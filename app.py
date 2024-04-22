@@ -1,33 +1,29 @@
-import json
-from functools import wraps
-from flask import Flask, render_template, redirect, session
-
-import auth
 from auth import auth_bp
+from user import user_bp
+from decorators import *
+from db import db
+from flask import Flask, render_template, redirect, session, request, url_for, make_response, flash
+from flask_sqlalchemy import SQLAlchemy
+import json
 
 app = Flask(__name__)
-
 app.config.from_file("config.json", load=json.load)
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Core blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(user_bp, url_prefix="/user")
 
-
-# Decorators
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("logged_in", False):
-            return auth.login()
-        else:
-            return f(*args, **kwargs)
-    return decorated_function
-
+db.init_app(app)
 
 # Routes
 @app.route('/')
 def index():  # put application's code here
-    return render_template("index.html")
+    if session and session['logged_in']:
+        return render_template("home.html")
+    else:
+        return render_template("index.html")
 
 
 @app.route('/private')

@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block pagetitle %}New user{% endblock %}
+{% block pagecontent %}
+    <div class="container bootstrap snippet">
+        <div class="row">
+            <div class="col-sm-10">
+                <br>
+                <h1>{{ session.first_name }} {{ session.name }}</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-9">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My preferences</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="profile">
+                        <br>
+                        <h2>Your informations</h2>
+                        <form class="form" action="{{ url_for('user.update_profile') }}" method="post" id="profileForm">
+                            <div class="form-group">
+                                <div class="col-xs-6">
+                                    <br>
+                                    <label for="first_name"><h4>First name</h4></label>
+                                    <input type="text" class="form-control" name="first_name" id="first_name"
+                                           placeholder="first name" value="{{ session.first_name }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-xs-6">
+                                    <br>
+                                    <label for="name"><h4>Last name</h4></label>
+                                    <input type="text" class="form-control" name="name" id="name"
+                                           placeholder="last name"
+                                           value="{{ session.name }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-xs-6">
+                                    <br>
+                                    <label for="email"><h4>Email</h4></label>
+                                    <input type="email" class="form-control" name="email" id="email" readonly="true"
+                                           value="{{ session.email }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-xs-12">
+                                    <br>
+                                    <button class="btn btn-lg btn-success" type="submit"><i
+                                            class="glyphicon glyphicon-ok-sign"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                    </div>
+                    <div class="tab-pane" id="preferences">
+                        <h2>Preferences for next year</h2>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -120,3 +120,20 @@
      and paste the content of the required files in the indicated `<tags>`.
      
 1. You can now run the app and feed any user information using the fields provided by the IdP application.
+
+## Configuration for the first application run
+### Setting up the database
+
+1. Add the database URI to the `config.json` file. The URI should be in the following format:
+    ```javascript
+    "SQLALCHEMY_DATABASE_URI": "DB URI"
+    ```
+    Replace the `DB URI` with the preferred location for the database.
+
+1. Run python script to create database tables and add the first admin.:
+    ```shell
+    [user@localhost ictm-teaching]$ python create_db.py --first_name "<first_name>" --name "<name>" --email "<email>"
+    ```
+    Replace the `<tags>` with the desired information for the first admin.
+
+1. Run the IdP server and the app.

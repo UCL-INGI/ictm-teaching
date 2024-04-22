@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, url_for, request, make_response, redirect, session
+from db import User, Session
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
@@ -33,6 +34,22 @@ def metadata():
     return resp
 
 
+def check_or_create_user(user):
+    db_session = Session()
+    try:
+        is_user = db_session.query(User).filter(User.email == user.email).first()
+        if is_user is None:
+            user = User(name=user.name, first_name=user.first_name, email=user.email)
+            db_session.add(user)
+            db_session.commit()
+            is_user = db_session.query(User).filter(User.email == user.email).first()
+        return is_user.id
+        return
+    except:
+        db_session.rollback()
+        raise
+
+
 @auth_bp.route("/callback", methods=['GET', 'POST'])
 def callback():
     auth = OneLogin_Saml2_Auth(prepare_saml_request(request), current_app.config["SAML"])
@@ -43,12 +60,20 @@ def callback():
         mappings = current_app.config["SAML"]["attributes"]
         attrs = {key: auth_attrs.get(mapping, []) for key, mapping in mappings.items()}
 
-        session["logged_in"] = True
-        session["user_id"] = attrs["uid"][0]
-        session["first_name"] = attrs["givenName"][0] if len(attrs["givenName"]) else ''
-        session["name"] = attrs["sn"][0]
-        session["email"] = attrs["email"][0]
+        uid = attrs["uid"][0]
+        first_name = attrs["givenName"][0] if len(attrs["givenName"]) else ''
+        name = attrs["sn"][0]
+        email = attrs["email"][0]
 
+        session["logged_in"] = True
+        session["uid"] = uid
+        session["first_name"] = first_name
+        session["name"] = name
+        session["email"] = email
+
+        user = User(name=name, first_name=first_name, email=email)
+        user_id = check_or_create_user(user)
+        session["user_id"] = user_id
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))
         if 'RelayState' in request.form and self_url != request.form['RelayState']:
@@ -69,3 +94,8 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
+
+@auth_bp.route('register')
+def register():
+    return redirect(url_for("register"))

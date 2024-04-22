@@ -6,7 +6,8 @@
 </head>
 <body>
     {% if session.logged_in %}
-        <p>Hello {{ session.first_name }} {{ session.name }}. <a href="{{ url_for('auth.logout') }}">Log out</a></p>
+        <!--- <p>Hello {{ session.first_name }} {{ session.name }}. <a href="{{ url_for('auth.logout') }}">Log out</a></p> --->
+        {%  extends "home.html" %}
     {% else %}
         <p><a href="{{ url_for('auth.login') }}">Log in</a></p>
     {% endif %}

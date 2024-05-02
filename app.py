@@ -9,7 +9,11 @@ import json
 
 app = Flask(__name__)
 app.config.from_file("config.json", load=json.load)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ictm-teaching.db'
+with open('config.json') as config_file:
+    app.config.update(json.load(config_file))
+
+db_name = app.config.get("db_name", "")
+app.config['SQLALCHEMY_DATABASE_URI'] = db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Core blueprints

@@ -3,6 +3,7 @@ from db import db, User
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session
 import re
 
+
 user_bp = Blueprint('user', __name__)
 
 

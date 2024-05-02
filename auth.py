@@ -1,7 +1,8 @@
+from db import db, User
 from flask import Blueprint, current_app, url_for, request, make_response, redirect, session
-from db import User, Session
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -34,18 +35,17 @@ def metadata():
     return resp
 
 
-def check_or_create_user(new_user):
-    db_session = Session()
+def check_or_create_user(user):
     try:
-        user = db_session.query(User).filter(User.email == new_user.email).first()
-        if user is None:
-            added_user = User(name=new_user.name, first_name=new_user.first_name, email=new_user.email)
-            db_session.add(added_user)
-            db_session.commit()
-            user = db_session.query(User).filter(User.email == added_user.email).first()
-        return user
+        is_user = db.session.query(User).filter(User.email == user.email).first()
+        if is_user is None:
+            user = User(name=user.name, first_name=user.first_name, email=user.email)
+            db.session.add(user)
+            db.session.commit()
+            db.session.refresh(user)
+        return user.id
     except:
-        db_session.rollback()
+        db.session.rollback()
         raise
 
 
@@ -70,13 +70,9 @@ def callback():
         session["name"] = name
         session["email"] = email
 
-        new_user = User(name=name, first_name=first_name, email=email)
-        user = check_or_create_user(new_user)
-        session["user_id"] = user.id
-
-        if user.admin:
-            session["is_admin"] = True
-
+        user = User(name=name, first_name=first_name, email=email)
+        user_id = check_or_create_user(user)
+        session["user_id"] = user_id
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))
         if 'RelayState' in request.form and self_url != request.form['RelayState']:

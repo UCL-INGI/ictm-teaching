@@ -75,6 +75,9 @@ def callback():
         session["first_name"] = updated_user.first_name
         session["name"] = updated_user.name
 
+        if updated_user.admin:
+            session["is_admin"] = True
+
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))
         if 'RelayState' in request.form and self_url != request.form['RelayState']:

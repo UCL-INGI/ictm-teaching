@@ -1,5 +1,6 @@
 from auth import auth_bp
 from user import user_bp
+from course import course_bp
 from decorators import *
 from db import db
 from flask import Flask, render_template, redirect, session, request, url_for, make_response, flash
@@ -15,10 +16,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Core blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
+app.register_blueprint(course_bp, url_prefix="/course")
 
 db.init_app(app)
-with app.app_context():
-    db.create_all()
 
 # Routes
 @app.route('/')

@@ -1,75 +1,91 @@
 {% extends "layout.html" %}
-{% block pagetitle %}New user{% endblock %}
+{% block pagetitle %}My profile{% endblock %}
+{% block additionalpageheader %}
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            function toggleResearcherFields() {
+                if ($('#is_researcher').is(':checked')) {
+                    $('#supervisor_select').show();
+                    $('#researcher_type_display').show();
+                    $('#max_load_display').show();
+                } else {
+                    $('#supervisor_select').hide();
+                    $('#researcher_type_display').hide();
+                    $('#max_load_display').hide();
+                }
+            }
+
+            $('#is_researcher').change(function () {
+                toggleResearcherFields();
+            });
+
+            // Initial check on page load
+            toggleResearcherFields();
+        });
+    </script>
+{% endblock %}
+
 {% block pagecontent %}
-    <div class="container bootstrap snippet">
-        <div class="row">
-            <div class="col-sm-10">
-                <br>
-                <h1>{{ session.first_name }} {{ session.name }}</h1>
+    <div class="container">
+        <h2 class="text-center mb-4">My profile</h2>
+        <form method="post" action="{{ url_for('user.profile') }}">
+            <div class="form-group">
+                <label for="first_name">First name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
             </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-9">
-                <ul class="nav nav-tabs">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My preferences</a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane active" id="profile">
-                        <br>
-                        <h2>Your informations</h2>
-                        <form class="form" action="{{ url_for('user.update_profile') }}" method="post" id="profileForm">
-                            <div class="form-group">
-                                <div class="col-xs-6">
-                                    <br>
-                                    <label for="first_name"><h4>First name</h4></label>
-                                    <input type="text" class="form-control" name="first_name" id="first_name"
-                                           placeholder="first name" value="{{ session.first_name }}">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-6">
-                                    <br>
-                                    <label for="name"><h4>Last name</h4></label>
-                                    <input type="text" class="form-control" name="name" id="name"
-                                           placeholder="last name"
-                                           value="{{ session.name }}">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-6">
-                                    <br>
-                                    <label for="email"><h4>Email</h4></label>
-                                    <input type="email" class="form-control" name="email" id="email" readonly="true"
-                                           value="{{ session.email }}">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-6">
-                                    <label for="email"><h4>Organization code</h4></label>
-                                    <input type="text" class="form-control" name="organization_code" id="organization_code" readonly="true"
-                                           value="{{ user.organization_code }}">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-12">
-                                    <br>
-                                    <button class="btn btn-lg btn-success" type="submit"><i
-                                            class="glyphicon glyphicon-ok-sign"></i> Save
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                        <hr>
-                    </div>
-                    <div class="tab-pane" id="preferences">
-                        <h2>Preferences for next year</h2>
-                        <hr>
-                    </div>
+            <br>
+            <div class="form-group">
+                <label for="name">Last name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}">
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="organization_code">Organization code</label>
+                <input type="text" class="form-control" id="organization_code" value="{{ user.organization_code }}" readonly>
+            </div>
+            <br>
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher" {% if user.is_teacher %}checked{% endif %} disabled>
+                    <label class="form-check-label" for="is_teacher">Teacher</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_researcher" name="is_researcher" {% if user.is_researcher %}checked{% endif %} disabled>
+                    <label class="form-check-label" for="is_researcher">Researcher</label>
                 </div>
             </div>
-        </div>
+            <div class="form-group" id="supervisor_select" style="display: none;">
+                <br>
+                <label for="supervisor">Supervisor</label>
+                <input type="text" class="form-control" id="supervisor" value="{{ user.supervisor.name }} {{ user.supervisor.first_name }}" readonly>
+            </div>
+            <div class="form-group" id="researcher_type_display" style="display: none;">
+                <br>
+                <label for="researcher_type">Researcher type</label>
+                <input type="text" class="form-control" id="researcher_type" value="{{ researcher.researcher_type }}" readonly>
+            </div>
+            <div class="form-group" id="max_load_display" style="display: none;">
+                <br>
+                <label for="max_load">Max load</label>
+                <input type="text" class="form-control" id="max_load" value="{{ researcher.max_loads }}" readonly>
+            </div>
+            <br>
+            <input type="submit" value="Save" class="btn btn-primary">
+        </form>
     </div>
 {% endblock %}

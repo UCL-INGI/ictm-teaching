@@ -1,6 +1,6 @@
 from decorators import login_required
 from db import db, User, Researcher
-from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
+from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
 import re, json
 

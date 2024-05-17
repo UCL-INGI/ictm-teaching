@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import json
 
 db = SQLAlchemy()
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -72,3 +75,47 @@ class PreferenceAssignment(db.Model):
     course = db.relationship('Course', backref=db.backref('course_preference_assignment', lazy=True))
     researcher = db.relationship('Researcher', backref=db.backref('researcher_preference_assignment', lazy=True))
 
+
+class Configuration(db.Model):
+    __tablename__ = 'configuration'
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.String, nullable=False)
+    is_current_year = db.Column(db.Boolean, default=True)
+
+    @classmethod
+    def update_current_year(cls, config_id):
+        # Update all years to set is_current_year to False
+        cls.query.update({cls.is_current_year: False})
+
+        selected_config = cls.query.get(config_id)
+        if selected_config:
+            selected_config.is_current_year = True
+            db.session.commit()
+
+
+# Add the first admin to the database
+def add_first_admin():
+    admin_exists = db.session.query(User).filter_by(admin=True).first()
+    if admin_exists is None:
+        first_admin = User(name='Admin', first_name='Admin', email='admin@example.com', organization_code="",
+                           admin=True)
+        db.session.add(first_admin)
+        db.session.commit()
+
+
+def get_current_academic_year():
+    current_year = datetime.now().year
+    next_year = current_year + 1
+    academic_year = f"{current_year}-{next_year}"
+    return academic_year
+
+
+# Add the first year corresponding to the current year
+def initialize_configuration():
+    current_year = get_current_academic_year()
+    existing_year = Configuration.query.filter_by(year=current_year).first()
+
+    if existing_year is None:
+        config = Configuration(year=current_year)
+        db.session.add(config)
+        db.session.commit()

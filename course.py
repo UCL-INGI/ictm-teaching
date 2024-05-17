@@ -1,11 +1,8 @@
-from datetime import datetime
-
 from decorators import login_required
-from db import db, User, Course, Teacher
-from sqlalchemy import func
-from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
+from db import db, User, Course, Teacher, Configuration
+from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify
-import re, json
+import json
 
 course_bp = Blueprint('course', __name__)
 
@@ -18,13 +15,12 @@ with open('config.json') as config_file:
 quadri = app.config.get('quadri', [])
 year = app.config.get('year', [])
 language = ['fr', 'en']
-current_year = datetime.now().year
 
 
 @course_bp.route('/form_course')
 @login_required
 def form_course():
-    return render_template('add_course.html', year=year, quadri=quadri, language=language)
+    return render_template('add_course.html', quadri=quadri, language=language)
 
 
 @course_bp.route('/add_course', methods=['POST'])
@@ -65,11 +61,9 @@ def add_course():
 @course_bp.route('/courses')
 @login_required
 def courses():
-    subquery = db.session.query(Course.id, func.max(Course.year).label('max_year')).group_by(Course.id).subquery()
-    recent_courses = db.session.query(Course).join(subquery, (Course.id == subquery.c.id) & (
-            Course.year == subquery.c.max_year)).all()
-
-    return render_template('courses.html', courses=recent_courses)
+    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
+    courses = courses = db.session.query(Course).filter_by(year=config.year).all()
+    return render_template('courses.html', courses=courses)
 
 
 @course_bp.route('/search_teachers')
@@ -83,17 +77,15 @@ def search_teachers():
 @course_bp.route('<int:course_id>')
 @login_required
 def course_info(course_id):
-    all_users = db.session.query(User).filter(User.admin == 0)
-    max_year_subquery = db.session.query(func.max(Course.year)).filter(Course.id == course_id).scalar_subquery()
-    course = db.session.query(Course).filter(Course.id == course_id, Course.year == max_year_subquery).first()
+    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
+    course = db.session.query(Course).filter(Course.id == course_id, Course.year == config.year).first()
     all_teachers = db.session.query(Teacher).filter(Teacher.course_id == course_id).all()
 
     if course:
         all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
             Course.year.desc()).all()
-        return render_template('course_info.html', course=course, all_years=all_years, quadri=quadri, years=year,
-                               language=language, users=all_users, teachers=all_teachers,
-                               all_teachers=all_teachers)
+        return render_template('course_info.html', course=course, all_years=all_years, quadri=quadri,
+                               language=language, teachers=all_teachers)
     else:
         flash('Course not found', 'error')
         return redirect(url_for('course.courses'))

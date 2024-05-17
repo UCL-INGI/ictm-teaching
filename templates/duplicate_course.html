@@ -94,12 +94,8 @@
                 <div class="form-group">
                     <label for="year"><h4>Year</h4></label>
                     <select class="form-select" id="year" name="year">
-                        {% for y in years %}
-                            {% if y == course.year %}
-                                <option value="{{ y }}" selected>{{ y }}</option>
-                            {% else %}
-                                <option value="{{ y }}">{{ y }}</option>
-                            {% endif %}
+                        {% for config in configurations %}
+                            <option value="{{ config.year }}" {% if config.year == course.year %} selected {% endif %}>{{ config.year }}</option>
                         {% endfor %}
                     </select>
                 </div>

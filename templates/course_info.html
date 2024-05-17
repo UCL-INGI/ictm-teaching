@@ -29,7 +29,6 @@
                 return $container;
             }
 
-            // Ajouter un gestionnaire d'événements pour chaque champ de sélection
             $('[id^=assigned_teachers]').each(function () {
                 $(this).select2({
                     placeholder: 'Search for a teacher',
@@ -117,12 +116,8 @@
                             <div class="form-group">
                                 <label for="year"><h4>Year</h4></label>
                                 <select class="form-select" id="year" name="year">
-                                    {% for y in years %}
-                                        {% if y == year.year %}
-                                            <option value="{{ y }}" selected>{{ y }}</option>
-                                        {% else %}
-                                            <option value="{{ y }}">{{ y }}</option>
-                                        {% endif %}
+                                    {% for config in configurations %}
+                                        <option value="{{ config.year }}" {% if config.year == year.year %} selected {% endif %}>{{ config.year }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -156,7 +151,7 @@
                                 <label for="assigned_teachers"><h4>Assign Teachers</h4></label>
                                 <select class="form-control" id="assigned_teachers_{{ year.year }}"
                                         name="assigned_teachers[]" multiple>
-                                    {% for assigned_teacher in all_teachers %}
+                                    {% for assigned_teacher in teachers %}
                                         {% if assigned_teacher.course_year == year.year %}
                                             <option value="{{ assigned_teacher.user_id }}"
                                                     selected>{{ assigned_teacher.user.name }} {{ assigned_teacher.user.first_name }}</option>

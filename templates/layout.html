@@ -4,55 +4,115 @@
     <meta charset="UTF-8">
     <title>{% block pagetitle %}{% endblock %} | ICTM Teaching</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <link href="{{ url_for('static', filename='select2.min.css') }}" rel="stylesheet"/>
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+    <style>
+        .form-select {
+            width: auto !important;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $('#yearSelect').change(function () {
+                var selectedYear = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('config.update_current_year') }}",
+                    data: {'selected_year': selectedYear},
+                });
+            });
+        });
+    </script>
     {% block additionalpageheader %}{% endblock %}
 </head>
 <body>
 {% if session.logged_in %}
-<div id="nav">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">ICTM Teaching</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.profile') }}">My Profile</a>
-                    </li>
-                {% if session.is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('user.register') }}">New user</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('user.users') }}">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('course.form_course') }}">New course</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('course.courses') }}">Courses</a>
-                    </li>
-                {% endif %}
-                {% block additionalnav %}{% endblock %}
-                </ul>
-                <div class="navbar-text ms-auto">
-                    Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+    <div id="nav">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('index') }}">ICTM Teaching</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.profile') }}">My Profile</a>
+                        </li>
+                        <!---
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="/" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Users Lists
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('user.register') }}">New User</a></li>
+            </ul>
+        </li>
+        --->
+                        {% if session.is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="{{ url_for('user.register') }}">New
+                                    user</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page"
+                                   href="{{ url_for('user.users') }}">Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page"
+                                   href="{{ url_for('course.form_course') }}">New course</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="{{ url_for('course.courses') }}">Courses</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="configDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Config
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="configDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('config.next_year') }}">Add New
+                                        Year</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        {% block additionalnav %}{% endblock %}
+                    </ul>
+                    <div class="navbar-text ms-auto">
+                        <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect">
+                            {% for config in configurations %}
+                                <option value="{{ config.id }}" {% if config.is_current_year %} selected {% endif %}>
+                                    {{ config.year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-</div>
+        </nav>
+    </div>
 {% endif %}
 
 <div id="content">
-    {% block pagecontent %}{% endblock %}
+    {% block pagecontent %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    {% endblock %}
 </div>
 </body>
 </html>

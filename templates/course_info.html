@@ -18,6 +18,15 @@
         .select2-selection--multiple {
             min-height: 38px;
         }
+
+        .badge a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .badge a:hover {
+            color: red;
+        }
     </style>
     <script>
         $(document).ready(function () {
@@ -54,6 +63,30 @@
                     templateSelection: formatTeacher,
                     tags: false
                 });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#organization_code').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var selectedValue = selectedOption.val();
+                var selectedText = selectedOption.text();
+
+                if (selectedValue) {
+                    var tagHtml = '<div class="badge bg-primary" data-id="' + selectedValue + '">' +
+                        selectedText + '&nbsp;<a href="#" class="remove-tag">&times;</a>' +
+                        '<input type="hidden" name="organization_code[]" value="' + selectedValue + '">' +
+                        '</div>';
+
+                    $('#selected-organizations').append(tagHtml);
+                    $(this).val('');
+                }
+            });
+
+            $(document).on('click', '.remove-tag', function (e) {
+                e.preventDefault();
+                $(this).parent('.badge').remove();
             });
         });
     </script>
@@ -117,7 +150,8 @@
                                 <label for="year"><h4>Year</h4></label>
                                 <select class="form-select" id="year" name="year">
                                     {% for config in configurations %}
-                                        <option value="{{ config.year }}" {% if config.year == year.year %} selected {% endif %}>{{ config.year }}</option>
+                                        <option value="{{ config.year }}" {% if config.year == year.year %}
+                                                selected {% endif %}>{{ config.year }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -151,7 +185,7 @@
                                 <label for="assigned_teachers"><h4>Assign Teachers</h4></label>
                                 <select class="form-control" id="assigned_teachers_{{ year.year }}"
                                         name="assigned_teachers[]" multiple>
-                                    {% for assigned_teacher in teachers %}
+                                    {% for assigned_teacher in year.course_teacher %}
                                         {% if assigned_teacher.course_year == year.year %}
                                             <option value="{{ assigned_teacher.user_id }}"
                                                     selected>{{ assigned_teacher.user.name }} {{ assigned_teacher.user.first_name }}</option>
@@ -160,12 +194,31 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <br>
+                                <label for="organization_code"><h4>Organization Code</h4></label>
+                                <select class="form-select" id="organization_code" name="organization_code">
+                                    <option value="" disabled selected>Select an organization</option>
+                                    {% for code in organizations_code %}
+                                        <option value="{{ code.id }}">{{ code.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div id="selected-organizations">
+                                {% for org in year.organizations %}
+                                    <div class="badge bg-primary" data-id="{{ org.id }}">
+                                        {{ org.name }}&nbsp;<a href="#" class="remove-tag">&times;</a>
+                                        <input type="hidden" name="organization_code[]" value="{{ org.id }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group">
                                 <div class="col-xs-12">
                                     <br>
                                     <button class="btn btn-lg btn-success" type="submit"><i
                                             class="glyphicon glyphicon-ok-sign"></i> Save
                                     </button>
-                                    <a href="{{ url_for('course.duplicate_course', course_id=year.id, year=year.year) }}" class="btn btn-lg btn-success">Duplicate Course</a>
+                                    <a href="{{ url_for('course.duplicate_course', course_id=year.id, year=year.year) }}"
+                                       class="btn btn-lg btn-success">Duplicate Course</a>
                                 </div>
                             </div>
                         </form>

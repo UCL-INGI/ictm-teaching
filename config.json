@@ -1,9 +1,7 @@
 {
   "APP_NAME": "ICTM Teaching",
   "SECRET_KEY": "ASECRETKEY",
-  "organization_codes": ["SST", "ICTM", "ELEN", "EPL", "INMA", "SSH", "IMMC", "IMAQ", "INGI", "SSS", "IONS", "ELI", "LDRI"],
   "quadri": [1, 2],
-  "year": ["2023-2024", "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029"],
   "db_name": "sqlite:///ictm-teaching.db",
   "SAML": {
     "attributes": {

@@ -19,7 +19,7 @@
                     <td>{{ user.name }}</td>
                     <td>{{ user.first_name }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{{ user.organization_code }}</td>
+                    <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
                 </tr>
             {% endfor %}
             </tbody>

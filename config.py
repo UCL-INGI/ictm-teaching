@@ -34,6 +34,7 @@ def next_year():
 
         return redirect(url_for("index"))
 
+
 @config_bp.route('/update_current_year', methods=['POST'])
 @login_required
 def update_current_year():

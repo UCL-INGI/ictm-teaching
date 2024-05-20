@@ -56,8 +56,8 @@
             <div class="form-group">
                 <label for="organization_code">Organization code</label>
                 <select class="form-select" id="organization_code" name="organization_code">
-                    {% for code in organization_codes %}
-                        <option value="{{ code }}">{{ code }}</option>
+                    {% for code in organizations_code %}
+                        <option value="{{ code.id }}">{{ code.name }}</option>
                     {% endfor %}
                 </select>
             </div>

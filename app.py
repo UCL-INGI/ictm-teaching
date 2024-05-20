@@ -2,7 +2,7 @@ from auth import auth_bp
 from user import user_bp
 from course import course_bp
 from config import config_bp
-from db import db, Configuration, add_first_admin, initialize_configuration
+from db import db, Configuration, Organization, add_first_admin, initialize_configuration, create_organizations
 from decorators import *
 from flask import Flask, render_template, redirect, session, request, url_for, make_response, flash
 import json
@@ -19,6 +19,7 @@ with app.app_context():
     db.create_all()
     add_first_admin()
     initialize_configuration()
+    create_organizations()
 
 # Core blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -34,9 +35,16 @@ def get_configurations():
         return []
 
 
+def get_organization():
+    if session.get('logged_in'):
+        return db.session.query(Organization).all()
+    else:
+        return []
+
+
 @app.context_processor
 def inject_configurations():
-    return dict(configurations=get_configurations())
+    return dict(configurations=get_configurations(), organizations_code=get_organization())
 
 
 # Routes

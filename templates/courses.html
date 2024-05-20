@@ -17,7 +17,11 @@
                 <tr onclick="window.location='{{ url_for("course.course_info", course_id=course.id) }}';" style="cursor:pointer;">
                     <td>{{ course.code }}</td>
                     <td>{{ course.title }}</td>
-                    <td>{{ course.organization_code }}</td>
+                    <td>
+                        {% for org in course.organizations %}
+                            <span class="badge bg-primary">{{ org.name }}</span>
+                        {% endfor %}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

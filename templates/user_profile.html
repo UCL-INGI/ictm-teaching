@@ -93,12 +93,8 @@
                             <div class="form-group">
                                 <label for="organization_code"><h4>Organization Code</h4></label>
                                 <select class="form-select" id="organization_code" name="organization_code">
-                                    {% for code in organization_codes %}
-                                        {% if code == user.organization_code %}
-                                            <option value="{{ code }}" selected>{{ code }}</option>
-                                        {% else %}
-                                            <option value="{{ code }}">{{ code }}</option>
-                                        {% endif %}
+                                    {% for code in organizations_code %}
+                                        <option value="{{ code.id }}" {% if code.id == user.organization_id %} selected {% endif %}>{{ code.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

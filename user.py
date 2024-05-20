@@ -11,8 +11,6 @@ app.config.from_file("config.json", load=json.load)
 with open('config.json') as config_file:
     app.config.update(json.load(config_file))
 
-organization_codes = app.config.get('organization_codes', [])
-
 researcher_types = ['Phd', 'Postdoc', 'Teaching assistant', 'Other']
 
 
@@ -30,8 +28,7 @@ def get_default_max_load(researcher_type):
 @login_required
 def register():
     all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1)
-    return render_template('register.html', organization_codes=organization_codes, supervisors=all_users,
-                           researcher_type=researcher_types)
+    return render_template('register.html', supervisors=all_users, researcher_type=researcher_types)
 
 
 def is_valid_email(email):
@@ -122,4 +119,65 @@ def update_profile():
             db.session.rollback()
         return redirect(url_for("user.profile"))
     else:
+        flash('User not found', 'danger')
+
+
+@user_bp.route('/users')
+@login_required
+def users():
+    all_users = db.session.query(User).all()
+    return render_template('users.html', users=all_users)
+
+
+@user_bp.route('/profile/<int:user_id>')
+@login_required
+def user_profile(user_id):
+    all_users = db.session.query(User).filter(User.admin == 0)
+    my_user = db.session.query(User).filter_by(id=user_id).first()
+    researcher = db.session.query(Researcher).filter(Researcher.user_id == my_user.id).first()
+    if my_user:
+        return render_template('user_profile.html', user=my_user, supervisors=all_users, researcher=researcher,
+                               researcher_type=researcher_types)
+    else:
+        return make_response("The user is not found", 500)
+
+
+@user_bp.route('/update_user_profile', methods=['POST'])
+@login_required
+def update_user_profile():
+    form = request.form
+    if form:
+        name = request.form['name']
+        first_name = request.form['first_name']
+        email = request.form['email']
+        user_id = request.form['user_id']
+        organization_code = request.form['organization_code']
+        is_teacher = 'is_teacher' in request.form
+        is_researcher = 'is_researcher' in request.form
+        supervisor_id = request.form.get('supervisor') if is_researcher else None
+        researcher_type = request.form['researcher_type'] if is_researcher else None
+        max_loads = request.form['max_load'] if is_researcher else None
+
+        user = db.session.query(User).filter(User.id == user_id).first()
+        researcher = db.session.query(Researcher).filter(Researcher.user_id == user.id).first()
+        if user:
+            try:
+                user.first_name = first_name
+                user.name = name
+                user.email = email
+                user.organization_id = organization_code
+                user.is_teacher = is_teacher
+                user.is_researcher = is_researcher
+                user.supervisor_id = supervisor_id
+                if is_researcher:
+                    researcher.max_loads = max_loads
+                    researcher.researcher_type = researcher_type
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+            return redirect(url_for("user.user_profile", user_id=user_id))
+        else:
+            flash('User not found', 'danger')
+    else:
+        return make_response("Problem with form request", 500)
         flash('User not found', 'danger')

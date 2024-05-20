@@ -10,57 +10,110 @@
             max-width: 400px;
             margin-top: 50px;
         }
+
+        .badge a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .badge a:hover {
+            color: red;
+        }
     </style>
+    <script>
+        $(document).ready(function () {
+            $('#organization_code').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var selectedValue = selectedOption.val();
+                var selectedText = selectedOption.text();
+
+                if (selectedValue) {
+                    var tagHtml = '<div class="badge bg-primary d-inline-block" data-id="' + selectedValue + '">' +
+                        selectedText + '&nbsp;<a href="#" class="remove-tag">&times;</a>' +
+                        '<input type="hidden" name="organization_code[]" value="' + selectedValue + '">' +
+                        '</div>';
+
+                    $('#tags-container').append(tagHtml);
+                    // Reset the select input
+                    $(this).val('');
+                }
+            });
+
+            $(document).on('click', '.remove-tag', function (e) {
+                e.preventDefault();
+                $(this).parent('.badge').remove();
+            });
+        });
+    </script>
 {% endblock %}
 {% block pagecontent %}
-    <div class="container">
-        <h2 class="text-center mb-4">New course</h2>
-        <form method="post" action="{{ url_for("course.add_course") }}">
-            <div class="form-group">
-                <label for="email"><h4>Code</h4></label>
-                <input type="text" class="form-control" id="code" name="code" placeholder="Enter the course code">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">New Course</h2>
+        <form method="post" action="{{ url_for('course.add_course') }}">
+            <div class="row">
+                <div class="col-lg-8 g-4">
+                    <div class="form-group">
+                        <label for="code"><h4>Code</h4></label>
+                        <input type="text" class="form-control" id="code" name="code"
+                               placeholder="Enter the course code">
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="title"><h4>Title</h4></label>
+                        <input type="text" class="form-control" id="title" name="title"
+                               placeholder="Enter the course title">
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="quadri"><h4>Quadri</h4></label>
+                        <select class="form-select" id="quadri" name="quadri">
+                            {% for q in quadri %}
+                                <option value="{{ q }}">{{ q }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4 g-4">
+                    <div class="form-group">
+                        <label for="year"><h4>Year</h4></label>
+                        <select class="form-select" id="year" name="year">
+                            {% for config in configurations %}
+                                <option value="{{ config.year }}" {% if config.is_current_year %} selected {% endif %}>
+                                    {{ config.year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="language"><h4>Language</h4></label>
+                        <select class="form-select" id="language" name="language">
+                            {% for lang in language %}
+                                {% if lang == 'fr' %}
+                                    <option value="{{ lang }}">French</option>
+                                {% elif lang == 'en' %}
+                                    <option value="{{ lang }}">English</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="organization_code"><h4>Organization Code</h4></label>
+                        <select class="form-select" id="organization_code" name="organization_code">
+                            <option value="" disabled selected>Select an organization</option>
+                            {% for code in organizations_code %}
+                                <option value="{{ code.id }}">{{ code.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="tags-container"></div>
+                </div>
             </div>
             <br>
-            <div class="form-group">
-                <label for="firstname"><h4>Title</h4></label>
-                <input type="text" class="form-control" id="title" name="title"
-                       placeholder="Enter the course title">
+            <div class="text-center">
+                <input type="submit" class="btn btn-primary" value="Add">
             </div>
-            <br>
-            <div class="form-group">
-                <label for="quadri"><h4>Quadri</h4></label>
-                <select class="form-select" id="quadri" name="quadri">
-                    {% for q in quadri %}
-                        <option value="{{ q }}">{{ q }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="year"><h4>Year</h4></label>
-                <select class="form-select" id="year" name="year">
-                    {% for config in configurations %}
-                        <option value="{{ config.year }}" {% if config.is_current_year %} selected {% endif %}>
-                            {{ config.year }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="language"><h4>Language</h4></label>
-                <select class="form-select" id="language" name="language">
-                    {% for lang in language %}
-                        {% if lang == 'fr' %}
-                            <option value="{{ lang }}">French</option>
-                        {% elif lang == 'en' %}
-                            <option value="{{ lang }}">English</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-            <br>
-            <input type="submit" value="Add">
         </form>
     </div>
 {% endblock %}

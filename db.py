@@ -12,13 +12,14 @@ class User(db.Model):
     name = db.Column(db.String, nullable=True)
     first_name = db.Column(db.String, nullable=True)
     email = db.Column(db.String, nullable=True)
-    organization_code = db.Column(db.String, nullable=True)
     admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
 
     supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
+    organization = db.relationship('Organization', back_populates='users')
 
 
 class Course(db.Model):
@@ -26,11 +27,16 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.String, primary_key=True)
     code = db.Column(db.String)
-    organization_code = db.Column(db.String)
     title = db.Column(db.String)
     quadri = db.Column(db.Integer)
     load_needed = db.Column(db.Integer, default=0)
     language = db.Column(db.String)
+
+    organizations = db.relationship('Organization',
+                                    secondary='course_organization',
+                                    back_populates='courses',
+                                    primaryjoin="and_(Course.id == CourseOrganization.course_id, Course.year == CourseOrganization.course_year)",
+                                    secondaryjoin="Organization.id == CourseOrganization.organization_id")
 
 
 class Researcher(db.Model):
@@ -93,12 +99,40 @@ class Configuration(db.Model):
             db.session.commit()
 
 
+class Organization(db.Model):
+    __tablename__ = 'organization'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)
+
+    users = db.relationship('User', back_populates='organization')
+    courses = db.relationship('Course',
+                              secondary='course_organization',
+                              back_populates='organizations',
+                              primaryjoin="Organization.id == CourseOrganization.organization_id",
+                              secondaryjoin="and_(Course.id == CourseOrganization.course_id, Course.year == CourseOrganization.course_year)")
+
+
+class CourseOrganization(db.Model):
+    __tablename__ = 'course_organization'
+
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
+    course_year = db.Column(db.Integer, db.ForeignKey('course.year'), primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), primary_key=True)
+
+    # Creation of a link to the compound key (id, year) of the course table
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
+
+
 # Add the first admin to the database
 def add_first_admin():
     admin_exists = db.session.query(User).filter_by(admin=True).first()
     if admin_exists is None:
-        first_admin = User(name='Admin', first_name='Admin', email='admin@example.com', organization_code="",
-                           admin=True)
+        first_admin = User(name='Admin', first_name='Admin', email='admin@example.com', admin=True)
         db.session.add(first_admin)
         db.session.commit()
 
@@ -118,4 +152,14 @@ def initialize_configuration():
     if existing_year is None:
         config = Configuration(year=current_year)
         db.session.add(config)
+        db.session.commit()
+
+
+# Create organizations
+def create_organizations():
+    organizations = ["SST", "ICTM", "ELEN", "EPL", "INMA", "SSH", "IMMC", "IMAQ", "INGI", "SSS", "IONS", "ELI",
+                     "LDRI"]
+
+    if db.session.query(Organization).count() == 0:
+        db.session.add_all([Organization(name=org) for org in organizations])
         db.session.commit()

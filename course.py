@@ -1,5 +1,5 @@
 from decorators import login_required
-from db import db, User, Course, Teacher, Configuration
+from db import db, User, Course, Teacher, Configuration, Organization
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify
 import json
@@ -33,6 +33,7 @@ def add_course():
         quadri = request.form['quadri']
         year = request.form['year']
         language = request.form['language']
+        organization_ids = request.form.getlist('organization_code[]')
 
         try:
             last_course = db.session.query(Course).order_by(Course.id.desc()).first()
@@ -45,6 +46,10 @@ def add_course():
                                                         Course.year == year).first()
             if is_course is None:
                 new_course = Course(id=new_id, year=year, code=code, title=title, quadri=quadri, language=language)
+                # Fetch organizations and add them to the course
+                organizations = db.session.query(Organization).filter(Organization.id.in_(organization_ids)).all()
+                new_course.organizations.extend(organizations)
+
                 db.session.add(new_course)
                 db.session.commit()
                 return redirect(url_for("course.form_course"))
@@ -62,7 +67,7 @@ def add_course():
 @login_required
 def courses():
     config = db.session.query(Configuration).filter_by(is_current_year=True).first()
-    courses = courses = db.session.query(Course).filter_by(year=config.year).all()
+    courses = db.session.query(Course).filter_by(year=config.year).all()
     return render_template('courses.html', courses=courses)
 
 
@@ -79,13 +84,12 @@ def search_teachers():
 def course_info(course_id):
     config = db.session.query(Configuration).filter_by(is_current_year=True).first()
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == config.year).first()
-    all_teachers = db.session.query(Teacher).filter(Teacher.course_id == course_id).all()
 
     if course:
         all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
             Course.year.desc()).all()
         return render_template('course_info.html', course=course, all_years=all_years, quadri=quadri,
-                               language=language, teachers=all_teachers)
+                               language=language)
     else:
         flash('Course not found', 'error')
         return redirect(url_for('course.courses'))
@@ -104,9 +108,10 @@ def update_course_info():
         load_needed = request.form['load_needed']
         language = request.form['language']
         assigned_teachers = request.form.getlist('assigned_teachers[]')
+        organisation_code = request.form.getlist('organization_code[]')
 
         course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
-        if assigned_teachers is not None:
+        if assigned_teachers:
             try:
                 teachers_to_remove = db.session.query(Teacher).filter(Teacher.course_id == course_id,
                                                                       Teacher.course_year == year,
@@ -124,9 +129,6 @@ def update_course_info():
                     if is_teacher is None:
                         new_teacher = Teacher(user_id=teacher, course_id=course_id, course_year=year)
                         db.session.add(new_teacher)
-
-                        user = db.session.query(User).get(teacher)
-                        course.organization_code = user.organization_code
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
@@ -139,6 +141,10 @@ def update_course_info():
                 course.year = year
                 course.load_needed = load_needed
                 course.language = language
+
+                course.organizations.clear()
+                course.organizations = db.session.query(Organization).filter(
+                    Organization.id.in_(organisation_code)).all()
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
@@ -155,10 +161,8 @@ def duplicate_course():
     course_id = request.args.get('course_id')
     course_year = request.args.get('year')
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == course_year).first()
-    teacher = db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == course_year).all()
 
-    return render_template('duplicate_course.html', course=course, teacher=teacher, quadri=quadri, years=year,
-                           language=language)
+    return render_template('duplicate_course.html', course=course, quadri=quadri, language=language)
 
 
 @course_bp.route('/add_duplicate_course', methods=['POST'])
@@ -175,18 +179,18 @@ def add_duplicate_course():
             load_needed = request.form['load_needed']
             language = request.form['language']
             assigned_teachers = request.form.getlist('assigned_teachers[]')
+            organisation_code = request.form.getlist('organization_code[]')
 
             try:
                 duplicate_course = Course(id=course_id, code=code, title=title, quadri=quadri, year=year,
                                           load_needed=load_needed, language=language)
+                organizations = db.session.query(Organization).filter(Organization.id.in_(organisation_code)).all()
+                duplicate_course.organizations.extend(organizations)
                 db.session.add(duplicate_course)
 
                 for teacher_id in assigned_teachers:
                     duplicate_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
                     db.session.add(duplicate_teacher)
-
-                    user = db.session.query(User).get(teacher_id)
-                    duplicate_course.organization_code = user.organization_code
 
                 db.session.commit()
 

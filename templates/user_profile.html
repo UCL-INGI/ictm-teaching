@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block pagetitle %}User profile{% endblock %}
+{% block pagetitle %}My profile{% endblock %}
 {% block additionalpageheader %}
     <style>
         body {
@@ -37,125 +37,133 @@
 {% endblock %}
 
 {% block pagecontent %}
-    <div class="container bootstrap snippet">
+    <div class="container-lg">
         <div class="row">
-            <div class="col-sm-10">
+            <div class="col-sm-12">
+                <br>
                 <h1>{{ user.first_name }} {{ user.name }}</h1>
+                <hr>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-3">
-                <div class="text-center">
-                    <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="avatar img-circle img-thumbnail"
-                         alt="avatar">
+        <div id="profile">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Your informations</h2>
+                    <hr>
                 </div>
-                <hr>
-                <br>
             </div>
-            <div class="col-sm-9">
-                <ul class="nav nav-tabs">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My preferences</a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane active" id="profile">
-                        <h2>Your informations</h2>
-                        <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
-                              id="profileForm">
-                            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
+                  id="profileForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div id="profile">
                             <div class="form-group">
-                                <div class="col-xs-6">
-                                    <br>
-                                    <label for="first_name"><h4>First name</h4></label>
-                                    <input type="text" class="form-control" name="first_name" id="first_name"
-                                           placeholder="first name" value="{{ user.first_name }}">
-                                </div>
+                                <br>
+                                <label for="first_name"><h4>First name</h4></label>
+                                <input type="text" class="form-control" name="first_name" id="first_name"
+                                       placeholder="first name" value="{{ user.first_name }}">
                             </div>
                             <div class="form-group">
-                                <div class="col-xs-6">
-                                    <br>
-                                    <label for="name"><h4>Last name</h4></label>
-                                    <input type="text" class="form-control" name="name" id="name"
-                                           placeholder="last name" value="{{ user.name }}">
-                                </div>
+                                <br>
+                                <label for="name"><h4>Last name</h4></label>
+                                <input type="text" class="form-control" name="name" id="name"
+                                       placeholder="last name" value="{{ user.name }}">
                             </div>
-                            <br>
                             <div class="form-group">
-                                <div class="col-xs-6">
-                                    <label for="email"><h4>Email</h4></label>
-                                    <input type="email" class="form-control" name="email" id="email"
-                                           value="{{ user.email }}">
-                                </div>
+                                <br>
+                                <label for="email"><h4>Email</h4></label>
+                                <input type="email" class="form-control" name="email" id="email"
+                                       value="{{ user.email }}">
                             </div>
-                            <br>
                             <div class="form-group">
-                                <label for="organization_code"><h4>Organization Code</h4></label>
+                                <br>
+                                <label for="organization_code"><h4>Organization code</h4></label>
                                 <select class="form-select" id="organization_code" name="organization_code">
                                     {% for code in organizations_code %}
-                                        <option value="{{ code.id }}" {% if code.id == user.organization_id %} selected {% endif %}>{{ code.name }}</option>
+                                        <option value="{{ code.id }}" {% if code.id == user.organization_id %}
+                                                selected {% endif %}>{{ code.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <br>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher"
-                                           {% if user.is_teacher %}checked{% endif %}>
-                                    <label class="form-check-label" for="is_teacher">Teacher</label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="is_researcher"
-                                           name="is_researcher" {% if user.is_researcher %}checked{% endif %}>
-                                    <label class="form-check-label" for="is_researcher">Researcher</label>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="col-lg-6">
+                        <div class="form-group">
                             <br>
-                            <div class="form-group" id="supervisor_select" style="display: none;">
-                                <label for="supervisor"><h4>Supervisor</h4></label>
-                                <select class="form-select" id="supervisor" name="supervisor">
-                                    {% for supervisor in supervisors %}
-                                        <option value="{{ supervisor.id }}"
-                                                {% if supervisor.id == user.supervisor.id %}selected{% endif %}>
-                                            {{ supervisor.first_name }} {{ supervisor.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher"
+                                       {% if user.is_teacher %}checked{% endif %}>
+                                <label class="form-check-label" for="is_teacher">Teacher</label>
                             </div>
-                            <div class="form-group" id="researcher_type_display" style="display: none;">
-                                <br>
-                                <label for="researcher_type">Researcher type</label>
-                                <select class="form-select" id="researcher_type" name="researcher_type">
-                                    {% for type in researcher_type %}
-                                        <option value="{{ type }}"
-                                                {% if type == researcher.researcher_type %}selected{% endif %}>
-                                            {{ type }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_researcher"
+                                       name="is_researcher" {% if user.is_researcher %}checked{% endif %}>
+                                <label class="form-check-label" for="is_researcher">Researcher</label>
                             </div>
-                            <div class="form-group" id="max_load_display" style="display: none;">
-                                <br>
-                                <label for="max_load">Max load</label>
-                                <input type="text" class="form-control" id="max_load" name="max_load"
-                                       value="{{ researcher.max_loads }}">
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-12">
-                                    <br>
-                                    <button class="btn btn-lg btn-success" type="submit"><i
-                                            class="glyphicon glyphicon-ok-sign"></i> Save
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                        <hr>
+                        </div>
+                        <div class="form-group" id="supervisor_select" style="display: none;">
+                            <br>
+                            <label for="supervisor">Supervisor</label>
+                            <select class="form-select" id="supervisor" name="supervisor">
+                                {% for supervisor in supervisors %}
+                                    <option value="{{ supervisor.id }}"
+                                            {% if supervisor.id == user.supervisor.id %}selected{% endif %}>
+                                        {{ supervisor.first_name }} {{ supervisor.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group" id="researcher_type_display" style="display: none;">
+                            <br>
+                            <label for="researcher_type">Researcher type</label>
+                            <select class="form-select" id="researcher_type" name="researcher_type">
+                                {% for type in researcher_type %}
+                                    <option value="{{ type }}"
+                                            {% if type == researcher.researcher_type %}selected{% endif %}>
+                                        {{ type }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group" id="max_load_display">
+                            <br>
+                            <label for="max_load">Max load</label>
+                            <input type="text" class="form-control" id="max_load" name="max_load"
+                                   value="{{ researcher.max_loads }}">
+                        </div>
                     </div>
-                    <div class="tab-pane" id="preferences">
-                        <h2>Preferences for next year</h2>
-                        <hr>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-sm-10">
+                        <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
                     </div>
+                </div>
+            </form>
+            <div id="preferences">
+                <div class="container-lg">
+                    <br>
+                    <h2>Course preferences</h2>
+                    <table class="table table-hover" id="preferencesTable">
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Title</th>
+                            <th>Semester</th>
+                        </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                        {% for preference in preferences %}
+                            <tr>
+                                <td>{{ preference.course.code }}</td>
+                                <td>{{ preference.course.title }}</td>
+                                <td>{{ preference.course.quadri }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

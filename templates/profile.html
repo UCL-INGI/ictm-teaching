@@ -211,61 +211,59 @@
                 </div>
             </div>
             <div class="tab-pane" id="preferences">
-                <div class="tab-pane" id="preferences">
-                    <div class="container-lg">
-                        <h2>Course preferences</h2>
-                        <form id="preferencesForm" action="{{ url_for('course_preference.save_preference') }}"
-                              method="post">
-                            <table class="table table-hover" id="preferencesTable">
-                                <thead>
+                <div class="container-lg">
+                    <h2>Course preferences</h2>
+                    <form id="preferencesForm" action="{{ url_for('course_preference.save_preference') }}"
+                          method="post">
+                        <table class="table table-hover" id="preferencesTable">
+                            <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Semester</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                            {% for preference in preferences %}
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Title</th>
-                                    <th>Semester</th>
+                                    <td>{{ preference.course.code }}</td>
+                                    <td>{{ preference.course.title }}</td>
+                                    <td>{{ preference.course.quadri }}</td>
+                                    <td>
+                                        <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
+                                           class="delete-icon">
+                                            <i class="fas fa-trash delete-icon"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <button type="button" id="showAddPreferencesTableButton" class="btn btn-primary">
+                            Add preference
+                        </button>
+
+                        <div id="addPreferencesSection" style="display: none;">
+                            <br>
+                            <h2>Add preferences</h2>
+                            <table class="table table-hover" id="selectionPref">
+                                <thead class="table-group-divider">
+                                <tr>
+                                    <th>Cours</th>
                                     <th></th>
                                 </tr>
                                 </thead>
-                                <tbody class="table-group-divider">
-                                {% for preference in preferences %}
-                                    <tr>
-                                        <td>{{ preference.course.code }}</td>
-                                        <td>{{ preference.course.title }}</td>
-                                        <td>{{ preference.course.quadri }}</td>
-                                        <td>
-                                            <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
-                                               class="delete-icon">
-                                                <i class="fas fa-trash delete-icon"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
+                                <tbody id="addPreferencesTable"></tbody>
                             </table>
-                            <button type="button" id="showAddPreferencesTableButton" class="btn btn-primary">
-                                Add preference
+                            <button type="button" id="addRowButton" class="btn btn-primary">
+                                Add row
                             </button>
-
-                            <div id="addPreferencesSection" style="display: none;">
-                                <br>
-                                <h2>Add preferences</h2>
-                                <table class="table table-hover" id="selectionPref">
-                                    <thead class="table-group-divider">
-                                    <tr>
-                                        <th>Cours</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="addPreferencesTable"></tbody>
-                                </table>
-                                <button type="button" id="addRowButton" class="btn btn-primary">
-                                    Add row
-                                </button>
-                                <button type="submit" id="submitPreferencesButton" class="btn btn-success">
-                                    Submit
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <button type="submit" id="submitPreferencesButton" class="btn btn-success">
+                                Submit
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

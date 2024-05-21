@@ -141,12 +141,18 @@ def users():
 @user_bp.route('/profile/<int:user_id>')
 @login_required
 def user_profile(user_id):
-    all_users = db.session.query(User).filter(User.admin == 0)
+    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1)
     my_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == my_user.id).first()
+    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
+
+    preferences = []
+    if researcher:
+        preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
+                                                                       course_year=config.year).all()
     if my_user:
         return render_template('user_profile.html', user=my_user, supervisors=all_users, researcher=researcher,
-                               researcher_type=researcher_types)
+                               researcher_type=researcher_types, preferences=preferences)
     else:
         return make_response("The user is not found", 500)
 

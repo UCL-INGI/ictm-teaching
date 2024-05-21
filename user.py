@@ -1,5 +1,5 @@
 from decorators import login_required
-from db import db, User, Researcher
+from db import db, User, Researcher, Course, Configuration, PreferenceAssignment
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
 import re, json
@@ -85,8 +85,17 @@ def add_user():
 def profile():
     email = session["email"]
     user = db.session.query(User).filter(User.email == email).first()
+
+    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == user.id).first()
-    return render_template("profile.html", user=user, researcher=researcher)
+    preferences = []
+    if researcher:
+        preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
+                                                                       course_year=config.year).all()
+
+    courses = db.session.query(Course).filter_by(year=config.year).all()
+
+    return render_template("profile.html", user=user, researcher=researcher, courses=courses, preferences=preferences)
 
 
 @user_bp.route('/update_profile', methods=['POST'])

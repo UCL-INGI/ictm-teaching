@@ -5,12 +5,21 @@
         body {
             background-color: #f8f9fa;
         }
+
         .container {
             max-width: 600px;
             margin-top: 50px;
         }
+
+        .move-icon {
+            cursor: move;
+        }
+
+        .delete-icon {
+            cursor: pointer;
+            color: red;
+        }
     </style>
-    <script src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
     <script>
         $(document).ready(function () {
             function toggleResearcherFields() {
@@ -33,59 +42,232 @@
             toggleResearcherFields();
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('#showAddPreferencesTableButton').click(function () {
+                $('#addPreferencesSection').toggle();
+            });
+
+            $('#addRowButton').click(function () {
+                const newRow = `
+                    <tr>
+                        <td>
+                            <select class="form-control course-select">
+                               {% for course in courses %}
+                                    <option value="{{ course.id }}-{{ course.year }}">
+                                        {{ course.code }} - {{ course.title }}
+                                    </option>
+                               {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <i class="fas fa-trash delete-icon"></i>
+                            <i class="fas fa-arrows-alt move-icon"></i>
+                        </td>
+                    </tr>
+                `;
+                $('#addPreferencesTable').append(newRow);
+                $("#addPreferencesTable").sortable({
+                    items: 'tr',
+                    handle: '.move-icon',
+                    axis: 'y',
+                    cursor: 'move'
+                });
+            });
+
+            $(document).on('click', '.delete-icon', function () {
+                $(this).closest('tr').remove();
+            });
+
+            $('#preferencesForm').submit(function (event) {
+                event.preventDefault();
+
+                $('#addPreferencesTable tr').each(function () {
+                    const courseCode = $(this).find('select.course-select').val();
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'preferences[]',
+                        value: courseCode
+                    }).appendTo('#preferencesForm');
+                });
+
+                this.submit();
+            });
+
+            $("#preferencesTable tbody").sortable({
+                axis: "y",
+                cursor: "move"
+            });
+
+            $('#preferencesTable').on('click', '.delete-icon', function () {
+                $(this).closest('tr').remove();
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block pagecontent %}
-    <div class="container">
-        <h2 class="text-center mb-4">My profile</h2>
-        <form method="post" action="{{ url_for('user.profile') }}">
-            <div class="form-group">
-                <label for="first_name">First name</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <br>
+                <h1>{{ user.first_name }} {{ user.name }}</h1>
             </div>
-            <br>
-            <div class="form-group">
-                <label for="name">Last name</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}">
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
+                    </li>
+                    {% if user.is_researcher %}
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
+                            preferences</a></li>
+                    {% endif %}
+                </ul>
+                <br>
             </div>
-            <br>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="organization_code">Organization code</label>
-                <input type="text" class="form-control" id="organization_code" value="{{ user.organization.name }}" readonly>
-            </div>
-            <br>
-            <div class="form-group">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher" {% if user.is_teacher %}checked{% endif %} disabled>
-                    <label class="form-check-label" for="is_teacher">Teacher</label>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane active" id="profile">
+                <div class="row">
+                    <div class="col-sm-10">
+                        <h2>Your informations</h2>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="is_researcher" name="is_researcher" {% if user.is_researcher %}checked{% endif %} disabled>
-                    <label class="form-check-label" for="is_researcher">Researcher</label>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="profile">
+                                <form class="form" action="{{ url_for('user.profile') }}" method="post"
+                                      id="profileForm">
+                                    <div class="form-group">
+                                        <br>
+                                        <label for="first_name"><h4>First name</h4></label>
+                                        <input type="text" class="form-control" name="first_name" id="first_name"
+                                               placeholder="first name" value="{{ user.first_name }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <br>
+                                        <label for="name"><h4>Last name</h4></label>
+                                        <input type="text" class="form-control" name="name" id="name"
+                                               placeholder="last name" value="{{ user.name }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <br>
+                                        <label for="email"><h4>Email</h4></label>
+                                        <input type="email" class="form-control" name="email" id="email"
+                                               value="{{ user.email }}" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <br>
+                                        <label for="organization_code"><h4>Organization code</h4></label>
+                                        <input type="text" class="form-control" id="organization_code"
+                                               value="{{ user.organization.name }}" readonly>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <br>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher"
+                                       {% if user.is_teacher %}checked{% endif %} disabled>
+                                <label class="form-check-label" for="is_teacher">Teacher</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_researcher" name="is_researcher"
+                                       {% if user.is_researcher %}checked{% endif %} disabled>
+                                <label class="form-check-label" for="is_researcher">Researcher</label>
+                            </div>
+                        </div>
+                        <div class="form-group" id="supervisor_select" style="display: none;">
+                            <br>
+                            <label for="supervisor">Supervisor</label>
+                            <input type="text" class="form-control" id="supervisor"
+                                   value="{{ user.supervisor.name }} {{ user.supervisor.first_name }}" readonly>
+                        </div>
+                        <div class="form-group" id="researcher_type_display" style="display: none;">
+                            <br>
+                            <label for="researcher_type">Researcher type</label>
+                            <input type="text" class="form-control" id="researcher_type"
+                                   value="{{ researcher.researcher_type }}" readonly>
+                        </div>
+                        <div class="form-group" id="max_load_display" style="display: none;">
+                            <br>
+                            <label for="max_load">Max load</label>
+                            <input type="text" class="form-control" id="max_load" value="{{ researcher.max_loads }}"
+                                   readonly>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-sm-10">
+                        <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
+                    </div>
                 </div>
             </div>
-            <div class="form-group" id="supervisor_select" style="display: none;">
-                <br>
-                <label for="supervisor">Supervisor</label>
-                <input type="text" class="form-control" id="supervisor" value="{{ user.supervisor.name }} {{ user.supervisor.first_name }}" readonly>
+            <div class="tab-pane" id="preferences">
+                <div class="tab-pane" id="preferences">
+                    <div class="container-lg">
+                        <h2>Course preferences</h2>
+                        <form id="preferencesForm" action="{{ url_for('course_preference.save_preference') }}"
+                              method="post">
+                            <table class="table table-hover" id="preferencesTable">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Title</th>
+                                    <th>Semester</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                {% for preference in preferences %}
+                                    <tr>
+                                        <td>{{ preference.course.code }}</td>
+                                        <td>{{ preference.course.title }}</td>
+                                        <td>{{ preference.course.quadri }}</td>
+                                        <td>
+                                            <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
+                                               class="delete-icon">
+                                                <i class="fas fa-trash delete-icon"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="button" id="showAddPreferencesTableButton" class="btn btn-primary">
+                                Add preference
+                            </button>
+
+                            <div id="addPreferencesSection" style="display: none;">
+                                <br>
+                                <h2>Add preferences</h2>
+                                <table class="table table-hover" id="selectionPref">
+                                    <thead class="table-group-divider">
+                                    <tr>
+                                        <th>Cours</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="addPreferencesTable"></tbody>
+                                </table>
+                                <button type="button" id="addRowButton" class="btn btn-primary">
+                                    Add row
+                                </button>
+                                <button type="submit" id="submitPreferencesButton" class="btn btn-success">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="form-group" id="researcher_type_display" style="display: none;">
-                <br>
-                <label for="researcher_type">Researcher type</label>
-                <input type="text" class="form-control" id="researcher_type" value="{{ researcher.researcher_type }}" readonly>
-            </div>
-            <div class="form-group" id="max_load_display" style="display: none;">
-                <br>
-                <label for="max_load">Max load</label>
-                <input type="text" class="form-control" id="max_load" value="{{ researcher.max_loads }}" readonly>
-            </div>
-            <br>
-            <input type="submit" value="Save" class="btn btn-primary">
-        </form>
+        </div>
     </div>
 {% endblock %}

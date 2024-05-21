@@ -74,9 +74,17 @@ class Teacher(db.Model):
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.String, nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    course_id = db.Column(db.Integer, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
     researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), nullable=False)
+
+    # Creation of a link to the compound key (id, year) of the course table
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
 
     course = db.relationship('Course', backref=db.backref('course_preference_assignment', lazy=True))
     researcher = db.relationship('Researcher', backref=db.backref('researcher_preference_assignment', lazy=True))

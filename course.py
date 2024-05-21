@@ -54,7 +54,7 @@ def add_course():
                 db.session.commit()
                 return redirect(url_for("course.form_course"))
             else:
-                flash('Course already exists', 'warning')  # Flash warning message
+                flash('Course already exists', 'warning')
         except Exception as e:
             db.session.rollback()
             raise e

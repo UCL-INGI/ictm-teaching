@@ -123,7 +123,7 @@
     <div class="container-lg">
         <div class="tab-content">
             {% for year in all_years %}
-                <div class="tab-pane {% if year.year == course.year %} active {% endif %}"
+                <div class="tab-pane {% if year.year == session.current_year %} active {% endif %}"
                      id="year-{{ year.year }}">
                     <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
                           id="courseInfo">

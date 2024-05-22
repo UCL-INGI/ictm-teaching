@@ -53,7 +53,6 @@ def inject_configurations():
 @app.route('/')
 def index():  # put application's code here
     if session and session['logged_in']:
-        configurations = db.session.query(Configuration).all()
         return render_template("home.html")
     else:
         return render_template("index.html")

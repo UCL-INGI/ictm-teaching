@@ -38,7 +38,8 @@ def next_year():
 @config_bp.route('/update_current_year', methods=['POST'])
 @login_required
 def update_current_year():
-    config_id = request.form.get('selected_year')
-    if config_id:
-        Configuration.update_current_year(config_id)
-        flash('Updated current year', 'success')
+    current_year = request.form.get('selected_year')
+    session['current_year'] = current_year
+    flash('Updated current year', 'success')
+
+    return redirect(url_for("index"))

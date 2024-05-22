@@ -57,6 +57,9 @@ def add_user():
     supervisor_id = request.form.get('supervisor') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
 
+    # Make email unique
+    is_user_exist = db.session.query(User).filter(User.email == email).first()
+
     if not contains_valid_characters(name):
         return make_response("Invalid characters in name", 400)
     if not contains_valid_characters(first_name):
@@ -84,16 +87,16 @@ def add_user():
 @login_required
 def profile():
     email = session["email"]
+    current_year = session["current_year"]
     user = db.session.query(User).filter(User.email == email).first()
-
-    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == user.id).first()
+
     preferences = []
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
-                                                                       course_year=config.year).all()
+                                                                       course_year=current_year).all()
 
-    courses = db.session.query(Course).filter_by(year=config.year).all()
+    courses = db.session.query(Course).filter_by(year=current_year).all()
 
     return render_template("profile.html", user=user, researcher=researcher, courses=courses, preferences=preferences)
 
@@ -144,12 +147,12 @@ def user_profile(user_id):
     all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
     my_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == my_user.id).first()
-    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
+    current_year = session["current_year"]
 
     preferences = []
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
-                                                                       course_year=config.year).all()
+                                                                       course_year=current_year).all()
     if my_user:
         return render_template('user_profile.html', user=my_user, supervisors=all_users, researcher=researcher,
                                researcher_type=researcher_types, preferences=preferences)

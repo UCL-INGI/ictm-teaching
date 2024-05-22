@@ -21,13 +21,30 @@
     </style>
     <script>
         $(document).ready(function () {
+            var selectedYear;
+            var currentYear = '{{ session.current_year }}';
+
             $('#yearSelect').change(function () {
-                var selectedYear = $(this).val();
+                selectedYear = $(this).val();
+                $('#selectedYearText').text(selectedYear);
+                $('#confirmationModal').modal('show');
+            });
+
+            $('#confirmChange').click(function () {
                 $.ajax({
                     type: 'POST',
                     url: "{{ url_for('config.update_current_year') }}",
                     data: {'selected_year': selectedYear},
+                    success: function (response) {
+                        alert('Year updated successfully.');
+                    },
+                    error: function (error) {
+                        alert('Error updating the year.');
+                        // Revert to the previously selected year in case of an error
+                        $('#yearSelect').val(currentYear);
+                    }
                 });
+                $('#confirmationModal').modal('hide');
             });
         });
     </script>
@@ -48,16 +65,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('user.profile') }}">My Profile</a>
                         </li>
-                        <!---
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="/" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Users Lists
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="{{ url_for('user.register') }}">New User</a></li>
-            </ul>
-        </li>
-        --->
                         {% if session.is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link active" aria-current="page" href="{{ url_for('user.register') }}">New
@@ -88,9 +95,11 @@
                         {% block additionalnav %}{% endblock %}
                     </ul>
                     <div class="navbar-text ms-auto">
-                        <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect">
+                        <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
+                                {% if session.is_admin == False %} disabled {% endif %}>
                             {% for config in configurations %}
-                                <option value="{{ config.id }}" {% if config.is_current_year %} selected {% endif %}>
+                                <option value="{{ config.year }}" {% if config.year == session.current_year %}
+                                        selected {% endif %}>
                                     {{ config.year }}
                                 </option>
                             {% endfor %}
@@ -105,6 +114,25 @@
         </nav>
     </div>
 {% endif %}
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Year Change</h5>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to change the year to <span id="selectedYearText"></span>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirmChange">Yes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="content">
     {% block pagecontent %}

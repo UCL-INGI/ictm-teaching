@@ -1,4 +1,4 @@
-from db import db, User
+from db import db, User, Configuration
 from flask import Blueprint, current_app, url_for, request, make_response, redirect, session
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
@@ -75,8 +75,13 @@ def callback():
         session["first_name"] = updated_user.first_name
         session["name"] = updated_user.name
 
+        config = db.session.query(Configuration).filter_by(is_current_year=True).first()
+        session["current_year"] = config.year
+
         if updated_user.admin:
             session["is_admin"] = True
+        else:
+            session["is_admin"] = False
 
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))

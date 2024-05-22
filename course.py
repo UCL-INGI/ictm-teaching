@@ -1,7 +1,7 @@
 from decorators import login_required
 from db import db, User, Course, Teacher, Configuration, Organization
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
-    Flask, jsonify
+    Flask, jsonify, session
 import json
 
 course_bp = Blueprint('course', __name__)
@@ -66,8 +66,8 @@ def add_course():
 @course_bp.route('/courses')
 @login_required
 def courses():
-    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
-    courses = db.session.query(Course).filter_by(year=config.year).all()
+    current_year = session["current_year"]
+    courses = db.session.query(Course).filter_by(year=current_year).all()
     return render_template('courses.html', courses=courses)
 
 
@@ -82,8 +82,8 @@ def search_teachers():
 @course_bp.route('<int:course_id>')
 @login_required
 def course_info(course_id):
-    config = db.session.query(Configuration).filter_by(is_current_year=True).first()
-    course = db.session.query(Course).filter(Course.id == course_id, Course.year == config.year).first()
+    current_year = session["current_year"]
+    course = db.session.query(Course).filter(Course.id == course_id, Course.year == current_year).first()
 
     if course:
         all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(

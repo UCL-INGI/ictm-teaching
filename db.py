@@ -15,11 +15,23 @@ class User(db.Model):
     admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
 
     supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
     organization = db.relationship('Organization', back_populates='users')
+
+    @staticmethod
+    def before_update(mapper, connection, target):
+        if not target.active:
+            if target.supervisees:
+                raise ValueError("Cannot deactivate a supervisor who has supervisees.")
+            if target.user_teacher:
+                raise ValueError("Cannot deactivate a teacher assigned to a course.")
+
+
+db.event.listen(User, 'before_update', User.before_update)
 
 
 class Course(db.Model):
@@ -31,6 +43,9 @@ class Course(db.Model):
     quadri = db.Column(db.Integer)
     load_needed = db.Column(db.Integer, default=0)
     language = db.Column(db.String)
+    nbr_students = db.Column(db.Integer, default=0)
+    nbr_teaching_assistants = db.Column(db.Integer, default=0)
+    nbr_monitor_students = db.Column(db.Integer, default=0)
 
     organizations = db.relationship('Organization',
                                     secondary='course_organization',
@@ -44,7 +59,6 @@ class Researcher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     research_field = db.Column(db.String)
-    active = db.Column(db.Boolean, default=True)
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String)

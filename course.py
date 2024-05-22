@@ -109,6 +109,9 @@ def update_course_info():
         language = request.form['language']
         assigned_teachers = request.form.getlist('assigned_teachers[]')
         organisation_code = request.form.getlist('organization_code[]')
+        nbr_students = request.form['nbr_students']
+        nbr_teaching_assistants = request.form['nbr_teaching_assistants']
+        nbr_monitor_students = request.form['nbr_monitor_students']
 
         course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
         if assigned_teachers:
@@ -141,6 +144,9 @@ def update_course_info():
                 course.year = year
                 course.load_needed = load_needed
                 course.language = language
+                course.nbr_students = nbr_students
+                course.nbr_teaching_assistants = nbr_teaching_assistants
+                course.nbr_monitor_students = nbr_monitor_students
 
                 course.organizations.clear()
                 course.organizations = db.session.query(Organization).filter(
@@ -180,10 +186,15 @@ def add_duplicate_course():
             language = request.form['language']
             assigned_teachers = request.form.getlist('assigned_teachers[]')
             organisation_code = request.form.getlist('organization_code[]')
+            nbr_students = request.form['nbr_students']
+            nbr_teaching_assistants = request.form['nbr_teaching_assistants']
+            nbr_monitor_students = request.form['nbr_monitor_students']
 
             try:
                 duplicate_course = Course(id=course_id, code=code, title=title, quadri=quadri, year=year,
-                                          load_needed=load_needed, language=language)
+                                          load_needed=load_needed, language=language, nbr_students=nbr_students,
+                                          nbr_teaching_assistants=nbr_teaching_assistants,
+                                          nbr_monitor_students=nbr_monitor_students)
                 organizations = db.session.query(Organization).filter(Organization.id.in_(organisation_code)).all()
                 duplicate_course.organizations.extend(organizations)
                 db.session.add(duplicate_course)

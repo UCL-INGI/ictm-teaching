@@ -27,7 +27,7 @@ def get_default_max_load(researcher_type):
 @user_bp.route('/register')
 @login_required
 def register():
-    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1)
+    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
     return render_template('register.html', supervisors=all_users, researcher_type=researcher_types)
 
 
@@ -134,14 +134,14 @@ def update_profile():
 @user_bp.route('/users')
 @login_required
 def users():
-    all_users = db.session.query(User).all()
+    all_users = db.session.query(User).filter_by(active=1).all()
     return render_template('users.html', users=all_users)
 
 
 @user_bp.route('/profile/<int:user_id>')
 @login_required
 def user_profile(user_id):
-    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1)
+    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
     my_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == my_user.id).first()
     config = db.session.query(Configuration).filter_by(is_current_year=True).first()
@@ -195,4 +195,18 @@ def update_user_profile():
             flash('User not found', 'danger')
     else:
         return make_response("Problem with form request", 500)
-        flash('User not found', 'danger')
+
+
+@user_bp.route('/disable/<int:user_id>')
+@login_required
+def disable(user_id):
+    try:
+        user = db.session.query(User).filter_by(id=user_id).first()
+        user.active = 0
+        db.session.commit()
+        all_users = db.session.query(User).filter(User.active == 1).all()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+    return render_template('users.html', users=all_users)

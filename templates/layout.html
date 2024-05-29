@@ -21,30 +21,35 @@
     </style>
     <script>
         $(document).ready(function () {
-            var selectedYear;
-            var currentYear = '{{ session.current_year }}';
-
-            $('#yearSelect').change(function () {
-                selectedYear = $(this).val();
-                $('#selectedYearText').text(selectedYear);
+            $('#newYear').click(function () {
                 $('#confirmationModal').modal('show');
             });
 
             $('#confirmChange').click(function () {
                 $.ajax({
                     type: 'POST',
-                    url: "{{ url_for('config.update_current_year') }}",
-                    data: {'selected_year': selectedYear},
+                    url: "{{ url_for('config.next_year') }}",
                     success: function (response) {
                         alert('Year updated successfully.');
+                        location.reload();
                     },
                     error: function (error) {
                         alert('Error updating the year.');
-                        // Revert to the previously selected year in case of an error
-                        $('#yearSelect').val(currentYear);
                     }
                 });
                 $('#confirmationModal').modal('hide');
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#yearSelect').change(function () {
+                var selectedYear = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('config.update_current_year') }}",
+                    data: {'selected_year': selectedYear},
+                });
             });
         });
     </script>
@@ -87,8 +92,7 @@
                                     Config
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="configDropdown">
-                                    <li><a class="dropdown-item" href="{{ url_for('config.next_year') }}">Add New
-                                        Year</a></li>
+                                    <li><a class="dropdown-item" id="newYear">Add New Year</a></li>
                                 </ul>
                             </li>
                         {% endif %}
@@ -124,7 +128,7 @@
                 <h5 class="modal-title" id="confirmationModalLabel">Confirm Year Change</h5>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to change the year to <span id="selectedYearText"></span>?</p>
+                <p>Are you sure you want to add a new year ?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="confirmChange">Yes</button>

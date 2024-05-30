@@ -44,8 +44,24 @@
     </script>
     <script>
         $(document).ready(function () {
-            $('#showAddPreferencesTableButton').click(function () {
-                $('#addPreferencesSection').toggle();
+            let originalTableContent;
+
+            $('#addPreferencesButton').click(function () {
+                $('#staticPreferencesTable').hide();
+                $('#editablePreferencesTable').show();
+                $('#addPreferencesButton').hide();
+                $('#savePreferencesButton').show();
+                $('#cancelEditButton').show();
+                $('#addRowButton').show();
+            });
+
+            $('#cancelEditButton').click(function () {
+                $('#editablePreferencesTable').hide();
+                $('#staticPreferencesTable').show();
+                $('#addPreferencesButton').show();
+                $('#savePreferencesButton').hide();
+                $('#cancelEditButton').hide();
+                $('#addRowButton').hide();
             });
 
             $('#addRowButton').click(function () {
@@ -53,11 +69,11 @@
                     <tr>
                         <td>
                             <select class="form-control course-select">
-                               {% for course in courses %}
+                                {% for course in courses %}
                                     <option value="{{ course.id }}-{{ course.year }}">
                                         {{ course.code }} - {{ course.title }}
                                     </option>
-                               {% endfor %}
+                                {% endfor %}
                             </select>
                         </td>
                         <td>
@@ -66,8 +82,8 @@
                         </td>
                     </tr>
                 `;
-                $('#addPreferencesTable').append(newRow);
-                $("#addPreferencesTable").sortable({
+                $('#editablePreferencesTable tbody').append(newRow);
+                $("#editablePreferencesTable tbody").sortable({
                     items: 'tr',
                     handle: '.move-icon',
                     axis: 'y',
@@ -79,28 +95,39 @@
                 $(this).closest('tr').remove();
             });
 
-            $('#preferencesForm').submit(function (event) {
-                event.preventDefault();
-
-                $('#addPreferencesTable tr').each(function () {
+            $('#savePreferencesButton').click(function () {
+                const preferences = [];
+                $('#editablePreferencesTable tr').each(function () {
                     const courseCode = $(this).find('select.course-select').val();
-                    $('<input>').attr({
-                        type: 'hidden',
-                        name: 'preferences[]',
-                        value: courseCode
-                    }).appendTo('#preferencesForm');
+                    if (courseCode) {
+                        preferences.push(courseCode);
+                    }
                 });
 
-                this.submit();
+                const data = {
+                    preferences: preferences
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('course_preference.save_preference') }}",
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert('Preferences updated successfully.');
+                        location.reload(); // Refresh the page to show the updated preferences
+                    },
+                    error: function (error) {
+                        alert('Error updating the preferences.');
+                    }
+                });
             });
 
-            $("#preferencesTable tbody").sortable({
-                axis: "y",
-                cursor: "move"
-            });
-
-            $('#preferencesTable').on('click', '.delete-icon', function () {
-                $(this).closest('tr').remove();
+            $("#editablePreferencesTable tbody").sortable({
+                items: 'tr',
+                handle: '.move-icon',
+                axis: 'y',
+                cursor: 'move'
             });
         });
     </script>
@@ -212,10 +239,9 @@
             </div>
             <div class="tab-pane" id="preferences">
                 <div class="container-lg">
-                    <h2>Course preferences</h2>
-                    <form id="preferencesForm" action="{{ url_for('course_preference.save_preference') }}"
-                          method="post">
-                        <table class="table table-hover" id="preferencesTable">
+                    <h2>Course Preferences</h2>
+                    <form id="preferencesForm" method="post">
+                        <table class="table table-hover" id="staticPreferencesTable">
                             <thead>
                             <tr>
                                 <th>Code</th>
@@ -240,29 +266,44 @@
                             {% endfor %}
                             </tbody>
                         </table>
-                        <button type="button" id="showAddPreferencesTableButton" class="btn btn-primary">
-                            Add preference
-                        </button>
 
-                        <div id="addPreferencesSection" style="display: none;">
-                            <br>
-                            <h2>Add preferences</h2>
-                            <table class="table table-hover" id="selectionPref">
-                                <thead class="table-group-divider">
+                        <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
+                            <thead>
+                            <tr>
+                                <th>Code</th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                            {% for preference in preferences %}
                                 <tr>
-                                    <th>Cours</th>
-                                    <th></th>
+                                    <td>
+                                        <select class="form-control course-select">
+                                            {% for course in courses %}
+                                                <option value="{{ course.id }}-{{ course.year }}"
+                                                        {% if course.id == preference.course.id %}selected{% endif %}>
+                                                    {{ course.code }} - {{ course.title }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-trash delete-icon"></i>
+                                        <i class="fas fa-arrows-alt move-icon"></i>
+                                    </td>
                                 </tr>
-                                </thead>
-                                <tbody id="addPreferencesTable"></tbody>
-                            </table>
-                            <button type="button" id="addRowButton" class="btn btn-primary">
-                                Add row
-                            </button>
-                            <button type="submit" id="submitPreferencesButton" class="btn btn-success">
-                                Submit
-                            </button>
-                        </div>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences</button>
+                        <button type="button" id="savePreferencesButton" class="btn btn-success" style="display: none;">
+                            Save Preferences
+                        </button>
+                        <button type="button" id="cancelEditButton" class="btn btn-secondary" style="display: none;">
+                            Cancel
+                        </button>
+                        <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">Add Row
+                        </button>
                     </form>
                 </div>
             </div>

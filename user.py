@@ -68,18 +68,21 @@ def add_user():
         return make_response("Invalid email format", 400)
 
     try:
-        new_user = User(name=name, first_name=first_name, email=email, organization_code=organization_code,
-                        is_teacher=is_teacher, is_researcher=is_researcher, supervisor_id=supervisor_id)
+        new_user = User(name=name, first_name=first_name, email=email, is_teacher=is_teacher,
+                        is_researcher=is_researcher, supervisor_id=supervisor_id,
+                        organization_id=organization_code)
         db.session.add(new_user)
         db.session.commit()
         if is_researcher:
             max_load = get_default_max_load(researcher_type)
-            new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type, max_loads=max_load)
+            new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type,
+                                        max_loads=max_load)
             db.session.add(new_researcher)
             db.session.commit()
     except:
         db.session.rollback()
         raise
+
     return redirect(url_for("user.register"))
 
 
@@ -96,7 +99,9 @@ def profile():
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).all()
 
-    courses = db.session.query(Course).filter_by(year=current_year).all()
+    courses = db.session.query(Course).filter(Course.year == current_year,
+                                              Course.organizations.contains(user.organization)
+                                              ).all()
 
     return render_template("profile.html", user=user, researcher=researcher, courses=courses, preferences=preferences)
 

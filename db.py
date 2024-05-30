@@ -94,6 +94,7 @@ class PreferenceAssignment(db.Model):
 
     # Creation of a link to the compound key (id, year) of the course table
     __table_args__ = (
+        db.UniqueConstraint('course_id', 'course_year', 'researcher_id', name='unique_course_year_researcher'),
         db.ForeignKeyConstraint(
             ['course_id', 'course_year'],
             ['course.id', 'course.year']

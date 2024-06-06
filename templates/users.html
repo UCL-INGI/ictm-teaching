@@ -11,6 +11,13 @@
                 <th>First Name</th>
                 <th>Email</th>
                 <th>Organization Code</th>
+                {% if user_type == 'researcher' %}
+                    <th>Status</th>
+                    <th>Max load</th>
+                {% endif %}
+                {% if user_type == 'archived' %}
+                    <th>Type</th>
+                {% endif %}
                 <th></th>
             </tr>
             </thead>
@@ -22,12 +29,31 @@
                     <td>{{ user.first_name }}</td>
                     <td>{{ user.email }}</td>
                     <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
-                    <td>
-                        <a href="{{ url_for('user.disable', user_id=user.id) }}"
-                           class="delete-icon">
-                            <i class="fas fa-trash delete-icon"></i>
-                        </a>
-                    </td>
+                    {% if user_type == 'researcher' %}
+                        <td>{{ user.user_researcher.researcher_type }}</td>
+                        <td>{{ user.user_researcher.max_loads }}</td>
+                        <td></td>
+                    {% endif %}
+                    {% if user_type == 'archived' %}
+                        {% if user.is_teacher %}
+                            <td>Teacher</td>
+                        {% else %}
+                            <td>{{ user.user_researcher.researcher_type }}</td>
+                        {% endif %}
+                        <td>
+                            <a href="{{ url_for('user.enable', user_id=user.id) }}"
+                               class="restore-icon">
+                                <i class="fas fa-trash-restore restore-icon"></i>
+                            </a>
+                        </td>
+                    {% else %}
+                        <td>
+                            <a href="{{ url_for('user.disable', user_id=user.id) }}"
+                               class="delete-icon">
+                                <i class="fas fa-trash delete-icon"></i>
+                            </a>
+                        </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>

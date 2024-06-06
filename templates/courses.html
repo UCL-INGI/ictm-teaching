@@ -7,16 +7,20 @@
         <table class="table">
             <thead>
             <tr>
-                <th>Code</th>
                 <th>Title</th>
+                <th>Teachers</th>
                 <th>Organizations</th>
             </tr>
             </thead>
             <tbody>
             {% for course in courses %}
                 <tr onclick="window.location='{{ url_for("course.course_info", course_id=course.id) }}';" style="cursor:pointer;">
-                    <td>{{ course.code }}</td>
-                    <td>{{ course.title }}</td>
+                    <td>{{ course.code }} - {{ course.title }}</td>
+                    <td>
+                        {% for teacher in course.course_teacher %}
+                            <span class="badge bg-primary">{{ teacher.user.name }} {{ teacher.user.first_name }}</span>
+                        {% endfor %}
+                    </td>
                     <td>
                         {% for org in course.organizations %}
                             <span class="badge bg-primary">{{ org.name }}</span>

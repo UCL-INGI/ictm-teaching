@@ -71,20 +71,47 @@
                             <a class="nav-link" href="{{ url_for('user.profile') }}">My Profile</a>
                         </li>
                         {% if session.is_admin %}
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url_for('user.register') }}">New
-                                    user</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="usersDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Users
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="researcherDropdown">
+                                    <li>
+                                        <a class="dropdown-item" id="researcherList"
+                                           href="{{ url_for('user.users', user_type='researcher') }}">Researchers</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" id="teacherList"
+                                           href="{{ url_for('user.users', user_type='teacher') }}">Teachers</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" id="archivedList"
+                                           href="{{ url_for('user.users', user_type='archived') }}">Archived users</a>
+                                    </li>
+                                    <li role="separator" class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" id="newUser"
+                                           href="{{ url_for('user.register') }}">New user</a>
+                                    </li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page"
-                                   href="{{ url_for('user.users') }}">Users</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page"
-                                   href="{{ url_for('course.form_course') }}">New course</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url_for('course.courses') }}">Courses</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="coursesDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Courses
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="coursesDropdown">
+                                    <li>
+                                        <a class="dropdown-item" id="courseList" href="{{ url_for('course.courses') }}">Course
+                                            list</a>
+                                    </li>
+                                    <li role="separator" class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" id="newCourse"
+                                           href="{{ url_for('course.form_course') }}">New course</a>
+                                    </li>
+                                </ul>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="configDropdown" role="button"

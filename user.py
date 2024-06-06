@@ -139,11 +139,20 @@ def update_profile():
         flash('User not found', 'danger')
 
 
-@user_bp.route('/users')
+@user_bp.route('/users/<string:user_type>')
 @login_required
-def users():
-    all_users = db.session.query(User).filter_by(active=1).all()
-    return render_template('users.html', users=all_users)
+def users(user_type):
+    base_query = db.session.query(User).filter(User.admin == 0)
+
+    if user_type == 'teacher':
+        base_query = base_query.filter(User.is_teacher == 1, User.active == 1)
+    elif user_type == 'researcher':
+        base_query = base_query.filter(User.is_researcher == 1, User.active == 1)
+    elif user_type == 'archived':
+        base_query = base_query.filter(User.active == 0)
+
+    all_users = base_query.all()
+    return render_template('users.html', users=all_users, user_type=user_type)
 
 
 @user_bp.route('/profile/<int:user_id>')
@@ -212,9 +221,22 @@ def disable(user_id):
         user = db.session.query(User).filter_by(id=user_id).first()
         user.active = 0
         db.session.commit()
-        all_users = db.session.query(User).filter(User.active == 1).all()
     except Exception as e:
         db.session.rollback()
         raise e
 
-    return render_template('users.html', users=all_users)
+    return redirect(url_for("user.users", user_type='archived'))
+
+
+@user_bp.route('/enable/<int:user_id>')
+@login_required
+def enable(user_id):
+    try:
+        user = db.session.query(User).filter_by(id=user_id).first()
+        user.active = 1
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+    return redirect(url_for("user.users", user_type='archived'))

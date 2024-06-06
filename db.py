@@ -41,7 +41,6 @@ class Course(db.Model):
     code = db.Column(db.String)
     title = db.Column(db.String)
     quadri = db.Column(db.Integer)
-    load_needed = db.Column(db.Integer, default=0)
     language = db.Column(db.String)
     nbr_students = db.Column(db.Integer, default=0)
     nbr_teaching_assistants = db.Column(db.Integer, default=0)
@@ -63,7 +62,7 @@ class Researcher(db.Model):
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String)
 
-    user = db.relationship('User', backref=db.backref('user_researcher', lazy=True))
+    user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
 
 
 class Teacher(db.Model):

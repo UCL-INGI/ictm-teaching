@@ -1,6 +1,7 @@
 {
   "APP_NAME": "ICTM Teaching",
   "SECRET_KEY": "ASECRETKEY",
+  "SQLALCHEMY_DATABASE_URI": "DB URI",
   "SAML": {
     "attributes": {
       "sn": "urn:oid:2.5.4.4",

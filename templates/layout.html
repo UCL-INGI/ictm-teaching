@@ -2,14 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{% block pagetitle %}{% endblock %} | ICTM Teaching</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    {% block additionalpageheader %}{% endblock %}
 </head>
 <body>
-    {% if session.logged_in %}
-        <p>Hello {{ session.first_name }} {{ session.name }}. <a href="{{ url_for('auth.logout') }}">Log out</a></p>
-    {% else %}
-        <p><a href="{{ url_for('auth.login') }}">Log in</a></p>
-    {% endif %}
-    {%  block content %}{% endblock %}
+{% if session.logged_in %}
+    <div id="nav">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">ICTM Teaching</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.profile') }}">My Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{{ url_for('user.register') }}">New
+                                user</a>
+                        </li>
+                        {% block additionalnav %}{% endblock %}
+                    </ul>
+                    <div class="navbar-text ms-auto">
+                        Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+{% endif %}
+
+<div id="content">
+    {% block pagecontent %}{% endblock %}
+</div>
 </body>
 </html>

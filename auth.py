@@ -1,6 +1,8 @@
+from db import db, User
 from flask import Blueprint, current_app, url_for, request, make_response, redirect, session
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -33,6 +35,21 @@ def metadata():
     return resp
 
 
+def check_or_create_user(user):
+    try:
+        is_user = db.session.query(User).filter(User.email == user.email).first()
+        if is_user is None:
+            db.session.add(user)
+            db.session.commit()
+            db.session.refresh(user)
+        else:
+            user = is_user
+        return user
+    except:
+        db.session.rollback()
+        raise
+
+
 @auth_bp.route("/callback", methods=['GET', 'POST'])
 def callback():
     auth = OneLogin_Saml2_Auth(prepare_saml_request(request), current_app.config["SAML"])
@@ -43,11 +60,20 @@ def callback():
         mappings = current_app.config["SAML"]["attributes"]
         attrs = {key: auth_attrs.get(mapping, []) for key, mapping in mappings.items()}
 
+        uid = attrs["uid"][0]
+        first_name = attrs["givenName"][0] if len(attrs["givenName"]) else ''
+        name = attrs["sn"][0]
+        email = attrs["email"][0]
+
         session["logged_in"] = True
-        session["user_id"] = attrs["uid"][0]
-        session["first_name"] = attrs["givenName"][0] if len(attrs["givenName"]) else ''
-        session["name"] = attrs["sn"][0]
-        session["email"] = attrs["email"][0]
+        session["uid"] = uid
+        session["email"] = email
+
+        user = User(name=name, first_name=first_name, email=email)
+        updated_user = check_or_create_user(user)
+        session["user_id"] = updated_user.id
+        session["first_name"] = updated_user.first_name
+        session["name"] = updated_user.name
 
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))
@@ -69,3 +95,8 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
+
+@auth_bp.route('register')
+def register():
+    return redirect(url_for("register"))

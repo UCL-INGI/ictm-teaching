@@ -3,11 +3,10 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization, add_first_admin, initialize_configuration, create_organizations
+from db import db, Configuration, Organization
 from decorators import *
-from flask import Flask, render_template, redirect, session, request, url_for, make_response, flash
+from flask import Flask, render_template, session
 import json
-
 
 app = Flask(__name__)
 app.config.from_file("config.json", load=json.load)
@@ -15,12 +14,6 @@ app.config.from_file("config.json", load=json.load)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-% Remove with create_db.py
-with app.app_context():
-    db.create_all()
-    add_first_admin()
-    initialize_configuration()
-    create_organizations()
 
 # Core blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")

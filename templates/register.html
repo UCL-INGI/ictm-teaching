@@ -1,17 +1,6 @@
 {% extends "layout.html" %}
 {% block pagetitle %}Register{% endblock %}
 {% block additionalpageheader %}
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            max-width: 400px;
-            margin-top: 50px;
-        }
-    </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
             function toggleResearcherFields() {
@@ -38,57 +27,73 @@
     <div class="container bootstrap snippet">
         <h2 class="text-center mb-4">New user</h2>
         <form method="post" action="{{ url_for("user.add_user") }}">
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address">
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="firstname">First name</label>
-                <input type="text" class="form-control" id="firstname" name="first_name" placeholder="Enter your first name">
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="lastname">Name</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name">
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="organization_code">Organization code</label>
-                <select class="form-select" id="organization_code" name="organization_code">
-                    {% for code in organizations_code %}
-                        <option value="{{ code.id }}">{{ code.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <br>
-            <div class="form-group">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher">
-                    <label class="form-check-label" for="is_teacher">Teacher</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="is_researcher" name="is_researcher">
-                    <label class="form-check-label" for="is_researcher">Researcher</label>
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <label for="email">Email address</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="Enter your email address">
                 </div>
             </div>
-            <div class="form-group" id="supervisor_select" style="display: none;">
-                <br>
-                <label for="supervisor">Supervisor</label>
-                <select class="form-select" id="supervisor" name="supervisor">
-                    {% for supervisor in supervisors %}
-                        <option value="{{ supervisor.id }}">{{ supervisor.first_name }} {{ supervisor.name }}</option>
-                    {% endfor %}
-                </select>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <label for="firstname">First name</label>
+                    <input type="text" class="form-control" id="firstname" name="first_name"
+                           placeholder="Enter your first name">
+                </div>
             </div>
-            <div class="form-group" id="researcher_type_select" style="display: none;">
-                <br>
-                <label for="researcher_type">Researcher type</label>
-                <select class="form-select" id="researcher_type" name="researcher_type">
-                    {% for type in researcher_type %}
-                        <option value="{{ type }}">{{ type }}</option>
-                    {% endfor %}
-                </select>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <label for="lastname">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name">
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <label for="organization_code">Organization code</label>
+                    <select class="form-select" id="organization_code" name="organization_code">
+                        {% for code in organizations_code %}
+                            <option value="{{ code.id }}">{{ code.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher">
+                        <label class="form-check-label" for="is_teacher">Teacher</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="is_researcher" name="is_researcher">
+                        <label class="form-check-label" for="is_researcher">Researcher</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-sm-4" id="supervisor_select" style="display: none;">
+                    <br>
+                    <label for="supervisor">Supervisor</label>
+                    <select class="form-select" id="supervisor" name="supervisor">
+                        {% for supervisor in supervisors %}
+                            <option value="{{ supervisor.id }}">{{ supervisor.first_name }} {{ supervisor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-sm-4" id="researcher_type_select" style="display: none;">
+                    <br>
+                    <label for="researcher_type">Researcher type</label>
+                    <select class="form-select" id="researcher_type" name="researcher_type">
+                        {% for type in researcher_type %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             <br>
             <div class="row justify-content-center">

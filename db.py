@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 import json
 
 db = SQLAlchemy()
@@ -11,7 +10,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=True)
     first_name = db.Column(db.String, nullable=True)
-    email = db.Column(db.String, nullable=True)
+    email = db.Column(db.String, nullable=True, unique=True)
     admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
@@ -49,7 +48,8 @@ class Course(db.Model):
     organizations = db.relationship('Organization',
                                     secondary='course_organization',
                                     back_populates='courses',
-                                    primaryjoin="and_(Course.id == CourseOrganization.course_id, Course.year == CourseOrganization.course_year)",
+                                    primaryjoin="and_(Course.id == CourseOrganization.course_id, Course.year == "
+                                                "CourseOrganization.course_year)",
                                     secondaryjoin="Organization.id == CourseOrganization.organization_id")
 
 
@@ -148,40 +148,3 @@ class CourseOrganization(db.Model):
             ['course.id', 'course.year']
         ),
     )
-
-
-# Add the first admin to the database
-def add_first_admin():
-    admin_exists = db.session.query(User).filter_by(admin=True).first()
-    if admin_exists is None:
-        first_admin = User(name='Admin', first_name='Admin', email='admin@example.com', admin=True)
-        db.session.add(first_admin)
-        db.session.commit()
-
-
-def get_current_academic_year():
-    current_year = datetime.now().year
-    next_year = current_year + 1
-    academic_year = f"{current_year}-{next_year}"
-    return academic_year
-
-
-# Add the first year corresponding to the current year
-def initialize_configuration():
-    current_year = get_current_academic_year()
-    existing_year = Configuration.query.filter_by(year=current_year).first()
-
-    if existing_year is None:
-        config = Configuration(year=current_year)
-        db.session.add(config)
-        db.session.commit()
-
-
-# Create organizations
-def create_organizations():
-    organizations = ["SST", "ICTM", "ELEN", "EPL", "INMA", "SSH", "IMMC", "IMAQ", "INGI", "SSS", "IONS", "ELI",
-                     "LDRI"]
-
-    if db.session.query(Organization).count() == 0:
-        db.session.add_all([Organization(name=org) for org in organizations])
-        db.session.commit()

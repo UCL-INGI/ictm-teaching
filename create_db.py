@@ -1,12 +1,15 @@
 import argparse
 from app import app, db
-from db import User
+from datetime import datetime
+from db import User, Configuration, Organization
 
 
 def create_database(name, first_name, email):
     with app.app_context():
         db.create_all()
         add_first_admin(name, first_name, email)
+        initialize_configuration()
+        create_organizations()
         print("Database tables created successfully.")
 
 
@@ -19,6 +22,34 @@ def add_first_admin(name, first_name, email):
         print(f"Admin account for {first_name} {name} created successfully.")
     else:
         print("Admin account already exists.")
+
+
+def get_current_academic_year():
+    current_year = datetime.now().year
+    next_year = current_year + 1
+    academic_year = f"{current_year}-{next_year}"
+    return academic_year
+
+
+# Add the first year corresponding to the current year
+def initialize_configuration():
+    current_year = get_current_academic_year()
+    existing_year = Configuration.query.filter_by(year=current_year).first()
+
+    if existing_year is None:
+        config = Configuration(year=current_year)
+        db.session.add(config)
+        db.session.commit()
+
+
+# Create organizations
+def create_organizations():
+    organizations = ["SST", "ICTM", "ELEN", "EPL", "INMA", "SSH", "IMMC", "IMAQ", "INGI", "SSS", "IONS", "ELI",
+                     "LDRI"]
+
+    if db.session.query(Organization).count() == 0:
+        db.session.add_all([Organization(name=org) for org in organizations])
+        db.session.commit()
 
 
 if __name__ == '__main__':

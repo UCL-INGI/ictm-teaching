@@ -12,12 +12,16 @@ app.config.from_file("config.json", load=json.load)
 
 def delete_old_preferences(researcher_id, course_ids):
     current_year = session["current_year"]
-    db.session.query(PreferenceAssignment).filter(
-        PreferenceAssignment.researcher_id == researcher_id,
-        PreferenceAssignment.course_year == current_year,
-        ~PreferenceAssignment.course_id.in_(course_ids)
-    ).delete()
-    db.session.commit()
+    try:
+        db.session.query(PreferenceAssignment).filter(
+            PreferenceAssignment.researcher_id == researcher_id,
+            PreferenceAssignment.course_year == current_year,
+            ~PreferenceAssignment.course_id.in_(course_ids)
+        ).delete()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 @course_preference_bp.route('/save_preference', methods=['POST'])

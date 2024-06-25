@@ -14,7 +14,8 @@
             </thead>
             <tbody>
             {% for course in courses %}
-                <tr onclick="window.location='{{ url_for("course.course_info", course_id=course.id) }}';" style="cursor:pointer;">
+                <tr onclick="window.location='{{ url_for("course.course_info", course_id=course.id) }}';"
+                    style="cursor:pointer;">
                     <td>{{ course.code }} - {{ course.title }}</td>
                     <td>
                         {% for teacher in course.course_teacher %}

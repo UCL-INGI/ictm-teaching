@@ -2,16 +2,15 @@
 {% block pagetitle %}My profile{% endblock %}
 {% block additionalpageheader %}
     <style>
-        body {
-            background-color: #f8f9fa;
+        .move-icon {
+            cursor: move;
         }
 
-        .container {
-            max-width: 800px;
-            margin-top: 50px;
+        .delete-icon {
+            cursor: pointer;
+            color: red;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
             function toggleSupervisorSelect() {
@@ -34,10 +33,106 @@
             });
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('#addPreferencesButton').click(function () {
+                $('#staticPreferencesTable').hide();
+                $('#editablePreferencesTable').show();
+                $('#addPreferencesButton').hide();
+                $('#savePreferencesButton').show();
+                $('#cancelEditButton').show();
+                $('#addRowButton').show();
+            });
+
+            $('#cancelEditButton').click(function () {
+                $('#editablePreferencesTable').hide();
+                $('#staticPreferencesTable').show();
+                $('#addPreferencesButton').show();
+                $('#savePreferencesButton').hide();
+                $('#cancelEditButton').hide();
+                $('#addRowButton').hide();
+            });
+
+            $('#addRowButton').click(function () {
+                const newRow = `
+                    <tr>
+                        <td>
+                            <select class="form-control course-select">
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}-{{ course.year }}">
+                                        {{ course.code }} - {{ course.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <i class="fas fa-trash delete-icon"></i>
+                            <i class="fas fa-arrows-alt move-icon"></i>
+                        </td>
+                    </tr>
+                `;
+                $('#editablePreferencesTable tbody').append(newRow);
+                $("#editablePreferencesTable tbody").sortable({
+                    items: 'tr',
+                    handle: '.move-icon',
+                    axis: 'y',
+                    cursor: 'move'
+                });
+            });
+
+            $(document).on('click', '.delete-icon', function () {
+                $(this).closest('tr').remove();
+            });
+
+            $('#savePreferencesButton').click(function () {
+                const preferences = [];
+                $('#editablePreferencesTable tr').each(function () {
+                    const courseCode = $(this).find('select.course-select').val();
+                    if (courseCode) {
+                        preferences.push(courseCode);
+                    }
+                });
+
+                const data = {
+                    preferences: preferences
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('course_preference.save_preference') }}",
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert('Preferences updated successfully.');
+                        location.reload(); // Refresh the page to show the updated preferences
+                    },
+                    error: function (error) {
+                        alert('Error updating the preferences.');
+                    }
+                });
+            });
+
+            $("#editablePreferencesTable tbody").sortable({
+                items: 'tr',
+                handle: '.move-icon',
+                axis: 'y',
+                cursor: 'move'
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#profileForm').submit(function (event) {
+                $(':disabled', this).each(function () {
+                    $(this).prop('disabled', false);
+                });
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block pagecontent %}
-    <div class="container-lg">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12">
                 <br>
@@ -45,127 +140,238 @@
                 <hr>
             </div>
         </div>
-        <div id="profile">
-            <div class="row">
-                <div class="col-sm-12">
-                    <h2>Your informations</h2>
-                    <hr>
-                </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
+                    </li>
+                    {% if user.is_researcher %}
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
+                            preferences</a></li>
+                    {% endif %}
+                </ul>
             </div>
-            <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
-                  id="profileForm">
-                <input type="hidden" name="user_id" value="{{ user.id }}">
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane active" id="profile">
                 <div class="row">
-                    <div class="col-lg-6">
-                        <div id="profile">
-                            <div class="form-group">
-                                <br>
-                                <label for="first_name"><h4>First name</h4></label>
-                                <input type="text" class="form-control" name="first_name" id="first_name"
-                                       placeholder="first name" value="{{ user.first_name }}">
+                    <div class="col-sm-12">
+                        <br>
+                        <h2>Your informations</h2>
+                    </div>
+                </div>
+                <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
+                      id="profileForm">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-6">
+                            <dl>
+                                <dt>First name</dt>
+                                <dd>
+                                    <input type="text" class="form-control" name="first_name" id="first_name"
+                                           placeholder="first name" value="{{ user.first_name }}">
+                                </dd>
+                                <dt>Last name</dt>
+                                <dd>
+                                    <input type="text" class="form-control" name="name" id="name"
+                                           placeholder="last name" value="{{ user.name }}">
+                                </dd>
+                                <dt>Email</dt>
+                                <dd>
+                                    <input type="email" class="form-control" name="email" id="email"
+                                           value="{{ user.email }}" {% if my_profile %}
+                                           readonly {% endif %}>
+                                </dd>
+                                <dt>Organization code</dt>
+                                <dd>
+                                    <select class="form-select" id="organization_code" name="organization_code"
+                                            {% if my_profile %}
+                                            disabled {% endif %}>
+                                        {% if user.organization == None and my_profile %}
+                                            <option value="None" selected>None</option>
+                                        {% else %}
+                                            {% for code in organizations_code %}
+                                                <option value="{{ code.id }}" {% if code.id == user.organization_id %}
+                                                        selected {% endif %}>{{ code.name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-sm-6 col-md-6">
+                            <dl>
+                                <dt>Status</dt>
+                                <dd>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="is_teacher"
+                                               name="is_teacher"
+                                               {% if user.is_teacher %}checked{% endif %} {% if my_profile %}
+                                               disabled {% endif %}>
+                                        <label class="form-check-label" for="is_teacher">Teacher</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="is_researcher"
+                                               name="is_researcher" {% if user.is_researcher %}checked{% endif %}
+                                                {% if my_profile %} disabled {% endif %}>
+                                        <label class="form-check-label" for="is_researcher">Researcher</label>
+                                    </div>
+                                </dd>
+                                <div class="form-group" id="supervisor_select" style="display: none;">
+                                    <dt>Supervisor</dt>
+                                    <dd>
+                                        <select class="form-select" id="supervisor" name="supervisor"
+                                                {% if my_profile %} disabled {% endif %}>
+                                            {% if user.supervisor == None and my_profile %}
+                                                <option value="" selected>None</option>
+                                            {% else %}
+                                                {% for supervisor in supervisors %}
+                                                    <option value="{{ supervisor.id }}"
+                                                            {% if supervisor.id == user.supervisor.id %}selected{% endif %}>
+                                                        {{ supervisor.first_name }} {{ supervisor.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </dd>
+                                </div>
+                                <div class="form-group" id="researcher_type_display" style="display: none;">
+                                    <dt>Researcher type</dt>
+                                    <dd>
+                                        <select class="form-select" id="researcher_type" name="researcher_type"
+                                                {% if my_profile %} disabled {% endif %}>
+                                            {% if not user.is_researcher and my_profile %}
+                                                <option value="" selected>None</option>
+                                            {% else %}
+                                                {% for type in researcher_type %}
+                                                    <option value="{{ type }}"
+                                                            {% if type == researcher.researcher_type %}selected{% endif %}>
+                                                        {{ type }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </dd>
+                                </div>
+                                <div class="col-2" id="max_load_display">
+                                    <dt>Max load</dt>
+                                    <dd>
+                                        <input type="text" class="form-control" id="max_load" name="max_load"
+                                               value="{{ researcher.max_loads }}" {% if my_profile %}
+                                               readonly {% endif %}>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
                             </div>
-                            <div class="form-group">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% if user.is_researcher %}
+                <div class="tab-pane" id="preferences">
+                    <div class="container-fluid">
+                        {% if my_profile %}
+                            <form id="preferencesForm" method="post">
                                 <br>
-                                <label for="name"><h4>Last name</h4></label>
-                                <input type="text" class="form-control" name="name" id="name"
-                                       placeholder="last name" value="{{ user.name }}">
-                            </div>
-                            <div class="form-group">
-                                <br>
-                                <label for="email"><h4>Email</h4></label>
-                                <input type="email" class="form-control" name="email" id="email"
-                                       value="{{ user.email }}">
-                            </div>
-                            <div class="form-group">
-                                <br>
-                                <label for="organization_code"><h4>Organization code</h4></label>
-                                <select class="form-select" id="organization_code" name="organization_code">
-                                    {% for code in organizations_code %}
-                                        <option value="{{ code.id }}" {% if code.id == user.organization_id %}
-                                                selected {% endif %}>{{ code.name }}</option>
+                                <h2>Preferences for next year</h2>
+                                <table class="table table-hover" id="staticPreferencesTable">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Title</th>
+                                        <th>Semester</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider">
+                                    {% for preference in preferences %}
+                                        <tr>
+                                            <td>{{ preference.course.code }}</td>
+                                            <td>{{ preference.course.title }}</td>
+                                            <td>{{ preference.course.quadri }}</td>
+                                            <td>
+                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
+                                                   class="delete-icon">
+                                                    <i class="fas fa-trash delete-icon"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
                                     {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-                    <div class="col-lg-6">
-                        <div class="form-group">
+                                    </tbody>
+                                </table>
+
+                                <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider">
+                                    {% for preference in preferences %}
+                                        <tr>
+                                            <td>
+                                                <select class="form-control course-select">
+                                                    {% for course in courses %}
+                                                        <option value="{{ course.id }}-{{ course.year }}"
+                                                                {% if course.id == preference.course.id %}selected{% endif %}>
+                                                            {{ course.code }} - {{ course.title }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-trash delete-icon"></i>
+                                                <i class="fas fa-arrows-alt move-icon"></i>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences
+                                </button>
+                                <button type="button" id="savePreferencesButton" class="btn btn-success"
+                                        style="display: none;">
+                                    Save Preferences
+                                </button>
+                                <button type="button" id="cancelEditButton" class="btn btn-secondary"
+                                        style="display: none;">
+                                    Cancel
+                                </button>
+                                <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">
+                                    Add Row
+                                </button>
+                            </form>
+                        {% else %}
                             <br>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher"
-                                       {% if user.is_teacher %}checked{% endif %}>
-                                <label class="form-check-label" for="is_teacher">Teacher</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="is_researcher"
-                                       name="is_researcher" {% if user.is_researcher %}checked{% endif %}>
-                                <label class="form-check-label" for="is_researcher">Researcher</label>
-                            </div>
-                        </div>
-                        <div class="form-group" id="supervisor_select" style="display: none;">
-                            <br>
-                            <label for="supervisor">Supervisor</label>
-                            <select class="form-select" id="supervisor" name="supervisor">
-                                {% for supervisor in supervisors %}
-                                    <option value="{{ supervisor.id }}"
-                                            {% if supervisor.id == user.supervisor.id %}selected{% endif %}>
-                                        {{ supervisor.first_name }} {{ supervisor.name }}
-                                    </option>
+                            <h2>Course preferences</h2>
+                            <table class="table table-hover" id="preferencesTable">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Title</th>
+                                    <th>Semester</th>
+                                </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                {% for preference in preferences %}
+                                    <tr>
+                                        <td>{{ preference.course.code }}</td>
+                                        <td>{{ preference.course.title }}</td>
+                                        <td>{{ preference.course.quadri }}</td>
+                                    </tr>
                                 {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group" id="researcher_type_display" style="display: none;">
-                            <br>
-                            <label for="researcher_type">Researcher type</label>
-                            <select class="form-select" id="researcher_type" name="researcher_type">
-                                {% for type in researcher_type %}
-                                    <option value="{{ type }}"
-                                            {% if type == researcher.researcher_type %}selected{% endif %}>
-                                        {{ type }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group" id="max_load_display">
-                            <br>
-                            <label for="max_load">Max load</label>
-                            <input type="text" class="form-control" id="max_load" name="max_load"
-                                   value="{{ researcher.max_loads }}">
-                        </div>
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </div>
                 </div>
-                <br>
-                <div class="row">
-                    <div class="col-sm-10">
-                        <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
-                    </div>
-                </div>
-            </form>
-            <div id="preferences">
-                <div class="container-lg">
-                    <br>
-                    <h2>Course preferences</h2>
-                    <table class="table table-hover" id="preferencesTable">
-                        <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Title</th>
-                            <th>Semester</th>
-                        </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
-                        {% for preference in preferences %}
-                            <tr>
-                                <td>{{ preference.course.code }}</td>
-                                <td>{{ preference.course.title }}</td>
-                                <td>{{ preference.course.quadri }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

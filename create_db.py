@@ -24,16 +24,9 @@ def add_first_admin(name, first_name, email):
         print("Admin account already exists.")
 
 
-def get_current_academic_year():
-    current_year = datetime.now().year
-    next_year = current_year + 1
-    academic_year = f"{current_year}-{next_year}"
-    return academic_year
-
-
 # Add the first year corresponding to the current year
 def initialize_configuration():
-    current_year = get_current_academic_year()
+    current_year = datetime.now().year
     existing_year = Configuration.query.filter_by(year=current_year).first()
 
     if existing_year is None:

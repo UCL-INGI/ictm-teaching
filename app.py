@@ -24,17 +24,11 @@ app.register_blueprint(course_preference_bp, url_prefix="/course_preference")
 
 
 def get_configurations():
-    if session.get('logged_in'):
-        return db.session.query(Configuration).all()
-    else:
-        return []
+    return db.session.query(Configuration).all()
 
 
 def get_organization():
-    if session.get('logged_in'):
-        return db.session.query(Organization).all()
-    else:
-        return []
+    return db.session.query(Organization).all()
 
 
 @app.context_processor

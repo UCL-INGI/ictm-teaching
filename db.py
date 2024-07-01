@@ -36,7 +36,7 @@ db.event.listen(User, 'before_update', User.before_update)
 class Course(db.Model):
     __tablename__ = 'course'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.String, primary_key=True)
+    year = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String)
     title = db.Column(db.String)
     quadri = db.Column(db.Integer)
@@ -70,7 +70,7 @@ class Teacher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     course_id = db.Column(db.Integer, nullable=False)
-    course_year = db.Column(db.String, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
 
     # Creation of a link to the compound key (id, year) of the course table
     __table_args__ = (
@@ -107,7 +107,7 @@ class PreferenceAssignment(db.Model):
 class Configuration(db.Model):
     __tablename__ = 'configuration'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.String, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
     is_current_year = db.Column(db.Boolean, default=True)
 
     @classmethod

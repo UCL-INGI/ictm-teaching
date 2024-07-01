@@ -34,8 +34,8 @@
                 {% for year in all_years %}
                     <li class="nav-item">
                         <a class="nav-link {% if year.year == course.year %} active {% endif %}"
-                           data-bs-toggle="tab" href="#year-{{ year.year }}" aria-expanded="false">
-                            {{ year.year }}
+                           data-bs-toggle="tab" href="#{{ year.year }}" aria-expanded="false">
+                            {{ year.year }}-{{ year.year + 1 }}
                         </a>
                     </li>
                 {% endfor %}
@@ -46,7 +46,7 @@
         <div class="tab-content">
             {% for year in all_years %}
                 <div class="tab-pane {% if year.year == session.current_year %} active {% endif %}"
-                     id="year-{{ year.year }}">
+                     id="{{ year.year }}">
                     <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
                           id="courseInfo">
                         <input type="hidden" name="course_id" value="{{ year.id }}">
@@ -82,7 +82,7 @@
                                         <select class="form-select" id="year" name="year">
                                             {% for config in configurations %}
                                                 <option value="{{ config.year }}" {% if config.year == year.year %}
-                                                        selected {% endif %}>{{ config.year }}</option>
+                                                        selected {% endif %}>{{ config.year }} - {{ config.year + 1 }}</option>
                                             {% endfor %}
                                         </select>
                                     </dd>

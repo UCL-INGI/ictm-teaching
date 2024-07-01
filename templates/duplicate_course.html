@@ -128,7 +128,7 @@
                                 <select class="form-select" id="year" name="year">
                                     {% for config in configurations %}
                                         <option value="{{ config.year }}" {% if config.year == course.year %}
-                                                selected {% endif %}>{{ config.year }}</option>
+                                                selected {% endif %}>{{ config.year }} - {{ config.year + 1 }}</option>
                                     {% endfor %}
                                 </select>
                             </dd>

@@ -48,7 +48,7 @@
                             {% for config in configurations %}
                                 <option value="{{ config.year }}" {% if config.year == session.current_year %}
                                         selected {% endif %}>
-                                    {{ config.year }}
+                                    {{ config.year }} - {{ config.year + 1 }}
                                 </option>
                             {% endfor %}
                         </select>

@@ -2,7 +2,6 @@
 {% block pagetitle %}List of Users{% endblock %}
 {% block additionalpageheader %}
     <script>
-        // JavaScript pour afficher le pop-up en cas d'erreur
         $(document).ready(function () {
             var errorPopup = $('#errorPopup');
 
@@ -22,12 +21,18 @@
             });
         });
     </script>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
 {% endblock %}
 {% block pagecontent %}
     <div class="container">
-        <hr>
         <h2>List of Users</h2>
-        <table class="table">
+        <hr>
+        <table class="table table-hover">
             <thead>
             <tr>
                 <th>Last Name</th>
@@ -46,10 +51,13 @@
             </thead>
             <tbody>
             {% for user in users %}
-                <tr onclick="window.location='{{ url_for("user.user_profile", user_id=user.id) }}';"
-                    style="cursor:pointer;">
-                    <td>{{ user.name }}</td>
-                    <td>{{ user.first_name }}</td>
+                <tr>
+                    <td><a href="{{ url_for("user.user_profile", user_id=user.id) }}">
+                        {{ user.name }}
+                    </a></td>
+                   <td><a href="{{ url_for("user.user_profile", user_id=user.id) }}">
+                        {{ user.first_name }}
+                    </a></td>
                     <td>{{ user.email }}</td>
                     <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
                     {% if user_type == 'researcher' %}

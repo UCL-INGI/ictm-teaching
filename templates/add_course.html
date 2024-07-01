@@ -11,31 +11,6 @@
             color: red;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            $('#organization_code').change(function () {
-                var selectedOption = $(this).find('option:selected');
-                var selectedValue = selectedOption.val();
-                var selectedText = selectedOption.text();
-
-                if (selectedValue) {
-                    var tagHtml = '<div class="badge bg-primary d-inline-block" data-id="' + selectedValue + '">' +
-                        selectedText + '&nbsp;<a href="#" class="remove-tag">&times;</a>' +
-                        '<input type="hidden" name="organization_code[]" value="' + selectedValue + '">' +
-                        '</div>';
-
-                    $('#tags-container').append(tagHtml);
-                    // Reset the select input
-                    $(this).val('');
-                }
-            });
-
-            $(document).on('click', '.remove-tag', function (e) {
-                e.preventDefault();
-                $(this).parent('.badge').remove();
-            });
-        });
-    </script>
 {% endblock %}
 {% block pagecontent %}
     <div class="container-sm">
@@ -107,4 +82,45 @@
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $('#organization_code').change(function () {
+                var selectedOption = $(this).find('option:selected');
+                var selectedValue = selectedOption.val();
+                var selectedText = selectedOption.text();
+
+                if (selectedValue) {
+                    var tagHtml = $('<div>', {
+                        class: 'badge bg-primary d-inline-block',
+                        'data-id': selectedValue
+                    });
+
+                    $('<span>').text(selectedText).appendTo(tagHtml);
+                    $('<span>').html('&nbsp;').appendTo(tagHtml);
+                    $('<a>', {
+                        href: '#',
+                        class: 'remove-tag ms-1',
+                        html: '&times;'
+                    }).appendTo(tagHtml);
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'organization_code[]',
+                        value: selectedValue
+                    }).appendTo(tagHtml);
+
+                    $('#tags-container').append(tagHtml);
+                    // Reset the select input
+                    $(this).val('');
+                }
+            });
+
+            $(document).on('click', '.remove-tag', function (e) {
+                e.preventDefault();
+                $(this).parent('.badge').remove();
+            });
+        });
+    </script>
 {% endblock %}

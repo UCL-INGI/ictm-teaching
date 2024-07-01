@@ -127,24 +127,16 @@ def update_course_info():
     if not course:
         return make_response("Course not found", 404)
 
+    # Remove all teachers assigned to the course
+    db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).delete()
+    course.course_teacher.clear()
+
+    # Add new teachers to the course
     if assigned_teachers:
         try:
-            teachers_to_remove = db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                                                  Teacher.course_year == year,
-                                                                  ~Teacher.user_id.in_(assigned_teachers)).all()
-            # Get rid of teachers who no longer teach the course
-            for teacher in teachers_to_remove:
-                db.session.delete(teacher)
-                db.session.commit()
-
-            for teacher in assigned_teachers:
-                is_teacher = db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                                              Teacher.user_id == teacher,
-                                                              Teacher.course_year == year).first()
-                # Check that you are not adding an existing teacher
-                if is_teacher is None:
-                    new_teacher = Teacher(user_id=teacher, course_id=course_id, course_year=year)
-                    db.session.add(new_teacher)
+            for teacher_id in assigned_teachers:
+                new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
+                db.session.add(new_teacher)
             db.session.commit()
         except Exception as e:
             db.session.rollback()

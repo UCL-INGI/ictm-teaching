@@ -78,7 +78,7 @@ def courses():
 @course_bp.route('/search_teachers')
 def search_teachers():
     search_term = request.args.get('q', '')
-    teachers = db.session.query(User).filter(User.is_teacher == 1, User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).filter(User.active == 1, User.admin == 0, User.user_researcher == None, User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 

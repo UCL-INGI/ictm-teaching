@@ -145,7 +145,7 @@
                 <ul class="nav nav-tabs">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
                     </li>
-                    {% if requested_user.is_researcher %}
+                    {% if user_type == 'researcher' %}
                         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
                             preferences</a></li>
                     {% endif %}
@@ -206,13 +206,13 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_teacher"
                                                name="is_teacher"
-                                               {% if requested_user.is_teacher %}checked{% endif %} {% if current_user %}
+                                               {% if user_type == 'teacher' %}checked{% endif %} {% if current_user %}
                                                disabled {% endif %}>
                                         <label class="form-check-label" for="is_teacher">Teacher</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_researcher"
-                                               name="is_researcher" {% if requested_user.is_researcher %}checked{% endif %}
+                                               name="is_researcher" {% if user_type == 'researcher' %}checked{% endif %}
                                                 {% if current_user %} disabled {% endif %}>
                                         <label class="form-check-label" for="is_researcher">Researcher</label>
                                     </div>
@@ -240,7 +240,7 @@
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
                                                 {% if current_user %} disabled {% endif %}>
-                                            {% if not requested_user.is_researcher and current_user %}
+                                            {% if user_type != 'researcher' and current_user %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for type in researcher_type %}
@@ -272,7 +272,7 @@
                     </div>
                 </form>
             </div>
-            {% if requested_user.is_researcher %}
+            {% if user_type == 'researcher' %}
                 <div class="tab-pane" id="preferences">
                     <div class="container-fluid">
                         {% if current_user %}

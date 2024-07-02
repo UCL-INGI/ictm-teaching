@@ -12,8 +12,6 @@ class User(db.Model):
     first_name = db.Column(db.String, nullable=True)
     email = db.Column(db.String, nullable=True, unique=True)
     admin = db.Column(db.Boolean, default=False)
-    is_teacher = db.Column(db.Boolean, default=False)
-    is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
@@ -80,7 +78,7 @@ class Teacher(db.Model):
         ),
     )
 
-    user = db.relationship('User', backref=db.backref('user_teacher', lazy=True))
+    user = db.relationship('User', backref=db.backref('user_teacher', uselist=False))
     course = db.relationship('Course', backref=db.backref('course_teacher', lazy=True))
 
 

@@ -1,21 +1,11 @@
 from decorators import login_required
 from db import db, User, Researcher, Course, PreferenceAssignment
-from data import RESEARCHERS_TYPE
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
+from enums import DEFAULT_MAX_LOAD
 import re, json
 
 user_bp = Blueprint('user', __name__)
-
-
-def get_default_max_load(researcher_type):
-    defaults = {
-        'Phd': 2,
-        'Postdoc': 1,
-        'Teaching assistant': 4,
-        'Other': 1,
-    }
-    return defaults.get(researcher_type, 0)
 
 
 @user_bp.route('/register')
@@ -23,7 +13,7 @@ def get_default_max_load(researcher_type):
 def register():
     current_year = int(request.args.get('current_year'))
     all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
-    return render_template('register.html', supervisors=all_users, researcher_type=RESEARCHERS_TYPE, current_year=current_year)
+    return render_template('register.html', supervisors=all_users, current_year=current_year)
 
 
 def is_valid_email(email):
@@ -67,7 +57,8 @@ def add_user():
         db.session.add(new_user)
         db.session.commit()
         if is_researcher:
-            max_load = get_default_max_load(researcher_type)
+            all_loads = DEFAULT_MAX_LOAD
+            max_load = all_loads.get(researcher_type, 0)
             new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type,
                                         max_loads=max_load)
             db.session.add(new_researcher)
@@ -119,7 +110,7 @@ def user_profile(user_id):
         return make_response("The user is not found", 404)
 
     return render_template('user_profile.html', user=my_user, supervisors=all_users, researcher=researcher,
-                           researcher_type=RESEARCHERS_TYPE, courses=courses, preferences=preferences,
+                           courses=courses, preferences=preferences,
                            my_profile=my_profile, current_year=current_year)
 
 

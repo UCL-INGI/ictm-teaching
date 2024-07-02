@@ -1,6 +1,5 @@
 from decorators import login_required
 from db import db, User, Course, Teacher, Organization
-from data import LANGUAGES, QUADRI
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 import json, re
@@ -22,7 +21,7 @@ def validate_course_title(title):
 @login_required
 def form_course():
     current_year = int(request.args.get('current_year'))
-    return render_template('add_course.html', quadri=QUADRI, language=LANGUAGES, current_year=current_year)
+    return render_template('add_course.html', current_year=current_year)
 
 
 @course_bp.route('/add_course', methods=['POST'])
@@ -94,8 +93,7 @@ def course_info(course_id):
 
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
-    return render_template('course_info.html', course=course, all_years=all_years, quadri=QUADRI,
-                           language=LANGUAGES, current_year=current_year)
+    return render_template('course_info.html', course=course, all_years=all_years, current_year=current_year)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])
@@ -168,7 +166,7 @@ def duplicate_course():
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == course_year).first()
     current_year = int(request.args.get('current_year'))
 
-    return render_template('duplicate_course.html', course=course, quadri=QUADRI, language=LANGUAGES, current_year=current_year)
+    return render_template('duplicate_course.html', course=course, current_year=current_year)
 
 
 @course_bp.route('/add_duplicate_course', methods=['POST'])

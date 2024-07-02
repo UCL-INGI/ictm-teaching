@@ -6,6 +6,7 @@ from course_preference import course_preference_bp
 from db import db, Configuration, Organization
 from decorators import *
 from flask import Flask, render_template, session, request
+from enums import *
 import json
 
 app = Flask(__name__)
@@ -33,7 +34,7 @@ def get_organization():
 
 @app.context_processor
 def inject_configurations():
-    return dict(configurations=get_configurations(), organizations_code=get_organization())
+    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI, language=LANGUAGES, researcher_type=RESEARCHERS_TYPE)
 
 
 # Routes

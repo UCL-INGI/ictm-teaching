@@ -2,6 +2,7 @@ import argparse
 from app import app, db
 from datetime import datetime
 from db import User, Configuration, Organization
+from enums import ORGANIZATIONS
 
 
 def create_database(name, first_name, email):
@@ -37,11 +38,8 @@ def initialize_configuration():
 
 # Create organizations
 def create_organizations():
-    organizations = ["SST", "ICTM", "ELEN", "EPL", "INMA", "SSH", "IMMC", "IMAQ", "INGI", "SSS", "IONS", "ELI",
-                     "LDRI"]
-
     if db.session.query(Organization).count() == 0:
-        db.session.add_all([Organization(name=org) for org in organizations])
+        db.session.add_all([Organization(name=org) for org in ORGANIZATIONS])
         db.session.commit()
 
 

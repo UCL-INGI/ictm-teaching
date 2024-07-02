@@ -7,9 +7,6 @@ import json, re
 
 course_bp = Blueprint('course', __name__)
 
-app = Flask(__name__)
-app.config.from_file("config.json", load=json.load)
-
 
 def validate_course_code(code):
     course_code_regex = r'^[a-zA-Z0-9]+$'

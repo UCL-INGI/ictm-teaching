@@ -6,9 +6,6 @@ import json
 
 course_preference_bp = Blueprint('course_preference', __name__)
 
-app = Flask(__name__)
-app.config.from_file("config.json", load=json.load)
-
 
 def delete_old_preferences(researcher_id, course_ids):
     current_year = session["current_year"]

@@ -7,9 +7,6 @@ import re, json
 
 user_bp = Blueprint('user', __name__)
 
-app = Flask(__name__)
-app.config.from_file("config.json", load=json.load)
-
 
 def get_default_max_load(researcher_type):
     defaults = {

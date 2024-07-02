@@ -91,27 +91,27 @@ def users(user_type):
 @login_required
 def user_profile(user_id):
     all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
-    my_user = db.session.query(User).filter_by(id=user_id).first()
-    researcher = db.session.query(Researcher).filter(Researcher.user_id == my_user.id).first()
+    requested_user = db.session.query(User).filter_by(id=user_id).first()
+    researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_year = int(request.args.get('current_year'))
-    my_profile = my_user.email == session["email"]
+    current_user = requested_user.email == session["email"]
 
     preferences = []
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).all()
     courses = []
-    if my_profile and my_user.organization:
+    if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,
-                                                  Course.organizations.contains(my_user.organization)
+                                                  Course.organizations.contains(requested_user.organization)
                                                   ).all()
 
-    if my_user is None:
+    if requested_user is None:
         return make_response("The user is not found", 404)
 
-    return render_template('user_profile.html', user=my_user, supervisors=all_users, researcher=researcher,
+    return render_template('user_profile.html', requested_user=requested_user, supervisors=all_users, researcher=researcher,
                            courses=courses, preferences=preferences,
-                           my_profile=my_profile, current_year=current_year)
+                           current_user=current_user, current_year=current_year)
 
 
 @user_bp.route('/update_user_profile', methods=['POST'])
@@ -135,8 +135,8 @@ def update_user_profile():
 
     user_id = request.form['user_id']
     organization_code = None if request.form['organization_code'] == 'None' else request.form['organization_code']
-    is_teacher = 1 if 'is_teacher' in request.form else 0
-    is_researcher = 1 if 'is_researcher' in request.form else 0
+    is_teacher = True if 'is_teacher' in request.form else False
+    is_researcher = True if 'is_researcher' in request.form else False
     supervisor_id = request.form.get('supervisor') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
     max_loads = request.form['max_load'] if is_researcher else None

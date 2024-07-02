@@ -136,7 +136,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <br>
-                <h1>{{ user.first_name }} {{ user.name }}</h1>
+                <h1>{{ requested_user.first_name }} {{ requested_user.name }}</h1>
                 <hr>
             </div>
         </div>
@@ -145,7 +145,7 @@
                 <ul class="nav nav-tabs">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
                     </li>
-                    {% if user.is_researcher %}
+                    {% if requested_user.is_researcher %}
                         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
                             preferences</a></li>
                     {% endif %}
@@ -162,36 +162,36 @@
                 </div>
                 <form class="form" action="{{ url_for('user.update_user_profile', current_year=current_year) }}" method="post"
                       id="profileForm">
-                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="user_id" value="{{ requested_user.id }}">
                     <div class="row">
                         <div class="col-sm-6 col-md-6">
                             <dl>
                                 <dt>First name</dt>
                                 <dd>
                                     <input type="text" class="form-control" name="first_name" id="first_name"
-                                           placeholder="first name" value="{{ user.first_name }}">
+                                           placeholder="first name" value="{{ requested_user.first_name }}">
                                 </dd>
                                 <dt>Last name</dt>
                                 <dd>
                                     <input type="text" class="form-control" name="name" id="name"
-                                           placeholder="last name" value="{{ user.name }}">
+                                           placeholder="last name" value="{{ requested_user.name }}">
                                 </dd>
                                 <dt>Email</dt>
                                 <dd>
                                     <input type="email" class="form-control" name="email" id="email"
-                                           value="{{ user.email }}" {% if my_profile %}
+                                           value="{{ requested_user.email }}" {% if current_user %}
                                            readonly {% endif %}>
                                 </dd>
                                 <dt>Organization code</dt>
                                 <dd>
                                     <select class="form-select" id="organization_code" name="organization_code"
-                                            {% if my_profile %}
+                                            {% if current_user %}
                                             disabled {% endif %}>
-                                        {% if user.organization == None and my_profile %}
+                                        {% if requested_user.organization == None and current_user %}
                                             <option value="None" selected>None</option>
                                         {% else %}
                                             {% for code in organizations_code %}
-                                                <option value="{{ code.id }}" {% if code.id == user.organization_id %}
+                                                <option value="{{ code.id }}" {% if code.id == requested_user.organization_id %}
                                                         selected {% endif %}>{{ code.name }}</option>
                                             {% endfor %}
                                         {% endif %}
@@ -206,14 +206,14 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_teacher"
                                                name="is_teacher"
-                                               {% if user.is_teacher %}checked{% endif %} {% if my_profile %}
+                                               {% if requested_user.is_teacher %}checked{% endif %} {% if current_user %}
                                                disabled {% endif %}>
                                         <label class="form-check-label" for="is_teacher">Teacher</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_researcher"
-                                               name="is_researcher" {% if user.is_researcher %}checked{% endif %}
-                                                {% if my_profile %} disabled {% endif %}>
+                                               name="is_researcher" {% if requested_user.is_researcher %}checked{% endif %}
+                                                {% if current_user %} disabled {% endif %}>
                                         <label class="form-check-label" for="is_researcher">Researcher</label>
                                     </div>
                                 </dd>
@@ -221,13 +221,13 @@
                                     <dt>Supervisor</dt>
                                     <dd>
                                         <select class="form-select" id="supervisor" name="supervisor"
-                                                {% if my_profile %} disabled {% endif %}>
-                                            {% if user.supervisor == None and my_profile %}
+                                                {% if current_user %} disabled {% endif %}>
+                                            {% if requested_user.supervisor == None and current_user %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for supervisor in supervisors %}
                                                     <option value="{{ supervisor.id }}"
-                                                            {% if supervisor.id == user.supervisor.id %}selected{% endif %}>
+                                                            {% if supervisor.id == requested_user.supervisor.id %}selected{% endif %}>
                                                         {{ supervisor.first_name }} {{ supervisor.name }}
                                                     </option>
                                                 {% endfor %}
@@ -239,8 +239,8 @@
                                     <dt>Researcher type</dt>
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
-                                                {% if my_profile %} disabled {% endif %}>
-                                            {% if not user.is_researcher and my_profile %}
+                                                {% if current_user %} disabled {% endif %}>
+                                            {% if not requested_user.is_researcher and current_user %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for type in researcher_type %}
@@ -257,7 +257,7 @@
                                     <dt>Max load</dt>
                                     <dd>
                                         <input type="text" class="form-control" id="max_load" name="max_load"
-                                               value="{{ researcher.max_loads }}" {% if my_profile %}
+                                               value="{{ researcher.max_loads }}" {% if current_user %}
                                                readonly {% endif %}>
                                     </dd>
                                 </div>
@@ -272,10 +272,10 @@
                     </div>
                 </form>
             </div>
-            {% if user.is_researcher %}
+            {% if requested_user.is_researcher %}
                 <div class="tab-pane" id="preferences">
                     <div class="container-fluid">
-                        {% if my_profile %}
+                        {% if current_user %}
                             <form id="preferencesForm" method="post">
                                 <br>
                                 <h2>Preferences for next year</h2>

@@ -75,9 +75,6 @@ def callback():
         session["name"] = updated_user.name
         session["is_admin"] = updated_user.admin
 
-        config = db.session.query(Configuration).filter_by(is_current_year=True).first()
-        session["current_year"] = config.year
-
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))
         if 'RelayState' in request.form and self_url != request.form['RelayState']:

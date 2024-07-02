@@ -99,7 +99,7 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: "{{ url_for('course_preference.save_preference') }}",
+                    url: "{{ url_for('course_preference.save_preference', current_year=current_year) }}",
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     success: function (response) {
@@ -160,7 +160,7 @@
                         <h2>Your informations</h2>
                     </div>
                 </div>
-                <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
+                <form class="form" action="{{ url_for('user.update_user_profile', current_year=current_year) }}" method="post"
                       id="profileForm">
                     <input type="hidden" name="user_id" value="{{ user.id }}">
                     <div class="row">
@@ -295,7 +295,7 @@
                                             <td>{{ preference.course.title }}</td>
                                             <td>{{ preference.course.quadri }}</td>
                                             <td>
-                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
+                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id, current_year=current_year) }}"
                                                    class="delete-icon">
                                                     <i class="fas fa-trash delete-icon"></i>
                                                 </a>

@@ -5,7 +5,7 @@ from config import config_bp
 from course_preference import course_preference_bp
 from db import db, Configuration, Organization
 from decorators import *
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request
 import json
 
 app = Flask(__name__)
@@ -40,7 +40,12 @@ def inject_configurations():
 @app.route('/')
 def index():  # put application's code here
     if session and session['logged_in']:
-        return render_template("home.html")
+        if not 'current_year' in session:
+            current_year = db.session.query(Configuration).filter_by(is_current_year=True).first().year
+        else:
+            current_year = session['current_year']
+
+        return render_template("home.html", current_year=current_year)
     else:
         return render_template("index.html")
 

@@ -94,7 +94,7 @@
 
     <div class="container-lg">
         <div class="tab-content">
-            <form action="{{ url_for('course.add_duplicate_course') }}" method="post"
+            <form action="{{ url_for('course.add_duplicate_course', current_year=current_year) }}" method="post"
                   id="courseInfo">
                 <input type="hidden" name="course_id" value="{{ course.id }}">
                 <div class="row">

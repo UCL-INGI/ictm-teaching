@@ -10,17 +10,15 @@ config_bp = Blueprint('config', __name__)
 @login_required
 def next_year():
     last_year = Configuration.query.order_by(Configuration.year.desc()).first()
-
-    current_year = last_year.year
+    new_year = last_year.year + 1
 
     try:
         # Check whether the following year already exists in the database
-        existing_config = Configuration.query.filter_by(year=current_year + 1).first()
+        existing_config = Configuration.query.filter_by(year=new_year).first()
         if existing_config is not None:
             return make_response("The year already exists", 500)
 
-        session['current_year'] = current_year + 1
-        config = Configuration(year=current_year + 1)
+        config = Configuration(year=new_year)
         db.session.add(config)
         db.session.commit()
         Configuration.update_current_year(config.id)
@@ -35,7 +33,7 @@ def next_year():
 @config_bp.route('/update_current_year', methods=['POST'])
 @login_required
 def update_current_year():
-    current_year = request.form.get('selected_year')
-    session['current_year'] = int(current_year)
-    flash('Updated current year', 'success')
+    current_year = int(request.form.get('selected_year'))
+    session['current_year'] = current_year
+
     return redirect(url_for("index"))

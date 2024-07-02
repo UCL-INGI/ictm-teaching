@@ -15,7 +15,7 @@
 {% block pagecontent %}
     <div class="container-sm">
         <h2 class="text-center mb-4">New Course</h2>
-        <form method="post" action="{{ url_for('course.add_course') }}">
+        <form method="post" action="{{ url_for('course.add_course', current_year=current_year) }}">
             <div class="row">
                 <div class="col-sm-6 col-md-6">
 

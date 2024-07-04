@@ -40,21 +40,6 @@
             });
         });
     </script>
-    <script>
-        $(document).ready(function () {
-            $('#yearSelect').change(function () {
-                var selectedYear = $(this).val();
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('config.update_current_year') }}",
-                    data: {'selected_year': selectedYear},
-                    success: function (response) {
-                        location.reload();
-                    },
-                });
-            });
-        });
-    </script>
     {% block additionalpageheader %}{% endblock %}
 </head>
 <body>
@@ -62,7 +47,7 @@
     <div id="nav">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('index', current_year=current_year) }}">ICTM Teaching</a>
+                <a class="navbar-brand" href="{{ url_for('index') }}">ICTM Teaching</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -70,7 +55,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user.user_profile', user_id=session.user_id, current_year=current_year) }}">My Profile</a>
+                            <a class="nav-link" href="{{ url_for('user.user_profile', user_id=session.user_id, current_year=dynamic_year) }}">My Profile</a>
                         </li>
                         {% if session.is_admin %}
                             <li class="nav-item dropdown">
@@ -81,20 +66,20 @@
                                 <ul class="dropdown-menu" aria-labelledby="researcherDropdown">
                                     <li>
                                         <a class="dropdown-item" id="researcherList"
-                                           href="{{ url_for('user.users', user_type='researcher', current_year=current_year) }}">Researchers</a>
+                                           href="{{ url_for('user.users', user_type='researcher') }}">Researchers</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" id="teacherList"
-                                           href="{{ url_for('user.users', user_type='teacher', current_year=current_year) }}">Teachers</a>
+                                           href="{{ url_for('user.users', user_type='teacher') }}">Teachers</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" id="archivedList"
-                                           href="{{ url_for('user.users', user_type='archived', current_year=current_year) }}">Archived users</a>
+                                           href="{{ url_for('user.users', user_type='archived') }}">Archived users</a>
                                     </li>
                                     <li role="separator" class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" id="newUser"
-                                           href="{{ url_for('user.register', current_year=current_year) }}">New user</a>
+                                           href="{{ url_for('user.register') }}">New user</a>
                                     </li>
                                 </ul>
                             </li>
@@ -105,13 +90,13 @@
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="coursesDropdown">
                                     <li>
-                                        <a class="dropdown-item" id="courseList" href="{{ url_for('course.courses', current_year=current_year) }}">Course
+                                        <a class="dropdown-item" id="courseList" href="{{ url_for('course.courses', current_year=dynamic_year) }}">Course
                                             list</a>
                                     </li>
                                     <li role="separator" class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" id="newCourse"
-                                           href="{{ url_for('course.form_course', current_year=current_year) }}">New course</a>
+                                           href="{{ url_for('course.form_course') }}">New course</a>
                                     </li>
                                 </ul>
                             </li>
@@ -128,15 +113,6 @@
                         {% block additionalnav %}{% endblock %}
                     </ul>
                     <div class="navbar-text ms-auto">
-                        <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
-                                {% if session.is_admin == False %} disabled {% endif %}>
-                            {% for config in configurations %}
-                                <option value="{{ config.year }}" {% if config.year == current_year %}
-                                        selected {% endif %}>
-                                    {{ config.year }}-{{ config.year + 1 }}
-                                </option>
-                            {% endfor %}
-                        </select>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
                         &nbsp;&nbsp;&nbsp;&nbsp;

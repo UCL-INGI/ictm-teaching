@@ -94,12 +94,12 @@
                 });
 
                 const data = {
-                    preferences: preferences
+                    preferences: preferences,
                 };
 
                 $.ajax({
                     type: 'POST',
-                    url: "{{ url_for('course_preference.save_preference', current_year=current_year) }}",
+                    url: "{{ url_for('course_preference.save_preference') }}",
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     success: function (response) {
@@ -125,6 +125,27 @@
             $('#profileForm').submit(function (event) {
                 $(':disabled', this).each(function () {
                     $(this).prop('disabled', false);
+                });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#yearSelect').change(function () {
+                var selectedYear = $(this).val();
+                var currentEndpoint = $('#current_endpoint').val();
+                var user_id = {{ requested_user.id }};
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('config.update_current_year') }}",
+                    data: {
+                        'selected_year': selectedYear,
+                        'current_endpoint': currentEndpoint,
+                        'user_id': user_id
+                    },
+                    success: function (response) {
+                        window.location.href = response;
+                    },
                 });
             });
         });
@@ -160,7 +181,7 @@
                         <h2>Your informations</h2>
                     </div>
                 </div>
-                <form class="form" action="{{ url_for('user.update_user_profile', current_year=current_year) }}" method="post"
+                <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
                       id="profileForm">
                     <input type="hidden" name="user_id" value="{{ requested_user.id }}">
                     <div class="row">
@@ -191,7 +212,8 @@
                                             <option value="None" selected>None</option>
                                         {% else %}
                                             {% for code in organizations_code %}
-                                                <option value="{{ code.id }}" {% if code.id == requested_user.organization_id %}
+                                                <option value="{{ code.id }}"
+                                                        {% if code.id == requested_user.organization_id %}
                                                         selected {% endif %}>{{ code.name }}</option>
                                             {% endfor %}
                                         {% endif %}
@@ -295,7 +317,7 @@
                                             <td>{{ preference.course.title }}</td>
                                             <td>{{ preference.course.quadri }}</td>
                                             <td>
-                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id, current_year=current_year) }}"
+                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
                                                    class="delete-icon">
                                                     <i class="fas fa-trash delete-icon"></i>
                                                 </a>
@@ -356,6 +378,19 @@
                                     <th>Code</th>
                                     <th>Title</th>
                                     <th>Semester</th>
+                                    <th>
+                                        <select class="form-select form-select-sm d-inline" id="yearSelect"
+                                                name="yearSelect"
+                                                {% if session.is_admin == False %} disabled {% endif %}>
+                                            {% for config in configurations %}
+                                                <option value="{{ config.year }}" {% if config.year == current_year %}
+                                                        selected {% endif %}>
+                                                    {{ config.year }}-{{ config.year + 1 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ request.endpoint }}">
+                                    </th>
                                 </tr>
                                 </thead>
                                 <tbody class="table-group-divider">
@@ -364,6 +399,7 @@
                                         <td>{{ preference.course.code }}</td>
                                         <td>{{ preference.course.title }}</td>
                                         <td>{{ preference.course.quadri }}</td>
+                                        <td></td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

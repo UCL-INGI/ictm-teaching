@@ -1,3 +1,5 @@
+import datetime
+
 from auth import auth_bp
 from user import user_bp
 from course import course_bp
@@ -7,6 +9,7 @@ from db import db, Configuration, Organization
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
+from util import get_current_year
 import json
 
 app = Flask(__name__)
@@ -34,19 +37,14 @@ def get_organization():
 
 @app.context_processor
 def inject_configurations():
-    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI, language=LANGUAGES, researcher_type=RESEARCHERS_TYPE)
+    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI, language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year())
 
 
 # Routes
 @app.route('/')
 def index():  # put application's code here
     if session and session['logged_in']:
-        if not 'current_year' in session:
-            current_year = db.session.query(Configuration).filter_by(is_current_year=True).first().year
-        else:
-            current_year = session['current_year']
-
-        return render_template("home.html", current_year=current_year)
+        return render_template("home.html")
     else:
         return render_template("index.html")
 

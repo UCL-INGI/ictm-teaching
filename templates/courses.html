@@ -7,6 +7,25 @@
             color: black;
         }
     </style>
+    <script>
+        $(document).ready(function () {
+            $('#yearSelect').change(function () {
+                var selectedYear = $(this).val();
+                var currentEndpoint = $('#current_endpoint').val();
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('config.update_current_year') }}",
+                    data: {
+                        'selected_year': selectedYear,
+                        'current_endpoint': currentEndpoint
+                    },
+                    success: function (response) {
+                        window.location.href = response;
+                    },
+                });
+            });
+        });
+    </script>
 {% endblock %}
 {% block pagecontent %}
     <div class="container">
@@ -18,6 +37,18 @@
                 <th>Title</th>
                 <th>Teachers</th>
                 <th>Organizations</th>
+                <th>
+                    <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
+                            {% if session.is_admin == False %} disabled {% endif %}>
+                        {% for config in configurations %}
+                            <option value="{{ config.year }}" {% if config.year == current_year %}
+                                    selected {% endif %}>
+                                {{ config.year }}-{{ config.year + 1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ request.endpoint }}">
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -38,6 +69,7 @@
                             <span class="badge bg-primary">{{ org.name }}</span>
                         {% endfor %}
                     </td>
+                    <td></td>
                 </tr>
             {% endfor %}
             </tbody>

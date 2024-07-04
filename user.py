@@ -3,6 +3,7 @@ from db import db, User, Researcher, Course, PreferenceAssignment, Teacher
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
 from enums import DEFAULT_MAX_LOAD
+from util import get_current_year
 import re, json
 
 user_bp = Blueprint('user', __name__)
@@ -11,9 +12,8 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/register')
 @login_required
 def register():
-    current_year = int(request.args.get('current_year'))
     teachers = db.session.query(User).filter(User.admin == 0, User.active == 1, User.user_teacher != None).all()
-    return render_template('register.html', supervisors=teachers, current_year=current_year)
+    return render_template('register.html', supervisors=teachers)
 
 
 def is_valid_email(email):
@@ -33,7 +33,6 @@ def add_user():
     if not form:
         return make_response("Problem with form request", 500)
 
-    current_year = int(request.args.get('current_year'))
     name = request.form['name']
     first_name = request.form['first_name']
     email = request.form['email']
@@ -65,14 +64,13 @@ def add_user():
         db.session.rollback()
         raise
 
-    return redirect(url_for("user.register", current_year=current_year))
+    return redirect(url_for("user.register"))
 
 
 @user_bp.route('/users/<string:user_type>')
 @login_required
 def users(user_type):
     base_query = db.session.query(User).filter(User.admin == 0)
-    current_year = int(request.args.get('current_year'))
 
     if user_type == 'teacher':
         base_query = base_query.filter(User.user_teacher != None, User.active == 1)
@@ -82,17 +80,17 @@ def users(user_type):
         base_query = base_query.filter(User.active == 0)
 
     all_users = base_query.all()
-    return render_template('users.html', users=all_users, user_type=user_type, current_year=current_year)
+    return render_template('users.html', users=all_users, user_type=user_type)
 
 
-@user_bp.route('/profile/<int:user_id>')
+@user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
-def user_profile(user_id):
+def user_profile(user_id, current_year):
     all_users = db.session.query(User).filter(User.admin == 0, User.user_teacher != None, User.active == 1).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
-    current_year = int(request.args.get('current_year'))
     current_user = requested_user.email == session["email"]
+    # current_year = get_current_year()
 
     if requested_user.user_researcher != None:
         user_type = 'researcher'
@@ -125,7 +123,6 @@ def update_user_profile():
     if not form:
         return make_response("Problem with form request", 500)
 
-    current_year = int(request.args.get('current_year'))
     name = request.form['name']
     first_name = request.form['first_name']
     email = request.form['email']
@@ -161,14 +158,13 @@ def update_user_profile():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-    return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))
+    return redirect(url_for("user.user_profile", user_id=user_id))
 
 
 @user_bp.route('/disable/<int:user_id>')
 @login_required
 def disable(user_id):
     user_type = request.args.get('user_type')
-    current_year = int(request.args.get('current_year'))
     try:
         user = db.session.query(User).filter_by(id=user_id).first()
         if user is None:
@@ -184,13 +180,12 @@ def disable(user_id):
         db.session.rollback()
         raise e
 
-    return redirect(url_for("user.users", user_type=user_type, current_year=current_year))
+    return redirect(url_for("user.users", user_type=user_type))
 
 
 @user_bp.route('/enable/<int:user_id>')
 @login_required
 def enable(user_id):
-    current_year = int(request.args.get('current_year'))
     try:
         user = db.session.query(User).filter_by(id=user_id).first()
         if user is None:
@@ -202,4 +197,4 @@ def enable(user_id):
         db.session.rollback()
         raise e
 
-    return redirect(url_for("user.users", user_type='archived', current_year=current_year))
+    return redirect(url_for("user.users", user_type='archived'))

@@ -4,13 +4,12 @@ from flask import Blueprint, render_template, flash, url_for, request, make_resp
     Flask, jsonify, session
 import json
 
+from util import get_current_year
+
 course_preference_bp = Blueprint('course_preference', __name__)
 
 
-def delete_old_preferences(researcher_id, course_ids):
-    current_year = session["current_year"]
-    current_year = int(request.args.get('current_year'))
-
+def delete_old_preferences(researcher_id, course_ids, current_year):
     try:
         db.session.query(PreferenceAssignment).filter(
             PreferenceAssignment.researcher_id == researcher_id,
@@ -26,8 +25,9 @@ def delete_old_preferences(researcher_id, course_ids):
 @course_preference_bp.route('/save_preference', methods=['POST'])
 @login_required
 def save_preference():
-    current_year = int(request.args.get('current_year'))
     data = request.get_json()
+    current_year = get_current_year()
+
     if data is None:
         return make_response("No data received", 500)
 
@@ -41,7 +41,7 @@ def save_preference():
         return make_response("User is not a researcher", 500)
 
     new_course_ids = {preference.split("-", 1)[0] for preference in preferences}
-    delete_old_preferences(researcher.id, new_course_ids)
+    delete_old_preferences(researcher.id, new_course_ids, current_year)
 
     for preference in preferences:
         try:
@@ -61,14 +61,14 @@ def save_preference():
             db.session.rollback()
             raise e
 
-    return redirect(url_for("user.profile", current_year=current_year))
+    return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))
 
 
 @course_preference_bp.route('/delete_preference', methods=['GET'])
 @login_required
 def delete_preference():
     preference_id = request.args.get('preference')
-    current_year = int(request.args.get('current_year'))
+    current_year = get_current_year()
     try:
         db.session.query(PreferenceAssignment).filter_by(id=preference_id).delete()
         db.session.commit()
@@ -76,4 +76,4 @@ def delete_preference():
         db.session.rollback()
         raise e
 
-    return redirect(url_for("user.profile", current_year=current_year))
+    return redirect(url_for("user.user_profile", user_id=session["user_id"], current_year=current_year))

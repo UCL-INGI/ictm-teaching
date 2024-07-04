@@ -47,7 +47,7 @@
             {% for year in all_years %}
                 <div class="tab-pane {% if year.year == current_year %} active {% endif %}"
                      id="{{ year.year }}">
-                    <form class="form" action="{{ url_for('course.update_course_info', current_year=current_year) }}" method="post"
+                    <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
                           id="courseInfo">
                         <input type="hidden" name="course_id" value="{{ year.id }}">
                         <br>
@@ -163,7 +163,7 @@
                                     <button class="btn btn-lg btn-success" type="submit"><i
                                             class="glyphicon glyphicon-ok-sign"></i> Save
                                     </button>
-                                    <a href="{{ url_for('course.duplicate_course', course_id=year.id, year=year.year, current_year=current_year) }}"
+                                    <a href="{{ url_for('course.duplicate_course', course_id=year.id, year=year.year) }}"
                                        class="btn btn-lg btn-success">Duplicate Course</a>
                                 </div>
                             </div>

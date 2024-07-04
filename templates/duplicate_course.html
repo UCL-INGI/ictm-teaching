@@ -21,7 +21,6 @@
                 return $container;
             }
 
-            // Ajouter un gestionnaire d'événements pour chaque champ de sélection
             $('[id^=assigned_teachers]').each(function () {
                 $(this).select2({
                     placeholder: 'Search for a teacher',
@@ -94,7 +93,7 @@
 
     <div class="container-lg">
         <div class="tab-content">
-            <form action="{{ url_for('course.add_duplicate_course', current_year=current_year) }}" method="post"
+            <form action="{{ url_for('course.add_duplicate_course') }}" method="post"
                   id="courseInfo">
                 <input type="hidden" name="course_id" value="{{ course.id }}">
                 <div class="row">

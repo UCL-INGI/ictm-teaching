@@ -15,7 +15,7 @@
 {% block pagecontent %}
     <div class="container-sm">
         <h2 class="text-center mb-4">New Course</h2>
-        <form method="post" action="{{ url_for('course.add_course', current_year=current_year) }}">
+        <form method="post" action="{{ url_for('course.add_course') }}">
             <div class="row">
                 <div class="col-sm-6 col-md-6">
 
@@ -46,8 +46,7 @@
                         <label for="year"><h4>Year</h4></label>
                         <select class="form-select" id="year" name="year">
                             {% for config in configurations %}
-                                <option value="{{ config.year }}" {% if config.year == session.current_year %}
-                                        selected {% endif %}>
+                                <option value="{{ config.year }}" {% if config.year == dynamic_year %} selected {% endif %}>
                                     {{ config.year }} - {{ config.year + 1 }}
                                 </option>
                             {% endfor %}

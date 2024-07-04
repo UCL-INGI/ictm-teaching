@@ -1,7 +1,8 @@
 from decorators import login_required
-from db import db, User, Course, Teacher, Organization
+from db import db, User, Course, Teacher, Organization, Configuration
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
+from util import get_current_year
 import json, re
 
 course_bp = Blueprint('course', __name__)
@@ -20,8 +21,7 @@ def validate_course_title(title):
 @course_bp.route('/form_course')
 @login_required
 def form_course():
-    current_year = int(request.args.get('current_year'))
-    return render_template('add_course.html', current_year=current_year)
+    return render_template('add_course.html')
 
 
 @course_bp.route('/add_course', methods=['POST'])
@@ -31,7 +31,6 @@ def add_course():
     if not form:
         return make_response("Problem with form request", 500)
 
-    current_year = int(request.args.get('current_year'))
     code = request.form['code']
     title = request.form['title']
 
@@ -61,16 +60,16 @@ def add_course():
 
         db.session.add(new_course)
         db.session.commit()
-        return redirect(url_for("course.form_course", current_year=current_year))
+        return redirect(url_for("course.form_course"))
     except Exception as e:
         db.session.rollback()
         raise e
 
 
-@course_bp.route('/courses')
+@course_bp.route('/courses/<int:current_year>')
 @login_required
-def courses():
-    current_year = int(request.args.get('current_year'))
+def courses(current_year=None):
+    current_year = request.args.get('current_year') if request.args.get('current_year') else current_year
     courses = db.session.query(Course).filter_by(year=current_year).all()
     return render_template('courses.html', courses=courses, current_year=current_year)
 
@@ -86,7 +85,8 @@ def search_teachers():
 @course_bp.route('<int:course_id>')
 @login_required
 def course_info(course_id):
-    current_year = int(request.args.get('current_year'))
+    dynamic_year = get_current_year()
+    current_year = int(request.args.get('current_year')) if request.args.get('current_year') else dynamic_year
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == current_year).first()
     if not course:
         return make_response("Course not found", 404)
@@ -103,7 +103,6 @@ def update_course_info():
     if not form:
         return make_response("Problem with form request", 500)
 
-    current_year = int(request.args.get('current_year'))
     code = request.form['code']
     title = request.form['title']
     if not validate_course_code(code):
@@ -155,7 +154,7 @@ def update_course_info():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-    return redirect(url_for("course.course_info", course_id=course_id, current_year=current_year))
+    return redirect(url_for("course.course_info", course_id=course_id))
 
 
 @course_bp.route('/duplicate_course')
@@ -164,9 +163,8 @@ def duplicate_course():
     course_id = request.args.get('course_id')
     course_year = request.args.get('year')
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == course_year).first()
-    current_year = int(request.args.get('current_year'))
 
-    return render_template('duplicate_course.html', course=course, current_year=current_year)
+    return render_template('duplicate_course.html', course=course)
 
 
 @course_bp.route('/add_duplicate_course', methods=['POST'])
@@ -176,7 +174,6 @@ def add_duplicate_course():
     if not form:
         return make_response("Problem with form request", 500)
 
-    current_year = int(request.args.get('current_year'))
     code = request.form['code']
     title = request.form['title']
     if not validate_course_code(code):
@@ -212,4 +209,4 @@ def add_duplicate_course():
     except Exception as e:
         db.session.rollback()
 
-    return redirect(url_for('course.course_info', course_id=course_id, current_year=current_year))
+    return redirect(url_for('course.course_info', course_id=course_id, current_year=year))

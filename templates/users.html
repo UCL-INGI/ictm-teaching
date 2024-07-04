@@ -52,10 +52,10 @@
             <tbody>
             {% for user in users %}
                 <tr>
-                    <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=current_year) }}">
+                    <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.name }}
                     </a></td>
-                   <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=current_year) }}">
+                   <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.first_name }}
                     </a></td>
                     <td>{{ user.email }}</td>
@@ -72,14 +72,14 @@
                             <td>{{ user.user_researcher.researcher_type }}</td>
                         {% endif %}
                         <td>
-                            <a href="{{ url_for('user.enable', user_id=user.id, current_year=current_year) }}"
+                            <a href="{{ url_for('user.enable', user_id=user.id) }}"
                                class="restore-icon">
                                 <i class="fas fa-trash-restore restore-icon"></i>
                             </a>
                         </td>
                     {% else %}
                         <td>
-                            <a href="{{ url_for('user.disable', user_id=user.id, user_type=user_type, current_year=current_year) }}"
+                            <a href="{{ url_for('user.disable', user_id=user.id, user_type=user_type) }}"
                                class="delete-icon">
                                 <i class="fas fa-trash delete-icon"></i>
                             </a>

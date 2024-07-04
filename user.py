@@ -12,7 +12,11 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/register')
 @login_required
 def register():
-    teachers = db.session.query(User).filter(User.admin == 0, User.active == 1, User.user_teacher != None).all()
+    teachers = db.session.query(User).join(Teacher).filter(
+        User.admin == 0,
+        User.active == 1,
+        Teacher.is_active == 1
+    ).all()
     return render_template('register.html', supervisors=teachers)
 
 
@@ -44,6 +48,7 @@ def add_user():
         return make_response("Invalid email format", 400)
 
     organization_code = request.form['organization_code']
+    is_teacher = 'is_teacher' in request.form
     is_researcher = 'is_researcher' in request.form
     supervisor_id = request.form.get('supervisor') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
@@ -60,6 +65,10 @@ def add_user():
                                         max_loads=max_load)
             db.session.add(new_researcher)
             db.session.commit()
+        elif is_teacher:
+            new_teacher = Teacher(user_id=new_user.id)
+            db.session.add(new_teacher)
+            db.session.commit()
     except:
         db.session.rollback()
         raise
@@ -73,9 +82,9 @@ def users(user_type):
     base_query = db.session.query(User).filter(User.admin == 0)
 
     if user_type == 'teacher':
-        base_query = base_query.filter(User.user_teacher != None, User.active == 1)
+        base_query = base_query.join(Teacher).filter(User.active == 1, Teacher.is_active == 1)
     elif user_type == 'researcher':
-        base_query = base_query.filter(User.user_researcher != None, User.active == 1)
+        base_query = base_query.join(Researcher).filter(User.active == 1, Researcher.is_active == 1)
     elif user_type == 'archived':
         base_query = base_query.filter(User.active == 0)
 
@@ -86,17 +95,23 @@ def users(user_type):
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
 def user_profile(user_id, current_year):
-    all_users = db.session.query(User).filter(User.admin == 0, User.user_teacher != None, User.active == 1).all()
+    all_users = db.session.query(User).join(Teacher).filter(
+        User.admin == 0,
+        User.active == 1,
+        Teacher.is_active == 1
+    ).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_user = requested_user.email == session["email"]
-    # current_year = get_current_year()
 
-    if requested_user.user_researcher != None:
+    requested_user = db.session.query(User).filter_by(id=user_id).first()
+
+    if requested_user.user_researcher and requested_user.user_researcher.is_active:
         user_type = 'researcher'
-    elif requested_user.user_teacher != None:
+    elif requested_user.user_teacher and requested_user.user_teacher.is_active:
         user_type = 'teacher'
-    else: user_type = 'other'
+    else:
+        user_type = 'other'
 
     preferences = []
     if researcher:
@@ -108,10 +123,8 @@ def user_profile(user_id, current_year):
                                                   Course.organizations.contains(requested_user.organization)
                                                   ).all()
 
-    if requested_user is None:
-        return make_response("The user is not found", 404)
-
-    return render_template('user_profile.html', requested_user=requested_user, supervisors=all_users, researcher=researcher,
+    return render_template('user_profile.html', requested_user=requested_user, supervisors=all_users,
+                           researcher=researcher,
                            courses=courses, preferences=preferences, user_type=user_type,
                            current_user=current_user, current_year=current_year)
 
@@ -126,6 +139,7 @@ def update_user_profile():
     name = request.form['name']
     first_name = request.form['first_name']
     email = request.form['email']
+    current_year = get_current_year()
 
     if not contains_valid_characters(name):
         return make_response("Invalid characters in name", 400)
@@ -158,7 +172,7 @@ def update_user_profile():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-    return redirect(url_for("user.user_profile", user_id=user_id))
+    return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))
 
 
 @user_bp.route('/disable/<int:user_id>')
@@ -198,3 +212,40 @@ def enable(user_id):
         raise e
 
     return redirect(url_for("user.users", user_type='archived'))
+
+
+@user_bp.route('/update_user_type', methods=['POST'])
+@login_required
+def update_user_type():
+    user_id = int(request.form.get('user_id'))
+    is_teacher = request.form.get('is_teacher').lower() == 'true'
+    is_researcher = request.form.get('is_researcher').lower() == 'true'
+    current_year = get_current_year()
+
+    user = db.session.query(User).filter_by(id=user_id).first()
+
+    try:
+        if is_teacher:
+            if not user.user_teacher:
+                teacher = Teacher(user_id=user.id)
+                db.session.add(teacher)
+            else:
+                user.user_teacher.is_active = True
+        elif user.user_teacher:
+            user.user_teacher.is_active = False
+
+        if is_researcher:
+            if not user.user_researcher:
+                researcher = Researcher(user_id=user.id)
+                db.session.add(researcher)
+            else:
+                user.user_researcher.is_active = True
+        elif user.user_researcher:
+            user.user_researcher.is_active = False
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+    return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))

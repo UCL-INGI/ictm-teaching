@@ -59,6 +59,7 @@ class Researcher(db.Model):
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String)
+    is_active = db.Column(db.Boolean, default=True)
 
     user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
 
@@ -67,8 +68,9 @@ class Teacher(db.Model):
     __tablename__ = 'teacher'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    course_id = db.Column(db.Integer, nullable=False)
-    course_year = db.Column(db.Integer, nullable=False)
+    course_id = db.Column(db.Integer)
+    course_year = db.Column(db.Integer)
+    is_active = db.Column(db.Boolean, default=True)
 
     # Creation of a link to the compound key (id, year) of the course table
     __table_args__ = (

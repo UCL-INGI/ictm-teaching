@@ -7,25 +7,6 @@
             color: black;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            $('#yearSelect').change(function () {
-                var selectedYear = $(this).val();
-                var currentEndpoint = $('#current_endpoint').val();
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('config.update_current_year') }}",
-                    data: {
-                        'selected_year': selectedYear,
-                        'current_endpoint': currentEndpoint
-                    },
-                    success: function (response) {
-                        window.location.href = response;
-                    },
-                });
-            });
-        });
-    </script>
 {% endblock %}
 {% block pagecontent %}
     <div class="container">
@@ -75,4 +56,14 @@
             </tbody>
         </table>
     </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            let params = {
+                'current_endpoint': $('#current_endpoint').val()
+            };
+            handleYearSelectChange(params);
+        });
+    </script>
 {% endblock %}

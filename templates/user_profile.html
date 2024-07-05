@@ -11,56 +11,7 @@
             color: red;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            function toggleSupervisorSelect() {
-                if ($('#is_researcher').is(':checked')) {
-                    $('#supervisor_select').show();
-                    $('#researcher_type_display').show();
-                    $('#max_load_display').show();
-                } else {
-                    $('#supervisor_select').hide();
-                    $('#researcher_type_display').hide();
-                    $('#max_load_display').hide();
-                }
-            }
-
-            // Initial check on page load
-            toggleSupervisorSelect();
-
-            $('#is_researcher').change(function () {
-                toggleSupervisorSelect();
-                updateStatus();
-            });
-
-            $('#is_teacher').change(function () {
-                updateStatus();
-            });
-
-            function updateStatus() {
-                var userId = $('#user_id').val();
-                var isTeacher = $('#is_teacher').is(':checked');
-                var isResearcher = $('#is_researcher').is(':checked');
-
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('user.update_user_type') }}",
-                    data: {
-                        user_id: userId,
-                        is_teacher: isTeacher,
-                        is_researcher: isResearcher
-                    },
-                    success: function (response) {
-                        location.reload(); // Refresh the page to show the updated status
-                        console.log('Status updated successfully.');
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX error:', error);
-                    }
-                });
-            }
-        });
-    </script>
+    <!--
     <script>
         $(document).ready(function () {
             $('#addPreferencesButton').click(function () {
@@ -148,6 +99,7 @@
             });
         });
     </script>
+
     <script>
         $(document).ready(function () {
             $('#profileForm').submit(function (event) {
@@ -159,25 +111,15 @@
     </script>
     <script>
         $(document).ready(function () {
-            $('#yearSelect').change(function () {
-                var selectedYear = $(this).val();
-                var currentEndpoint = $('#current_endpoint').val();
-                var userId = $('#user_id').val();
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('config.update_current_year') }}",
-                    data: {
-                        'selected_year': selectedYear,
-                        'current_endpoint': currentEndpoint,
-                        'user_id': userId
-                    },
-                    success: function (response) {
-                        window.location.href = response;
-                    },
-                });
-            });
+            let params = {
+                'current_endpoint': $('#current_endpoint').val(),
+                'user_id': $('#user_id').val()
+            };
+
+            handleYearSelectChange(params);
         });
     </script>
+    -->
 {% endblock %}
 
 {% block pagecontent %}
@@ -256,13 +198,15 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_teacher"
                                                name="is_teacher"
-                                               {% if requested_user.user_teacher and requested_user.user_teacher.is_active == 1 %}checked{% endif %} {% if current_user %}
+                                               {% if requested_user.user_teacher and requested_user.user_teacher.is_active == 1 %}checked{% endif %}
+                                                {% if current_user %}
                                                disabled {% endif %}>
                                         <label class="form-check-label" for="is_teacher">Teacher</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_researcher"
-                                               name="is_researcher" {% if requested_user.user_researcher and requested_user.user_researcher.is_active == 1 %}checked{% endif %}
+                                               name="is_researcher"
+                                               {% if requested_user.user_researcher and requested_user.user_researcher.is_active == 1 %}checked{% endif %}
                                                 {% if current_user %} disabled {% endif %}>
                                         <label class="form-check-label" for="is_researcher">Researcher</label>
                                     </div>
@@ -439,4 +383,155 @@
             {% endif %}
         </div>
     </div>
+{% endblock %}
+{% block additionalfooter %}
+<script>
+    //Handle user status
+    $(document).ready(function () {
+        function toggleSupervisorSelect() {
+            if ($('#is_researcher').is(':checked')) {
+                $('#supervisor_select').show();
+                $('#researcher_type_display').show();
+                $('#max_load_display').show();
+            } else {
+                $('#supervisor_select').hide();
+                $('#researcher_type_display').hide();
+                $('#max_load_display').hide();
+            }
+        }
+
+        toggleSupervisorSelect();
+
+        $('#is_researcher').change(function () {
+            toggleSupervisorSelect();
+            updateStatus();
+        });
+
+        $('#is_teacher').change(function () {
+            updateStatus();
+        });
+
+        function updateStatus() {
+            var userId = $('#user_id').val();
+            var isTeacher = $('#is_teacher').is(':checked');
+            var isResearcher = $('#is_researcher').is(':checked');
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ url_for('user.update_user_type') }}",
+                data: {
+                    user_id: userId,
+                    is_teacher: isTeacher,
+                    is_researcher: isResearcher
+                },
+                success: function (response) {
+                    location.reload(); // Refresh the page to show the updated status
+                    console.log('Status updated successfully.');
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                }
+            });
+        }
+
+        //Handle preferences
+        $('#addPreferencesButton').click(function () {
+            $('#staticPreferencesTable').hide();
+            $('#editablePreferencesTable').show();
+            $('#addPreferencesButton').hide();
+            $('#savePreferencesButton').show();
+            $('#cancelEditButton').show();
+            $('#addRowButton').show();
+        });
+
+        $('#cancelEditButton').click(function () {
+            $('#editablePreferencesTable').hide();
+            $('#staticPreferencesTable').show();
+            $('#addPreferencesButton').show();
+            $('#savePreferencesButton').hide();
+            $('#cancelEditButton').hide();
+            $('#addRowButton').hide();
+        });
+
+        $('#addRowButton').click(function () {
+            const newRow = `
+                    <tr>
+                        <td>
+                            <select class="form-control course-select">
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}-{{ course.year }}">
+                                        {{ course.code }} - {{ course.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <i class="fas fa-trash delete-icon"></i>
+                            <i class="fas fa-arrows-alt move-icon"></i>
+                        </td>
+                    </tr>
+                `;
+            $('#editablePreferencesTable tbody').append(newRow);
+            $("#editablePreferencesTable tbody").sortable({
+                items: 'tr',
+                handle: '.move-icon',
+                axis: 'y',
+                cursor: 'move'
+            });
+        });
+
+        $(document).on('click', '.delete-icon', function () {
+            $(this).closest('tr').remove();
+        });
+
+        $('#savePreferencesButton').click(function () {
+            const preferences = [];
+            $('#editablePreferencesTable tr').each(function () {
+                const courseCode = $(this).find('select.course-select').val();
+                if (courseCode) {
+                    preferences.push(courseCode);
+                }
+            });
+
+            const data = {
+                preferences: preferences,
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ url_for('course_preference.save_preference') }}",
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('Preferences updated successfully.');
+                    location.reload(); // Refresh the page to show the updated preferences
+                },
+                error: function (error) {
+                    alert('Error updating the preferences.');
+                }
+            });
+        });
+
+        $("#editablePreferencesTable tbody").sortable({
+            items: 'tr',
+            handle: '.move-icon',
+            axis: 'y',
+            cursor: 'move'
+        });
+
+        $('#profileForm').submit(function (event) {
+            $(':disabled', this).each(function () {
+                $(this).prop('disabled', false);
+            });
+        });
+
+        //Handle year select change
+        let params = {
+            'current_endpoint': $('#current_endpoint').val(),
+            'user_id': $('#user_id').val()
+        };
+
+        handleYearSelectChange(params);
+    });
+</script>
 {% endblock %}

@@ -11,115 +11,6 @@
             color: red;
         }
     </style>
-    <!--
-    <script>
-        $(document).ready(function () {
-            $('#addPreferencesButton').click(function () {
-                $('#staticPreferencesTable').hide();
-                $('#editablePreferencesTable').show();
-                $('#addPreferencesButton').hide();
-                $('#savePreferencesButton').show();
-                $('#cancelEditButton').show();
-                $('#addRowButton').show();
-            });
-
-            $('#cancelEditButton').click(function () {
-                $('#editablePreferencesTable').hide();
-                $('#staticPreferencesTable').show();
-                $('#addPreferencesButton').show();
-                $('#savePreferencesButton').hide();
-                $('#cancelEditButton').hide();
-                $('#addRowButton').hide();
-            });
-
-            $('#addRowButton').click(function () {
-                const newRow = `
-                    <tr>
-                        <td>
-                            <select class="form-control course-select">
-                                {% for course in courses %}
-                                    <option value="{{ course.id }}-{{ course.year }}">
-                                        {{ course.code }} - {{ course.title }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td>
-                            <i class="fas fa-trash delete-icon"></i>
-                            <i class="fas fa-arrows-alt move-icon"></i>
-                        </td>
-                    </tr>
-                `;
-                $('#editablePreferencesTable tbody').append(newRow);
-                $("#editablePreferencesTable tbody").sortable({
-                    items: 'tr',
-                    handle: '.move-icon',
-                    axis: 'y',
-                    cursor: 'move'
-                });
-            });
-
-            $(document).on('click', '.delete-icon', function () {
-                $(this).closest('tr').remove();
-            });
-
-            $('#savePreferencesButton').click(function () {
-                const preferences = [];
-                $('#editablePreferencesTable tr').each(function () {
-                    const courseCode = $(this).find('select.course-select').val();
-                    if (courseCode) {
-                        preferences.push(courseCode);
-                    }
-                });
-
-                const data = {
-                    preferences: preferences,
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('course_preference.save_preference') }}",
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        alert('Preferences updated successfully.');
-                        location.reload(); // Refresh the page to show the updated preferences
-                    },
-                    error: function (error) {
-                        alert('Error updating the preferences.');
-                    }
-                });
-            });
-
-            $("#editablePreferencesTable tbody").sortable({
-                items: 'tr',
-                handle: '.move-icon',
-                axis: 'y',
-                cursor: 'move'
-            });
-        });
-    </script>
-
-    <script>
-        $(document).ready(function () {
-            $('#profileForm').submit(function (event) {
-                $(':disabled', this).each(function () {
-                    $(this).prop('disabled', false);
-                });
-            });
-        });
-    </script>
-    <script>
-        $(document).ready(function () {
-            let params = {
-                'current_endpoint': $('#current_endpoint').val(),
-                'user_id': $('#user_id').val()
-            };
-
-            handleYearSelectChange(params);
-        });
-    </script>
-    -->
 {% endblock %}
 
 {% block pagecontent %}
@@ -486,10 +377,12 @@
 
         $('#savePreferencesButton').click(function () {
             const preferences = [];
-            $('#editablePreferencesTable tr').each(function () {
-                const courseCode = $(this).find('select.course-select').val();
-                if (courseCode) {
-                    preferences.push(courseCode);
+            $('#editablePreferencesTable tbody tr').each(function () {
+                const courseValue = $(this).find('select.course-select').val();
+
+                if (courseValue) {
+                    const [course_id, course_year] = courseValue.split("-");
+                    preferences.push({ course_id: course_id, course_year: course_year });
                 }
             });
 

@@ -14,62 +14,83 @@
     <script>
         $(document).ready(function () {
             function formatTeacher(teacher) {
-                if (teacher.loading) {
-                    return teacher.text;
-                }
-                var $container = $("<div></div>").text(teacher.text);
-                return $container;
+                return teacher.text;
             }
 
-            $('[id^=assigned_teachers]').each(function () {
-                $(this).select2({
-                    placeholder: 'Search for a teacher',
-                    multiple: true,
-                    minimumInputLength: 1,
-                    ajax: {
-                        url: "{{ url_for('course.search_teachers') }}",
-                        dataType: 'json',
-                        delay: 250,
-                        data: function (params) {
-                            return {
-                                q: params.term
-                            };
-                        },
-                        processResults: function (data) {
-                            return {
-                                results: data
-                            };
-                        },
-                        cache: true
+            $('.assigned-teachers').select2({
+                placeholder: 'Search for a teacher',
+                multiple: true,
+                minimumInputLength: 1,
+                width: '100%',
+                ajax: {
+                    url: "{{ url_for('course.search_teachers') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
                     },
-                    templateResult: formatTeacher,
-                    templateSelection: formatTeacher,
-                    tags: false
-                });
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatTeacher,
+                templateSelection: formatTeacher,
+                tags: false
             });
         });
     </script>
     <script>
         $(document).ready(function () {
-            $('#organization_code').change(function () {
+            $(document).on('change', '#organization_code', function () {
                 var selectedOption = $(this).find('option:selected');
                 var selectedValue = selectedOption.val();
                 var selectedText = selectedOption.text();
 
-                if (selectedValue) {
-                    var tagHtml = '<div class="badge bg-primary" data-id="' + selectedValue + '">' +
-                        selectedText + '&nbsp;<a href="#" class="remove-tag">&times;</a>' +
-                        '<input type="hidden" name="organization_code[]" value="' + selectedValue + '">' +
-                        '</div>';
+                console.log("Selected value:", selectedValue);
+                console.log("Selected text:", selectedText);
 
-                    $('#selected-organizations').append(tagHtml);
+                if (selectedValue) {
+                    // Check if the organization is already added
+                    var alreadyExists = $('#selected-organizations', $(this).parent()).find('div[data-id="' + selectedValue + '"]').length > 0;
+
+                    if (!alreadyExists) {
+                        var tagHtml = $('<div>', {
+                            class: 'badge bg-primary d-inline-block',
+                            'data-id': selectedValue
+                        });
+
+                        $(tagHtml).text(selectedText);
+                        $('<a>', {
+                            href: '#',
+                            class: 'remove-tag ms-1',
+                            html: '&times;'
+                        }).appendTo(tagHtml);
+                        $('<input>', {
+                            type: 'hidden',
+                            name: 'organization_code[]',
+                            value: selectedValue
+                        }).appendTo(tagHtml);
+
+                        $('#selected-organizations', $(this).parent()).append(tagHtml);
+                    } else {
+                        console.log("Organization already added:", selectedText);
+                    }
+
+                    // Reset the select input
                     $(this).val('');
                 }
             });
 
+            // Event listener for removing the organization tag
             $(document).on('click', '.remove-tag', function (e) {
                 e.preventDefault();
                 $(this).parent('.badge').remove();
+                console.log("Tag removed");
             });
         });
     </script>
@@ -147,7 +168,7 @@
                             </dd>
                             <dt>Assign Teachers</dt>
                             <dd>
-                                <select class="form-control" id="assigned_teachers"
+                                <select class="form-control assigned-teachers" id="assigned_teachers"
                                         name="assigned_teachers[]" multiple>
                                     {% for t in course.course_teacher %}
                                         <option value="{{ t.user_id }}"
@@ -164,12 +185,12 @@
                                     {% endfor %}
                                 </select>
                                 <div id="selected-organizations">
-                                    {% for org in course.organizations %}
+                                    {%- for org in course.organizations -%}
                                         <div class="badge bg-primary" data-id="{{ org.id }}">
                                             {{ org.name }}&nbsp;<a href="#" class="remove-tag">&times;</a>
                                             <input type="hidden" name="organization_code[]" value="{{ org.id }}">
                                         </div>
-                                    {% endfor %}
+                                    {%- endfor %}
                                 </div>
                             </dd>
                         </dl>

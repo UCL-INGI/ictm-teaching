@@ -82,7 +82,8 @@
                                         <select class="form-select" id="year" name="year">
                                             {% for config in configurations %}
                                                 <option value="{{ config.year }}" {% if config.year == year.year %}
-                                                        selected {% endif %}>{{ config.year }} - {{ config.year + 1 }}</option>
+                                                        selected {% endif %}>
+                                                    {{ config.year }}-{{ config.year + 1 }}</option>
                                             {% endfor %}
                                         </select>
                                     </dd>
@@ -122,14 +123,15 @@
                                                 <option value="{{ code.id }}">{{ code.name }}</option>
                                             {% endfor %}
                                         </select>
+
                                         <div id="selected-organizations">
-                                            {% for org in year.organizations %}
+                                            {%- for org in year.organizations -%}
                                                 <div class="badge bg-primary" data-id="{{ org.id }}">
-                                                    {{ org.name }}&nbsp;<a href="#" class="remove-tag">&times;</a>
+                                                    <span>{{org.name}}</span><a href="#" class="remove-tag ms-1">&times;</a>
                                                     <input type="hidden" name="organization_code[]"
                                                            value="{{ org.id }}">
                                                 </div>
-                                            {% endfor %}
+                                            {%- endfor %}
                                         </div>
                                     </dd>
                                 </dl>
@@ -178,15 +180,64 @@
 {% block additionalfooter %}
     <script>
         $(document).ready(function () {
+            // Organization code selector
+            $(document).on('change', '#organization_code', function () {
+                var selectedOption = $(this).find('option:selected');
+                var selectedValue = selectedOption.val();
+                var selectedText = selectedOption.text();
+
+                console.log("Selected value:", selectedValue);
+                console.log("Selected text:", selectedText);
+
+                if (selectedValue) {
+                    // Check if the organization is already added
+                    var alreadyExists = $('#selected-organizations', $(this).parent()).find('div[data-id="' + selectedValue + '"]').length > 0;
+
+                    if (!alreadyExists) {
+                        var tagHtml = $('<div>', {
+                            class: 'badge bg-primary d-inline-block',
+                            'data-id': selectedValue
+                        });
+
+                        $(tagHtml).text(selectedText);
+                        $('<a>', {
+                            href: '#',
+                            class: 'remove-tag ms-1',
+                            html: '&times;'
+                        }).appendTo(tagHtml);
+                        $('<input>', {
+                            type: 'hidden',
+                            name: 'organization_code[]',
+                            value: selectedValue
+                        }).appendTo(tagHtml);
+
+                        $('#selected-organizations', $(this).parent()).append(tagHtml);
+                    } else {
+                        console.log("Organization already added:", selectedText);
+                    }
+
+                    // Reset the select input
+                    $(this).val('');
+                }
+            });
+
+            // Event listener for removing the organization tag
+            $(document).on('click', '.remove-tag', function (e) {
+                e.preventDefault();
+                $(this).parent('.badge').remove();
+                console.log("Tag removed");
+            });
+
+
             function formatTeacher(teacher) {
                 return teacher.text;
             }
 
-            $('.assigned-teachers').each(function () {
-                $(this).select2({
+            $('.assigned-teachers').select2({
                     placeholder: 'Search for a teacher',
                     multiple: true,
                     minimumInputLength: 1,
+                    width: '100%',
                     ajax: {
                         url: "{{ url_for('course.search_teachers') }}",
                         dataType: 'json',
@@ -206,43 +257,6 @@
                     templateResult: formatTeacher,
                     templateSelection: formatTeacher,
                     tags: false
-                });
-            });
-
-            // Organization code selector
-            $('#organization_code').change(function () {
-                var selectedOption = $(this).find('option:selected');
-                var selectedValue = selectedOption.val();
-                var selectedText = selectedOption.text();
-
-                if (selectedValue) {
-                    var tagHtml = $('<div>', {
-                        class: 'badge bg-primary d-inline-block',
-                        'data-id': selectedValue
-                    });
-
-                    $('<span>').text(selectedText).appendTo(tagHtml);
-                    $('<span>').html('&nbsp;').appendTo(tagHtml);
-                    $('<a>', {
-                        href: '#',
-                        class: 'remove-tag ms-1',
-                        html: '&times;'
-                    }).appendTo(tagHtml);
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'organization_code[]',
-                        value: selectedValue
-                    }).appendTo(tagHtml);
-
-                    $('#tags-container').append(tagHtml);
-                    // Reset the select input
-                    $(this).val('');
-                }
-            });
-
-            $(document).on('click', '.remove-tag', function (e) {
-                e.preventDefault();
-                $(this).parent('.badge').remove();
             });
         });
     </script>

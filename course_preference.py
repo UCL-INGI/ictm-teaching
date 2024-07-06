@@ -41,6 +41,7 @@ def save_preference():
         return make_response("User is not a researcher", 500)
 
     new_course_ids = {preference.split("-", 1)[0] for preference in preferences}
+    test_ids = {preference['course_id'] for preference in preferences}
     delete_old_preferences(researcher.id, new_course_ids, current_year)
 
     for preference in preferences:

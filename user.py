@@ -104,8 +104,6 @@ def user_profile(user_id, current_year):
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_user = requested_user.email == session["email"]
 
-    requested_user = db.session.query(User).filter_by(id=user_id).first()
-
     if requested_user.user_researcher and requested_user.user_researcher.is_active:
         user_type = 'researcher'
     elif requested_user.user_teacher and requested_user.user_teacher.is_active:

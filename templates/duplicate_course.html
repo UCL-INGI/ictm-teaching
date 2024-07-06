@@ -11,89 +11,6 @@
             color: red;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            function formatTeacher(teacher) {
-                return teacher.text;
-            }
-
-            $('.assigned-teachers').select2({
-                placeholder: 'Search for a teacher',
-                multiple: true,
-                minimumInputLength: 1,
-                width: '100%',
-                ajax: {
-                    url: "{{ url_for('course.search_teachers') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            q: params.term
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: formatTeacher,
-                templateSelection: formatTeacher,
-                tags: false
-            });
-        });
-    </script>
-    <script>
-        $(document).ready(function () {
-            $(document).on('change', '#organization_code', function () {
-                var selectedOption = $(this).find('option:selected');
-                var selectedValue = selectedOption.val();
-                var selectedText = selectedOption.text();
-
-                console.log("Selected value:", selectedValue);
-                console.log("Selected text:", selectedText);
-
-                if (selectedValue) {
-                    // Check if the organization is already added
-                    var alreadyExists = $('#selected-organizations', $(this).parent()).find('div[data-id="' + selectedValue + '"]').length > 0;
-
-                    if (!alreadyExists) {
-                        var tagHtml = $('<div>', {
-                            class: 'badge bg-primary d-inline-block',
-                            'data-id': selectedValue
-                        });
-
-                        $(tagHtml).text(selectedText);
-                        $('<a>', {
-                            href: '#',
-                            class: 'remove-tag ms-1',
-                            html: '&times;'
-                        }).appendTo(tagHtml);
-                        $('<input>', {
-                            type: 'hidden',
-                            name: 'organization_code[]',
-                            value: selectedValue
-                        }).appendTo(tagHtml);
-
-                        $('#selected-organizations', $(this).parent()).append(tagHtml);
-                    } else {
-                        console.log("Organization already added:", selectedText);
-                    }
-
-                    // Reset the select input
-                    $(this).val('');
-                }
-            });
-
-            // Event listener for removing the organization tag
-            $(document).on('click', '.remove-tag', function (e) {
-                e.preventDefault();
-                $(this).parent('.badge').remove();
-                console.log("Tag removed");
-            });
-        });
-    </script>
 {% endblock %}
 
 {% block pagecontent %}
@@ -230,4 +147,45 @@
             </form>
         </div>
     </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $(document).on('change', '#organization_code', function () {
+                var containerSelector = $('#selected-organizations', $(this).parent());
+                console.log("Before Fun", containerSelector);
+                addBadge($(this), containerSelector);
+            });
+
+            function formatTeacher(teacher) {
+                return teacher.text;
+            }
+
+            $('.assigned-teachers').select2({
+                placeholder: 'Search for a teacher',
+                multiple: true,
+                minimumInputLength: 1,
+                width: '100%',
+                ajax: {
+                    url: "{{ url_for('course.search_teachers') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatTeacher,
+                templateSelection: formatTeacher,
+                tags: false
+            });
+        });
+    </script>
 {% endblock %}

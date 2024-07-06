@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
 
+from sqlalchemy.orm import validates
+
 db = SQLAlchemy()
 
 
@@ -19,6 +21,7 @@ class User(db.Model):
     supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
     organization = db.relationship('Organization', back_populates='users')
 
+    '''
     @staticmethod
     def before_update(mapper, connection, target):
         if not target.active:
@@ -26,10 +29,19 @@ class User(db.Model):
                 raise ValueError("Cannot deactivate a supervisor who has supervisees.")
             if target.user_teacher:
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
+    '''
+
+    @validates('active')
+    def validate_active(self, key, value):
+        if not value:
+            if self.supervisees:
+                raise ValueError("Cannot deactivate a supervisor who has supervisees.")
+            if self.user_teacher:
+                raise ValueError("Cannot deactivate a teacher assigned to a course.")
+        return value
 
 
-db.event.listen(User, 'before_update', User.before_update)
-
+#db.event.listen(User, 'before_update', User.before_update)
 
 class Course(db.Model):
     __tablename__ = 'course'

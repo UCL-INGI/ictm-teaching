@@ -97,7 +97,13 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).filter(User.active == 1, User.admin == 0, User.user_researcher == None, User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).join(Teacher).filter(
+        User.admin == 0,
+        User.active == 1,
+        Teacher.is_active == 1,
+        User.name.ilike(f'%{search_term}%')
+    ).all()
+    #teachers = db.session.query(User).filter(User.active == 1, User.admin == 0, User.user_researcher == None, )).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
@@ -125,35 +131,62 @@ def update_course_info():
 
     code = request.form['code']
     title = request.form['title']
-    if not validate_course_code(code):
-        return make_response("Invalid course code", 400)
-    if not validate_course_title(title):
-        return make_response("Invalid course title", 400)
-
     course_id = request.form['course_id']
     quadri = request.form['quadri']
     year = request.form['year']
     language = request.form['language']
-    assigned_teachers = request.form.getlist('assigned_teachers[]')
-    organisation_code = request.form.getlist('organization_code[]')
     nbr_students = request.form['nbr_students']
     nbr_teaching_assistants = request.form['nbr_teaching_assistants']
     nbr_monitor_students = request.form['nbr_monitor_students']
+
+    if not validate_course_code(code):
+        return make_response("Invalid course code", 400)
+    if not validate_course_title(title):
+        return make_response("Invalid course title", 400)
+    if not validate_string_pattern(language):
+        return make_response("Invalid language", 400)
+    if not validate_number_pattern(year):
+        return make_response("Invalid year", 400)
+    if not validate_number_pattern(quadri):
+        return make_response("Invalid quadri", 400)
+    if not validate_number_pattern(nbr_students):
+        return make_response("Invalid number of students", 400)
+    if not validate_number_pattern(nbr_teaching_assistants):
+        return make_response("Invalid number of teaching assistants", 400)
+    if not validate_number_pattern(nbr_monitor_students):
+        return make_response("Invalid number of monitor students", 400)
+
+
+    assigned_teachers = request.form.getlist('assigned_teachers[]')
+    organisation_code = request.form.getlist('organization_code[]')
 
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
     if not course:
         return make_response("Course not found", 404)
 
     # Remove all teachers assigned to the course
-    db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).delete()
-    course.course_teacher.clear()
+    try:
+        old_teachers = db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).all()
+        if old_teachers:
+            for teacher in old_teachers:
+                teacher.course_id = None
+                teacher.course_year = None
+            db.session.commit()
+    except Exception as e:
+        db.session.rollback()
 
     # Add new teachers to the course
     if assigned_teachers:
         try:
             for teacher_id in assigned_teachers:
-                new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
-                db.session.add(new_teacher)
+                teacher = Teacher.query.filter_by(user_id=teacher_id, course_id=None, course_year=None).first()
+
+                if not teacher:
+                    new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
+                    db.session.add(new_teacher)
+                else:
+                    teacher.course_id = course_id
+                    teacher.course_year = year
             db.session.commit()
         except Exception as e:
             db.session.rollback()

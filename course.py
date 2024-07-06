@@ -18,6 +18,16 @@ def validate_course_title(title):
     return re.match(title_regex, title) is not None
 
 
+def validate_string_pattern(string):
+    pattern = r'^[a-zA-Z\s]+$'
+    return re.match(pattern, string) is not None
+
+
+def validate_number_pattern(number):
+    pattern = r'^[1-9][0-9]*$'
+    return re.match(pattern, number) is not None
+
+
 @course_bp.route('/form_course')
 @login_required
 def form_course():
@@ -33,15 +43,21 @@ def add_course():
 
     code = request.form['code']
     title = request.form['title']
+    quadri = request.form['quadri']
+    year = request.form['year']
+    language = request.form['language']
 
     if not validate_course_code(code):
         return make_response("Invalid course code", 400)
     if not validate_course_title(title):
         return make_response("Invalid course title", 400)
+    if not validate_string_pattern(language):
+        return make_response("Invalid language", 400)
+    if not validate_number_pattern(year):
+        return make_response("Invalid year", 400)
+    if not validate_number_pattern(quadri):
+        return make_response("Invalid quadri", 400)
 
-    quadri = request.form['quadri']
-    year = request.form['year']
-    language = request.form['language']
     organization_ids = request.form.getlist('organization_code[]')
 
     try:
@@ -176,20 +192,33 @@ def add_duplicate_course():
 
     code = request.form['code']
     title = request.form['title']
+    quadri = request.form['quadri']
+    year = request.form['year']
+    language = request.form['language']
+    nbr_students = request.form['nbr_students']
+    nbr_teaching_assistants = request.form['nbr_teaching_assistants']
+    nbr_monitor_students = request.form['nbr_monitor_students']
+
     if not validate_course_code(code):
         return make_response("Invalid course code", 400)
     if not validate_course_title(title):
         return make_response("Invalid course title", 400)
+    if not validate_string_pattern(language):
+        return make_response("Invalid language", 400)
+    if not validate_number_pattern(year):
+        return make_response("Invalid year", 400)
+    if not validate_number_pattern(quadri):
+        return make_response("Invalid quadri", 400)
+    if not validate_number_pattern(nbr_students):
+        return make_response("Invalid number of students", 400)
+    if not validate_number_pattern(nbr_teaching_assistants):
+        return make_response("Invalid number of teaching assistants", 400)
+    if not validate_number_pattern(nbr_monitor_students):
+        return make_response("Invalid number of monitor students", 400)
 
     course_id = request.form['course_id']
-    quadri = request.form['quadri']
-    year = request.form['year']
-    language = request.form['language']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
-    nbr_students = request.form['nbr_students']
-    nbr_teaching_assistants = request.form['nbr_teaching_assistants']
-    nbr_monitor_students = request.form['nbr_monitor_students']
 
     try:
         duplicate_course = Course(id=course_id, code=code, title=title, quadri=quadri, year=year,

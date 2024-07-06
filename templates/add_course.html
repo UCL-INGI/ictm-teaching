@@ -46,7 +46,8 @@
                         <label for="year"><h4>Year</h4></label>
                         <select class="form-select" id="year" name="year">
                             {% for config in configurations %}
-                                <option value="{{ config.year }}" {% if config.year == dynamic_year %} selected {% endif %}>
+                                <option value="{{ config.year }}" {% if config.year == dynamic_year %}
+                                        selected {% endif %}>
                                     {{ config.year }} - {{ config.year + 1 }}
                                 </option>
                             {% endfor %}
@@ -87,38 +88,8 @@
     <script>
         $(document).ready(function () {
             $('#organization_code').change(function () {
-                var selectedOption = $(this).find('option:selected');
-                var selectedValue = selectedOption.val();
-                var selectedText = selectedOption.text();
-
-                if (selectedValue) {
-                    var tagHtml = $('<div>', {
-                        class: 'badge bg-primary d-inline-block',
-                        'data-id': selectedValue
-                    });
-
-                    $('<span>').text(selectedText).appendTo(tagHtml);
-                    $('<span>').html('&nbsp;').appendTo(tagHtml);
-                    $('<a>', {
-                        href: '#',
-                        class: 'remove-tag ms-1',
-                        html: '&times;'
-                    }).appendTo(tagHtml);
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'organization_code[]',
-                        value: selectedValue
-                    }).appendTo(tagHtml);
-
-                    $('#tags-container').append(tagHtml);
-                    // Reset the select input
-                    $(this).val('');
-                }
-            });
-
-            $(document).on('click', '.remove-tag', function (e) {
-                e.preventDefault();
-                $(this).parent('.badge').remove();
+                var containerSelector = '#tags-container';
+                addBadge(this, containerSelector);
             });
         });
     </script>

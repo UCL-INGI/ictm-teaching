@@ -93,6 +93,10 @@ def courses(current_year=None):
 @course_bp.route('/search_teachers')
 def search_teachers():
     search_term = request.args.get('q', '')
+
+    if not validate_string_pattern(search_term):
+        return make_response("Invalid search term", 400)
+
     teachers = db.session.query(User).filter(User.active == 1, User.admin == 0, User.user_researcher == None, User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)

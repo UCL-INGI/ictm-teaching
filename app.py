@@ -48,7 +48,7 @@ def index():  # put application's code here
     if session and session['logged_in']:
         return render_template("home.html")
     else:
-        return render_template("index.html")
+        return redirect(url_for("auth.login"))
 
 
 if __name__ == '__main__':

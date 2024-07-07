@@ -1,33 +1,5 @@
-{% extends "layout.html" %}
-{% block pagetitle %}Course informations{% endblock %}
-{% block additionalpageheader %}
-    <style>
-        .badge a {
-            color: black;
-            text-decoration: none;
-        }
-
-        .badge a:hover {
-            color: red;
-        }
-    </style>
-{% endblock %}
-{% block pagecontent %}
-    <div class="row">
-        <div class="col-sm-12">
-            <br>
-            <h1 class="page-header">{{ course.code }} - {{ course.title }}</h1>
-            <hr>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-12">
-            <h2 class="sub-header">Course informations</h2>
-            <hr>
-        </div>
-    </div>
-
+{% extends "course_template.html" %}
+{% block tabs %}
     <div class="row">
         <div class="col-sm-12">
             <ul class="nav nav-tabs">
@@ -42,181 +14,20 @@
             </ul>
         </div>
     </div>
-    <div class="container-lg">
-        <div class="tab-content">
-            {% for year in all_years %}
-                <div class="tab-pane {% if year.year == current_year %} active {% endif %}"
-                     id="{{ year.year }}">
-                    <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
-                          id="courseInfo">
-                        <input type="hidden" name="course_id" value="{{ year.id }}">
-                        <br>
-                        <div class="row">
-                            <div class="col-lg-4 col-md-6">
-                                <dl>
-                                    <dt>Code</dt>
-                                    <dd>
-                                        <input type="text" class="form-control" name="code" id="code"
-                                               placeholder="Code" value="{{ year.code }}">
-                                    </dd>
-                                    <dt>Title</dt>
-                                    <dd>
-                                        <input type="text" class="form-control" name="title" id="title"
-                                               placeholder="Title"
-                                               value="{{ year.title }}">
-                                    </dd>
-                                    <dt>Quadri</dt>
-                                    <dd>
-                                        <select class="form-select" id="quadri" name="quadri">
-                                            {% for q in quadri %}
-                                                {% if q == year.quadri %}
-                                                    <option value="{{ q }}" selected>{{ q }}</option>
-                                                {% else %}
-                                                    <option value="{{ q }}">{{ q }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    </dd>
-                                    <dt>Year</dt>
-                                    <dd>
-                                        <select class="form-select" id="year" name="year">
-                                            {% for config in configurations %}
-                                                <option value="{{ config.year }}" {% if config.year == year.year %}
-                                                        selected {% endif %}>
-                                                    {{ config.year }}-{{ config.year + 1 }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </dd>
-                                </dl>
-                            </div>
-                            <div class="col-lg-4 col-md-6">
-                                <dl>
-                                    <dt>Language</dt>
-                                    <dd>
-                                        <select class="form-select" id="language" name="language">
-                                            {% for code, name in language.items() %}
-                                                <option value="{{ code }}"
-                                                        {% if year.language == code %}selected{% endif %}>
-                                                    {{ name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </dd>
-                                    <dt>Assign Teachers</dt>
-                                    <dd>
-                                        <select class="form-control assigned-teachers"
-                                                id="assigned_teachers_{{ year.year }}"
-                                                name="assigned_teachers[]" multiple>
-                                            {% for assigned_teacher in year.course_teacher %}
-                                                {% if assigned_teacher.course_year == year.year %}
-                                                    <option value="{{ assigned_teacher.user_id }}"
-                                                            selected>{{ assigned_teacher.user.name }} {{ assigned_teacher.user.first_name }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    </dd>
-                                    <dt>Organization code</dt>
-                                    <dd>
-                                        <select class="form-select" id="organization_code" name="organization_code">
-                                            <option value="" disabled selected>Select an organization</option>
-                                            {% for code in organizations_code %}
-                                                <option value="{{ code.id }}">{{ code.name }}</option>
-                                            {% endfor %}
-                                        </select>
+    <br>
+{% endblock %}
 
-                                        <div id="selected-organizations">
-                                            {%- for org in year.organizations -%}
-                                                <div class="badge bg-primary" data-id="{{ org.id }}">
-                                                    <span>{{ org.name }}</span><a href="#" class="remove-tag ms-1">&times;</a>
-                                                    <input type="hidden" name="organization_code[]"
-                                                           value="{{ org.id }}">
-                                                </div>
-                                            {%- endfor %}
-                                        </div>
-                                    </dd>
-                                </dl>
-                            </div>
-                            <div class="col-lg-4 col-md-6">
-                                <dl>
-                                    <dt>Number of students</dt>
-                                    <dd>
-                                        <input type="text" class="form-control" name="nbr_students" id="nbr_students"
-                                               placeholder="Number of students" value="{{ year.nbr_students }}">
-                                    </dd>
-                                    <dt>Number of teaching assistants</dt>
-                                    <dd>
-                                        <input type="text" class="form-control" name="nbr_teaching_assistants"
-                                               id="nbr_teaching_assistants"
-                                               placeholder="Number of teaching assistants"
-                                               value="{{ year.nbr_teaching_assistants }}">
-                                    </dd>
-                                    <dt>Number of monitor students</dt>
-                                    <dd>
-                                        <input type="text" class="form-control" name="nbr_monitor_students"
-                                               id="nbr_monitor_students"
-                                               placeholder="Number of monitor students"
-                                               value="{{ year.nbr_monitor_students }}">
-                                    </dd>
-                                </dl>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <br>
-                                    <button class="btn btn-lg btn-success" type="submit"><i
-                                            class="glyphicon glyphicon-ok-sign"></i> Save
-                                    </button>
-                                    <a href="{{ url_for('course.duplicate_course', course_id=year.id, year=year.year) }}"
-                                       class="btn btn-lg btn-success">Duplicate Course</a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            {% endfor %}
+{% block beforeform %}
+    {% for course in all_years %}
+        <div class="tab-pane {% if course.year == current_year %} active {% endif %}"
+             id="{{ course.year }}">
+            <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
+                  id="courseInfo">
+                {% with page='course_info' %}
+                    {% include 'course_info_template.html' %}
+                {% endwith %}
+            </form>
         </div>
-    </div>
+    {% endfor %}
 {% endblock %}
 
-{% block additionalfooter %}
-    <script>
-        $(document).ready(function () {
-            $(document).on('change', '#organization_code', function () {
-                var containerSelector = $('#selected-organizations', $(this).parent());
-                console.log("Before Fun", containerSelector);
-                addBadge($(this), containerSelector);
-            });
-
-
-
-            function formatTeacher(teacher) {
-                return teacher.text;
-            }
-
-            $('.assigned-teachers').select2({
-                placeholder: 'Search for a teacher',
-                multiple: true,
-                minimumInputLength: 1,
-                width: '100%',
-                ajax: {
-                    url: "{{ url_for('course.search_teachers') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            q: params.term
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: formatTeacher,
-                templateSelection: formatTeacher,
-                tags: false
-            });
-        });
-    </script>
-{% endblock %}

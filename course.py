@@ -9,7 +9,7 @@ course_bp = Blueprint('course', __name__)
 
 
 def validate_course_code(code):
-    course_code_regex = r'^[a-zA-Z0-9]+$'
+    course_code_regex = r'^[a-zA-Z0-9\s]+$'
     return re.match(course_code_regex, code) is not None
 
 
@@ -24,7 +24,7 @@ def validate_string_pattern(string):
 
 
 def validate_number_pattern(number):
-    pattern = r'^[1-9][0-9]*$'
+    pattern = r'^(0|[1-9][0-9]*)$'
     return re.match(pattern, number) is not None
 
 
@@ -32,6 +32,51 @@ def validate_number_pattern(number):
 @login_required
 def form_course():
     return render_template('add_course.html')
+
+def validate_form_data(form):
+    mandatory_fields = {
+        'code': validate_course_code,
+        'title': validate_course_title,
+        'language': validate_string_pattern,
+        'year': validate_number_pattern,
+        'quadri': validate_number_pattern,
+    }
+
+    extra_fields = {
+        'nbr_students': validate_number_pattern,
+        'nbr_teaching_assistants': validate_number_pattern,
+        'nbr_monitor_students': validate_number_pattern,
+    }
+
+    for field, validator in mandatory_fields.items():
+        value = form.get(field)
+        if not value:
+            return f"Missing {field}", 400
+        if not validator(value):
+            return f"Invalid {field}", 400
+
+    for field, validator in extra_fields.items():
+        value = form.get(field)
+        if not value:
+            return f"Missing {field}", 400
+        if not validator(value):
+            return f"Invalid {field}", 400
+
+def assign_teachers_to_course(course_id, course_year, assigned_teachers):
+    try:
+        for teacher_id in assigned_teachers:
+            teacher = Teacher.query.filter_by(user_id=teacher_id, course_id=None, course_year=None).first()
+
+            if not teacher:
+                new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
+                db.session.add(new_teacher)
+            else:
+                teacher.course_id = course_id
+                teacher.course_year = course_year
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 @course_bp.route('/add_course', methods=['POST'])
@@ -41,22 +86,15 @@ def add_course():
     if not form:
         return make_response("Problem with form request", 500)
 
+    error = validate_form_data(form)
+    if error:
+        return make_response(error[0], error[1])
+
     code = request.form['code']
     title = request.form['title']
     quadri = request.form['quadri']
     year = request.form['year']
     language = request.form['language']
-
-    if not validate_course_code(code):
-        return make_response("Invalid course code", 400)
-    if not validate_course_title(title):
-        return make_response("Invalid course title", 400)
-    if not validate_string_pattern(language):
-        return make_response("Invalid language", 400)
-    if not validate_number_pattern(year):
-        return make_response("Invalid year", 400)
-    if not validate_number_pattern(quadri):
-        return make_response("Invalid quadri", 400)
 
     organization_ids = request.form.getlist('organization_code[]')
 
@@ -129,6 +167,10 @@ def update_course_info():
     if not form:
         return make_response("Problem with form request", 500)
 
+    error = validate_form_data(form)
+    if error:
+        return make_response(error[0], error[1])
+
     code = request.form['code']
     title = request.form['title']
     course_id = request.form['course_id']
@@ -138,25 +180,6 @@ def update_course_info():
     nbr_students = request.form['nbr_students']
     nbr_teaching_assistants = request.form['nbr_teaching_assistants']
     nbr_monitor_students = request.form['nbr_monitor_students']
-
-    if not validate_course_code(code):
-        return make_response("Invalid course code", 400)
-    if not validate_course_title(title):
-        return make_response("Invalid course title", 400)
-    if not validate_string_pattern(language):
-        return make_response("Invalid language", 400)
-    if not validate_number_pattern(year):
-        return make_response("Invalid year", 400)
-    if not validate_number_pattern(quadri):
-        return make_response("Invalid quadri", 400)
-    if not validate_number_pattern(nbr_students):
-        return make_response("Invalid number of students", 400)
-    if not validate_number_pattern(nbr_teaching_assistants):
-        return make_response("Invalid number of teaching assistants", 400)
-    if not validate_number_pattern(nbr_monitor_students):
-        return make_response("Invalid number of monitor students", 400)
-
-
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
 
@@ -177,19 +200,7 @@ def update_course_info():
 
     # Add new teachers to the course
     if assigned_teachers:
-        try:
-            for teacher_id in assigned_teachers:
-                teacher = Teacher.query.filter_by(user_id=teacher_id, course_id=None, course_year=None).first()
-
-                if not teacher:
-                    new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
-                    db.session.add(new_teacher)
-                else:
-                    teacher.course_id = course_id
-                    teacher.course_year = year
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
+        assign_teachers_to_course(course_id, year, assigned_teachers)
 
     try:
         course.code = code
@@ -227,6 +238,10 @@ def add_duplicate_course():
     if not form:
         return make_response("Problem with form request", 500)
 
+    error = validate_form_data(form)
+    if error:
+        return make_response(error[0], error[1])
+
     code = request.form['code']
     title = request.form['title']
     quadri = request.form['quadri']
@@ -235,24 +250,6 @@ def add_duplicate_course():
     nbr_students = request.form['nbr_students']
     nbr_teaching_assistants = request.form['nbr_teaching_assistants']
     nbr_monitor_students = request.form['nbr_monitor_students']
-
-    if not validate_course_code(code):
-        return make_response("Invalid course code", 400)
-    if not validate_course_title(title):
-        return make_response("Invalid course title", 400)
-    if not validate_string_pattern(language):
-        return make_response("Invalid language", 400)
-    if not validate_number_pattern(year):
-        return make_response("Invalid year", 400)
-    if not validate_number_pattern(quadri):
-        return make_response("Invalid quadri", 400)
-    if not validate_number_pattern(nbr_students):
-        return make_response("Invalid number of students", 400)
-    if not validate_number_pattern(nbr_teaching_assistants):
-        return make_response("Invalid number of teaching assistants", 400)
-    if not validate_number_pattern(nbr_monitor_students):
-        return make_response("Invalid number of monitor students", 400)
-
     course_id = request.form['course_id']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
@@ -266,11 +263,8 @@ def add_duplicate_course():
         duplicate_course.organizations.extend(organizations)
         db.session.add(duplicate_course)
 
-        for teacher_id in assigned_teachers:
-            duplicate_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=year)
-            db.session.add(duplicate_teacher)
-
-        db.session.commit()
+        if assigned_teachers:
+            assign_teachers_to_course(course_id, year, assigned_teachers)
 
     except Exception as e:
         db.session.rollback()

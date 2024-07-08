@@ -14,22 +14,14 @@ class User(db.Model):
     first_name = db.Column(db.String, nullable=True)
     email = db.Column(db.String, nullable=True, unique=True)
     admin = db.Column(db.Boolean, default=False)
+    is_teacher = db.Column(db.Boolean, default=False)
+    is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
 
     supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
     organization = db.relationship('Organization', back_populates='users')
-
-    '''
-    @staticmethod
-    def before_update(mapper, connection, target):
-        if not target.active:
-            if target.supervisees:
-                raise ValueError("Cannot deactivate a supervisor who has supervisees.")
-            if target.user_teacher:
-                raise ValueError("Cannot deactivate a teacher assigned to a course.")
-    '''
 
     @validates('active')
     def validate_active(self, key, value):
@@ -40,8 +32,6 @@ class User(db.Model):
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
         return value
 
-
-#db.event.listen(User, 'before_update', User.before_update)
 
 class Course(db.Model):
     __tablename__ = 'course'
@@ -71,7 +61,6 @@ class Researcher(db.Model):
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String)
-    is_active = db.Column(db.Boolean, default=True)
 
     user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
 
@@ -82,7 +71,6 @@ class Teacher(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     course_id = db.Column(db.Integer)
     course_year = db.Column(db.Integer)
-    is_active = db.Column(db.Boolean, default=True)
 
     # Creation of a link to the compound key (id, year) of the course table
     __table_args__ = (

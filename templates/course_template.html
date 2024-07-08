@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% block pagetitle %}Course informations{% endblock %}
+{% block additionalpageheader %}
+    <style>
+        .badge a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .badge a:hover {
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block pagecontent %}
+    <div class="row">
+        <div class="col-sm-12">
+            <br>
+            <h1 class="page-header">{{ course.code }} - {{ course.title }}</h1>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <h2 class="sub-header">Course informations</h2>
+            <br>
+        </div>
+    </div>
+
+    {% block tabs %}{% endblock %}
+
+    <div class="container-lg">
+        <div class="tab-content">
+            {% block beforeform %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $(document).on('change', '#organization_code', function () {
+                var containerSelector = $('#selected-organizations', $(this).parent());
+                console.log("Before Fun", containerSelector);
+                addBadge($(this), containerSelector);
+            });
+
+
+            function formatTeacher(teacher) {
+                return teacher.text;
+            }
+
+            $('.assigned-teachers').select2({
+                placeholder: 'Search for a teacher',
+                multiple: true,
+                minimumInputLength: 1,
+                width: '100%',
+                ajax: {
+                    url: "{{ url_for('course.search_teachers') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatTeacher,
+                templateSelection: formatTeacher,
+                tags: false
+            });
+        });
+    </script>
+{% endblock %}

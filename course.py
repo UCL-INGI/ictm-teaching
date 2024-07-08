@@ -33,7 +33,7 @@ def validate_number_pattern(number):
 def form_course():
     return render_template('add_course.html')
 
-def validate_form_data(form):
+def validate_form_data(form, extra_fields_needed=False):
     mandatory_fields = {
         'code': validate_course_code,
         'title': validate_course_title,
@@ -55,24 +55,24 @@ def validate_form_data(form):
         if not validator(value):
             return f"Invalid {field}", 400
 
-    for field, validator in extra_fields.items():
-        value = form.get(field)
-        if not value:
-            return f"Missing {field}", 400
-        if not validator(value):
-            return f"Invalid {field}", 400
+    if extra_fields_needed:
+        for field, validator in extra_fields.items():
+            value = form.get(field)
+            if not value:
+                return f"Missing {field}", 400
+            if not validator(value):
+                return f"Invalid {field}", 400
 
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
         for teacher_id in assigned_teachers:
-            teacher = Teacher.query.filter_by(user_id=teacher_id, course_id=None, course_year=None).first()
+            existing_teacher = db.session.query(Teacher).filter(Teacher.course_id == course_id,
+                                                                Teacher.user_id == teacher_id,
+                                                                Teacher.course_year == course_year).first()
 
-            if not teacher:
+            if existing_teacher is None:
                 new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
                 db.session.add(new_teacher)
-            else:
-                teacher.course_id = course_id
-                teacher.course_year = course_year
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -135,13 +135,7 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).join(Teacher).filter(
-        User.admin == 0,
-        User.active == 1,
-        Teacher.is_active == 1,
-        User.name.ilike(f'%{search_term}%')
-    ).all()
-    #teachers = db.session.query(User).filter(User.active == 1, User.admin == 0, User.user_researcher == None, )).all()
+    teachers = db.session.query(User).filter(User.active == 1, User.is_teacher == 1, User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
@@ -189,14 +183,13 @@ def update_course_info():
 
     # Remove all teachers assigned to the course
     try:
-        old_teachers = db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).all()
-        if old_teachers:
-            for teacher in old_teachers:
-                teacher.course_id = None
-                teacher.course_year = None
-            db.session.commit()
+        db.session.query(Teacher).filter(Teacher.course_id == course_id,
+                                                              Teacher.course_year == year,
+                                                              Teacher.user_id.in_(assigned_teachers)).delete()
+        db.session.commit()
     except Exception as e:
         db.session.rollback()
+        raise e
 
     # Add new teachers to the course
     if assigned_teachers:
@@ -238,7 +231,7 @@ def add_duplicate_course():
     if not form:
         return make_response("Problem with form request", 500)
 
-    error = validate_form_data(form)
+    error = validate_form_data(form, extra_fields_needed=True)
     if error:
         return make_response(error[0], error[1])
 

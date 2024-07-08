@@ -27,7 +27,7 @@
                 <ul class="nav nav-tabs">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
                     </li>
-                    {% if user_type == 'researcher' %}
+                    {% if requested_user.is_researcher == true %}
                         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
                             preferences</a></li>
                     {% endif %}
@@ -89,7 +89,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_teacher"
                                                name="is_teacher"
-                                               {% if requested_user.user_teacher and requested_user.user_teacher.is_active == 1 %}checked{% endif %}
+                                               {% if requested_user.is_teacher %}checked{% endif %}
                                                 {% if current_user %}
                                                disabled {% endif %}>
                                         <label class="form-check-label" for="is_teacher">Teacher</label>
@@ -97,7 +97,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="is_researcher"
                                                name="is_researcher"
-                                               {% if requested_user.user_researcher and requested_user.user_researcher.is_active == 1 %}checked{% endif %}
+                                               {% if requested_user.is_researcher %}checked{% endif %}
                                                 {% if current_user %} disabled {% endif %}>
                                         <label class="form-check-label" for="is_researcher">Researcher</label>
                                     </div>
@@ -125,7 +125,7 @@
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
                                                 {% if current_user %} disabled {% endif %}>
-                                            {% if user_type != 'researcher' and current_user %}
+                                            {% if requested_user.is_researcher and current_user %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for type in researcher_type %}
@@ -157,7 +157,7 @@
                     </div>
                 </form>
             </div>
-            {% if user_type == 'researcher' %}
+            {% if requested_user.is_researcher %}
                 <div class="tab-pane" id="preferences">
                     <div class="container-fluid">
                         {% if current_user %}
@@ -312,35 +312,7 @@
 
             $('#is_researcher').change(function () {
                 toggleSupervisorSelect();
-                updateStatus();
             });
-
-            $('#is_teacher').change(function () {
-                updateStatus();
-            });
-
-            function updateStatus() {
-                var userId = $('#user_id').val();
-                var isTeacher = $('#is_teacher').is(':checked');
-                var isResearcher = $('#is_researcher').is(':checked');
-
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('user.update_user_type') }}",
-                    data: {
-                        user_id: userId,
-                        is_teacher: isTeacher,
-                        is_researcher: isResearcher
-                    },
-                    success: function (response) {
-                        location.reload(); // Refresh the page to show the updated status
-                        console.log('Status updated successfully.');
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX error:', error);
-                    }
-                });
-            }
 
             //Handle preferences
             $('#addPreferencesButton').click(function () {

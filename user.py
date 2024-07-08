@@ -12,7 +12,7 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/register')
 @login_required
 def register():
-    supervisors = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
+    supervisors = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
     return render_template('register.html', supervisors=supervisors)
 
 
@@ -72,14 +72,14 @@ def add_user():
 @user_bp.route('/users/<string:user_type>')
 @login_required
 def users(user_type):
-    base_query = db.session.query(User).filter(User.admin == 0)
+    base_query = db.session.query(User).filter(User.admin == False)
 
     if user_type == 'teacher':
-        base_query = base_query.filter(User.is_teacher == 1, User.active == 1)
+        base_query = base_query.filter(User.is_teacher == True, User.active == True)
     elif user_type == 'researcher':
-        base_query = base_query.filter(User.is_researcher == 1, User.active == 1)
+        base_query = base_query.filter(User.is_researcher == True, User.active == True)
     elif user_type == 'archived':
-        base_query = base_query.filter(User.active == 0)
+        base_query = base_query.filter(User.active == False)
 
     all_users = base_query.all()
     return render_template('users.html', users=all_users, user_type=user_type)
@@ -88,7 +88,7 @@ def users(user_type):
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
 def user_profile(user_id, current_year):
-    all_users = db.session.query(User).filter(User.admin == 0, User.is_teacher == 1, User.active == 1).all()
+    all_users = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_user = requested_user.email == session["email"]
@@ -149,8 +149,12 @@ def update_user_profile():
         user.is_researcher = is_researcher
         user.supervisor_id = supervisor_id
         if is_researcher:
-            researcher.max_loads = max_loads
-            researcher.researcher_type = researcher_type
+            if researcher is None:
+                new_researcher = Researcher(user_id=user.id, researcher_type=researcher_type, max_loads=max_loads)
+                db.session.add(new_researcher)
+            else:
+                researcher.max_loads = max_loads
+                researcher.researcher_type = researcher_type
         db.session.commit()
     except Exception as e:
         db.session.rollback()

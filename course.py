@@ -99,15 +99,12 @@ def add_course():
     organization_ids = request.form.getlist('organization_code[]')
 
     try:
-        last_course = db.session.query(Course).order_by(Course.id.desc()).first()
-        new_id = 1 if last_course is None else last_course.id + 1
-
         is_course = db.session.query(Course).filter(Course.code == code,
                                                     Course.year == year).first()
         if is_course is not None:
             return make_response("Course already exists", 500)
 
-        new_course = Course(id=new_id, year=year, code=code, title=title, quadri=quadri, language=language)
+        new_course = Course(year=year, code=code, title=title, quadri=quadri, language=language)
         # Fetch organizations and add them to the course
         organizations = db.session.query(Organization).filter(Organization.id.in_(organization_ids)).all()
         new_course.organizations.extend(organizations)
@@ -135,7 +132,7 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).filter(User.active == 1, User.is_teacher == 1, User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True, User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
@@ -258,7 +255,7 @@ def add_duplicate_course():
 
         if assigned_teachers:
             assign_teachers_to_course(course_id, year, assigned_teachers)
-
+        db.session.commit()
     except Exception as e:
         db.session.rollback()
 

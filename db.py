@@ -35,7 +35,7 @@ class User(db.Model):
 
 class Course(db.Model):
     __tablename__ = 'course'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     year = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String)
     title = db.Column(db.String)
@@ -44,6 +44,8 @@ class Course(db.Model):
     nbr_students = db.Column(db.Integer, default=0)
     nbr_teaching_assistants = db.Column(db.Integer, default=0)
     nbr_monitor_students = db.Column(db.Integer, default=0)
+
+    __table_args__ = (db.UniqueConstraint('id', 'year', name='uq_course_id_year'),)
 
     organizations = db.relationship('Organization',
                                     secondary='course_organization',
@@ -141,7 +143,6 @@ class CourseOrganization(db.Model):
     course_year = db.Column(db.Integer, db.ForeignKey('course.year'), primary_key=True)
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), primary_key=True)
 
-    # Creation of a link to the compound key (id, year) of the course table
     __table_args__ = (
         db.ForeignKeyConstraint(
             ['course_id', 'course_year'],

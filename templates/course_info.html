@@ -27,7 +27,81 @@
                     {% include 'course_info_template.html' %}
                 {% endwith %}
             </form>
+            <br>
+            <hr>
+            <h2 class="sub-header">Assistants for this year</h2>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Last name</th>
+                    <th>First name</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for assistant in course.course_teacher %}
+                    {% if assistant.course_year == course.year %}
+                        <tr>
+                            <td>{{ assistant.user.name }}</td>
+                            <td>{{ assistant.user.first_name }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="container-fluid">
+                <h2 class="sub-header">History</h2>
+                <hr>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="assistants-tab" data-toggle="tab" href="#assistants" role="tab"
+                           aria-controls="assistants" aria-selected="true">Assistants</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="evaluations-tab" data-toggle="tab" href="#evaluations" role="tab"
+                           aria-controls="evaluations" aria-selected="false">Evaluations</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <!-- Assistants Pane -->
+                    <div class="tab-pane fade show active" id="assistants" role="tabpanel"
+                         aria-labelledby="assistants-tab">
+                        <table class="table table-hover mt-3">
+                            <thead>
+                            <tr>
+                                <th>Last name</th>
+                                <th>First name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for teacher in previous_teachers %}
+                                {% if teacher.course_year < course.year %}
+                                    <tr>
+                                        <td>{{ teacher.user.name }}</td>
+                                        <td>{{ teacher.user.first_name }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Evaluations Pane -->
+                    <div class="tab-pane fade" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
+                        <!-- Content for Evaluations -->
+                        <p>Content for evaluations will go here.</p>
+                        <h2>Test</h2>
+                    </div>
+                </div>
+            </div>
         </div>
     {% endfor %}
+{% endblock %}
+
+{% block afterform %}
+
 {% endblock %}
 

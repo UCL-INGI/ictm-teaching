@@ -7,7 +7,7 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization
+from db import db, Configuration, Organization, User
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *

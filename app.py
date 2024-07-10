@@ -46,7 +46,8 @@ def inject_configurations():
 @app.route('/')
 def index():  # put application's code here
     if session and session['logged_in']:
-        return render_template("home.html")
+        user = db.session.query(User).filter_by(email=session['email']).first()
+        return render_template("home.html", user=user)
     else:
         return redirect(url_for("auth.login"))
 

@@ -137,14 +137,7 @@ def course_info(course_id):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    teachers_by_course = {
-        teacher
-        for course in all_years
-        for teacher in course.course_teacher
-    }
-
-    return render_template('course_info.html', course=course, all_years=all_years, current_year=current_year,
-                           previous_teachers=teachers_by_course)
+    return render_template('course_info.html', course=course, all_years=all_years, current_year=current_year)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])

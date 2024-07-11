@@ -26,11 +26,11 @@
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" id="historyTabs" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="assistants-tab" data-toggle="tab" href="#assistants" role="tab"
+                    <a class="nav-link active" id="assistants-tab" data-bs-toggle="tab" href="#assistants" role="tab"
                        aria-controls="assistants" aria-selected="true">Assistants</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="evaluations-tab" data-toggle="tab" href="#evaluations" role="tab"
+                    <a class="nav-link" id="evaluations-tab" data-bs-toggle="tab" href="#evaluations" role="tab"
                        aria-controls="evaluations" aria-selected="false">Evaluations</a>
                 </li>
             </ul>
@@ -53,8 +53,9 @@
                     </table>
                 </div>
                 <!-- Evaluations Pane -->
-                <div class="tab-pane fade" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
+                <div class="tab-pane fade show" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
                     <!-- Content for Evaluations -->
+                    <br>
                     <p>Content for evaluations will go here.</p>
                 </div>
             </div>
@@ -70,9 +71,14 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td colspan="3">No course(s) this year.</td>
-            </tr>
+
+            {% for course in courses %}
+                <tr>
+                    <td>{{ course.code }}</td>
+                    <td>{{ course.title }}</td>
+                    <td>None</td>
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
         <h2 class="sub-header">Course assignments for my researchers</h2>

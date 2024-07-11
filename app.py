@@ -7,7 +7,7 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization, User
+from db import db, Configuration, Organization, User, Course
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -47,7 +47,13 @@ def inject_configurations():
 def index():  # put application's code here
     if session and session['logged_in']:
         user = db.session.query(User).filter_by(email=session['email']).first()
-        return render_template("home.html", user=user)
+        courses = db.session.query(Course).all()
+        teachers_course = {
+            course
+            for course in courses
+            for teacher in course.course_teacher if teacher.user_id == user.id
+        }
+        return render_template("home.html", user=user, courses=teachers_course)
     else:
         return redirect(url_for("auth.login"))
 

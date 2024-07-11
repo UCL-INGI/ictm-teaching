@@ -104,3 +104,4 @@ $(document).on('click', '.remove-tag', function (e) {
     $(this).parent('.badge').remove();
 });
 
+

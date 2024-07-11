@@ -1,26 +1,6 @@
 {% extends "layout.html" %}
 {% block pagetitle %}List of Users{% endblock %}
 {% block additionalpageheader %}
-    <script>
-        $(document).ready(function () {
-            var errorPopup = $('#errorPopup');
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        {% if category == 'error' %}
-                            $('#errorMessage').text('{{ message }}');
-                            errorPopup.modal('show');
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            $('#okButton').click(function () {
-                errorPopup.modal('hide');
-            });
-        });
-    </script>
     <style>
         a {
             text-decoration: none;
@@ -32,6 +12,11 @@
     <div class="container">
         <h2>List of Users</h2>
         <hr>
+        {% include 'filter.html' %}
+        <div class="col-sm-12 d-flex">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="checkAllBtn">Check All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="uncheckAllBtn">Uncheck All</button>
+        </div>
         <table class="table table-hover">
             <thead>
             <tr>
@@ -51,11 +36,11 @@
             </thead>
             <tbody>
             {% for user in users %}
-                <tr>
+                <tr class="user-item" data-organizations="{{ user.organization.id }}">
                     <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.name }}
                     </a></td>
-                   <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
+                    <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.first_name }}
                     </a></td>
                     <td>{{ user.email }}</td>
@@ -105,4 +90,47 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            var errorPopup = $('#errorPopup');
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            $('#errorMessage').text('{{ message }}');
+                            errorPopup.modal('show');
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            $('#okButton').click(function () {
+                errorPopup.modal('hide');
+            });
+
+            $('.badge-checkbox').change(function () {
+                changeBadgeColorCheckbox($(this));
+                filter("user");
+            });
+
+            // Check All button functionality
+            $('#checkAllBtn').click(function () {
+                $('.badge-checkbox').prop('checked', true).each(function () {
+                    changeBadgeColorCheckbox($(this));
+                });
+                filter("user");
+            });
+
+            // Uncheck All button functionality
+            $('#uncheckAllBtn').click(function () {
+                $('.badge-checkbox').prop('checked', false).each(function () {
+                    changeBadgeColorCheckbox($(this));
+                });
+                filter("user");
+            });
+        });
+    </script>
 {% endblock %}

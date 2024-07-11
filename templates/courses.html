@@ -13,21 +13,7 @@
         <br>
         <h2>List of Courses</h2>
         <hr>
-        <b>Filter organizations</b>
-        <div class="row col-sm-12">
-            <div class="col-sm-12 ">
-                <!-- Badges for organizations -->
-                <div class="mb-3">
-                    {% for organization in organizations_code %}
-                        <div class="badge bg-primary organization-badge" data-id="{{ organization.id }}"
-                             style="cursor: pointer;">
-                            {{ organization.name }}&nbsp;
-                            <input type="hidden" name="organization_code[]" value="{{ organization.id }}">
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+        {% include 'filter.html' %}
         <div class="col-sm-12 d-flex">
             <button type="button" class="btn btn-outline-secondary btn-sm" id="checkAllBtn">Check All</button>
             <button type="button" class="btn btn-outline-secondary btn-sm" id="uncheckAllBtn">Uncheck All</button>
@@ -54,26 +40,25 @@
             </thead>
             <tbody>
             {% for course in courses %}
-                <div class="course-item" data-organizations="{{ course.organizations | map(attribute='id') }}">
-                    <tr>
-                        <td>
-                            <a href="{{ url_for("course.course_info", course_id=course.id, current_year=current_year) }}">
-                                {{ course.code }} - {{ course.title }}
-                            </a>
-                        </td>
-                        <td>
-                            {% for teacher in course.course_teacher %}
-                                <span class="badge bg-primary">{{ teacher.user.name }} {{ teacher.user.first_name }}</span>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            {% for org in course.organizations %}
-                                <span class="badge bg-primary">{{ org.name }}</span>
-                            {% endfor %}
-                        </td>
-                        <td></td>
-                    </tr>
-                </div>
+                <tr class="course-item"
+                    data-organizations="{{ course.organizations | map(attribute='id') | join(',') }}">
+                    <td>
+                        <a href="{{ url_for("course.course_info", course_id=course.id, current_year=current_year) }}">
+                            {{ course.code }} - {{ course.title }}
+                        </a>
+                    </td>
+                    <td>
+                        {% for teacher in course.course_teacher %}
+                            <span class="badge bg-primary">{{ teacher.user.name }} {{ teacher.user.first_name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for org in course.organizations %}
+                            <span class="badge bg-primary">{{ org.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td></td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>
@@ -87,43 +72,27 @@
             };
             handleYearSelectChange(params);
 
-            $('.organization-badge').click(function () {
-                $(this).toggleClass('bg-primary bg-secondary');
-
-                var activeOrganizations = [];
-                $('.organization-badge.bg-primary').each(function () {
-                    activeOrganizations.push($(this).data('id'));
-                });
-
-                if (activeOrganizations.length > 0) {
-                    $('.course-item').each(function () {
-                        console.log($(this).data('organizations'));
-                        var courseOrganizations = $(this).data('organizations').toString().split(',');
-                        console.log("Course Organisations", courseOrganizations);
-
-                        var showCourse = activeOrganizations.every(org => courseOrganizations.includes(org.toString()));
-                        console.log("Show Course", showCourse);
-                        if (showCourse) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                } else {
-                    // If no organization is selected, show all courses
-                    $('.course-item').show();
-                }
+            $('.badge-checkbox').change(function () {
+                changeBadgeColorCheckbox($(this));
+                filter("course");
             });
 
+            // Check All button functionality
             $('#checkAllBtn').click(function () {
-                $('.organization-badge').removeClass('bg-secondary').addClass('bg-primary');
-                $('.course-item').show();
+                $('.badge-checkbox').prop('checked', true).each(function () {
+                    changeBadgeColorCheckbox($(this));
+                });
+                filter("course");
             });
 
+            // Uncheck All button functionality
             $('#uncheckAllBtn').click(function () {
-                $('.organization-badge').removeClass('bg-primary').addClass('bg-secondary');
-                $('.course-item').hide();
+                $('.badge-checkbox').prop('checked', false).each(function () {
+                    changeBadgeColorCheckbox($(this));
+                });
+                filter("course");
             });
+
         });
     </script>
 {% endblock %}

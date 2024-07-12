@@ -139,9 +139,29 @@ class Organization(db.Model):
 class CourseOrganization(db.Model):
     __tablename__ = 'course_organization'
 
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
-    course_year = db.Column(db.Integer, db.ForeignKey('course.year'), primary_key=True)
+    course_id = db.Column(db.Integer, primary_key=True)
+    course_year = db.Column(db.Integer, primary_key=True)
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), primary_key=True)
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
+
+
+class Evaluation(db.Model):
+    __tablename__ = 'evaluation'
+
+    course_id = db.Column(db.Integer, primary_key=True)
+    course_year = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    task = db.Column(db.String)
+    nbr_hours = db.Column(db.String)
+    workload = db.Column(db.String)
+    comment = db.Column(db.String)
+    second_course = db.Column(db.Boolean)
 
     __table_args__ = (
         db.ForeignKeyConstraint(

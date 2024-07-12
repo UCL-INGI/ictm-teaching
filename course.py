@@ -1,5 +1,5 @@
 from decorators import login_required
-from db import db, User, Course, Teacher, Organization, Configuration
+from db import db, User, Course, Teacher, Organization, Evaluation
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -33,6 +33,7 @@ def validate_number_pattern(number):
 def form_course():
     return render_template('add_course.html')
 
+
 def validate_form_data(form, extra_fields_needed=False):
     mandatory_fields = {
         'code': validate_course_code,
@@ -62,6 +63,7 @@ def validate_form_data(form, extra_fields_needed=False):
                 return f"Missing {field}", 400
             if not validator(value):
                 return f"Invalid {field}", 400
+
 
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
@@ -132,7 +134,8 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True, User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True,
+                                             User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
@@ -181,8 +184,8 @@ def update_course_info():
     # Remove all teachers assigned to the course
     try:
         db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                                              Teacher.course_year == year,
-                                                              Teacher.user_id.in_(assigned_teachers)).delete()
+                                         Teacher.course_year == year,
+                                         Teacher.user_id.in_(assigned_teachers)).delete()
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -260,3 +263,44 @@ def add_duplicate_course():
         db.session.rollback()
 
     return redirect(url_for('course.course_info', course_id=course_id, current_year=year))
+
+
+@course_bp.route('/evaluations')
+@login_required
+def evaluations():
+    user_id = request.args.get('user_id')
+    current_year = request.args.get('current_year')
+    courses = db.session.query(Course).filter_by(year=current_year).all()
+
+    return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id)
+
+
+@course_bp.route('/create_evaluations', methods=['POST'])
+@login_required
+def create_evaluation():
+    form = request.form
+    if not form:
+        return make_response("Problem with form request", 500)
+
+    course_id = request.form['course_id']
+    current_year = request.args.get('current_year')
+    user_id = request.args.get('user_id')
+    tasks = request.form.getlist('tasks[]')
+    evaluation_hour = request.form['evaluation_hour']
+    workload = request.form['workload']
+    comment = request.form['comment']
+    second_course = True if request.form.get('second_course') == 'Yes' else False
+
+    tasks_str = ', '.join(tasks)
+
+    try:
+        new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks_str,
+                                    nbr_hours=evaluation_hour, workload=workload, comment=comment,
+                                    second_course=second_course)
+        db.session.add(new_evaluation)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+    return redirect(url_for('course.evaluations', user_id=user_id, current_year=current_year))

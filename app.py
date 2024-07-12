@@ -39,7 +39,9 @@ def get_organization():
 
 @app.context_processor
 def inject_configurations():
-    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI, language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year())
+    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI,
+                language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year(),
+                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD)
 
 
 # Routes

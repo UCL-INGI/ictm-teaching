@@ -1,0 +1,16 @@
+<b>Filter organizations</b>
+<div class="row col-sm-12">
+    <div class="col-sm-12 ">
+        <!-- Badges for organizations -->
+        <div class="mb-3">
+            <br>
+            {% for org in organizations_code %}
+                <label>
+                    <input type="checkbox" style="opacity: 0" class="badge-checkbox" data-id="{{ org.id }}"
+                           checked>
+                    <span class="badge bg-primary">{{ org.name }}</span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+</div>

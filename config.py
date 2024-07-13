@@ -1,4 +1,4 @@
-from decorators import login_required
+from decorators import login_required, check_access_level
 from db import db, Configuration
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask
@@ -8,6 +8,7 @@ config_bp = Blueprint('config', __name__)
 
 @config_bp.route('/next_year', methods=['POST'])
 @login_required
+@check_access_level('admin')
 def next_year():
     last_year = Configuration.query.order_by(Configuration.year.desc()).first()
     new_year = last_year.year + 1
@@ -32,6 +33,7 @@ def next_year():
 
 @config_bp.route('/update_current_year', methods=['GET', 'POST', 'PUT'])
 @login_required
+@check_access_level('admin')
 def update_current_year():
     current_year = int(request.form.get('selected_year'))
     endpoint = request.form.get('current_endpoint')

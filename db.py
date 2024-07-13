@@ -32,6 +32,16 @@ class User(db.Model):
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
         return value
 
+    def allowed(self, access_level):
+        if access_level == 'admin':
+            return self.admin
+        elif access_level == 'researcher':
+            return self.is_researcher
+        elif access_level == 'teacher':
+            return self.is_teacher
+        else:
+            return False
+
 
 class Course(db.Model):
     __tablename__ = 'course'

@@ -1,4 +1,4 @@
-from decorators import login_required
+from decorators import login_required, check_access_level
 from db import db, User, Researcher, Course, PreferenceAssignment, Teacher
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
@@ -11,6 +11,7 @@ user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/register')
 @login_required
+@check_access_level('admin')
 def register():
     supervisors = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
     return render_template('register.html', supervisors=supervisors)
@@ -28,6 +29,7 @@ def contains_valid_characters(name):
 
 @user_bp.route('/add_user', methods=['POST'])
 @login_required
+@check_access_level('admin')
 def add_user():
     form = request.form
     if not form:
@@ -71,6 +73,7 @@ def add_user():
 
 @user_bp.route('/users/<string:user_type>')
 @login_required
+@check_access_level('admin')
 def users(user_type):
     base_query = db.session.query(User).filter(User.admin == False)
 
@@ -163,6 +166,7 @@ def update_user_profile():
 
 @user_bp.route('/disable/<int:user_id>')
 @login_required
+@check_access_level('admin')
 def disable(user_id):
     user_type = request.args.get('user_type')
     try:
@@ -185,6 +189,7 @@ def disable(user_id):
 
 @user_bp.route('/enable/<int:user_id>')
 @login_required
+@check_access_level('admin')
 def enable(user_id):
     try:
         user = db.session.query(User).filter_by(id=user_id).first()

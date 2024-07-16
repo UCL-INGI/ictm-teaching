@@ -1,10 +1,3 @@
-/**
- import Handsontable from 'handsontable';
- import {TextEditor} from "handsontable/editors";
- **/
-
-//import {TextEditor} from "./textEditor";
-
 fetch('/assignment/load_data')
     .then(response => response.json())
     .then(loadData => {
@@ -71,7 +64,6 @@ fetch('/assignment/load_data')
                 row.researchers = {};
                 row.researchers.fgs = "";
                 row.researchers.name = "";
-                //row.researchers.name = fixedRowsText[i];
                 row.org = "";
                 row.charge1 = "";
                 row.charge2 = "";
@@ -148,11 +140,6 @@ fetch('/assignment/load_data')
                 {data: 'charge2'},
                 {data: 'charge3'},
                 {data: 'check'}
-                /*{
-                  type: 'dropdown',
-                  source: userNames,
-                  filter: true
-                }*/
             ];
 
             courses.forEach(course => {
@@ -208,7 +195,6 @@ fetch('/assignment/load_data')
         }
 
         function retrieveCellsMetaLocally() {
-            //localStorage.removeItem('cellsMeta');
             const cellsMeta = localStorage.getItem('cellsMeta');
             return cellsMeta ? JSON.parse(cellsMeta) : null;
         }
@@ -224,7 +210,6 @@ fetch('/assignment/load_data')
 
         const table = new Handsontable(example, {
             data: data,
-            //editor: TextEditor,
             fixedColumnsLeft: lenFixedHeaders,
             fixedRowsTop: lenFixedRowsText,
             manualColumnMove: true,
@@ -242,10 +227,9 @@ fetch('/assignment/load_data')
             },
             contextMenu: ['commentsAddEdit', 'commentsRemove', 'hidden_columns_hide', 'hidden_rows_hide', 'hidden_columns_show', 'hidden_rows_show'],
             filters: true,
-            dropdownMenu: ['filter_by_value', 'filter_action_bar'],
+            dropdownMenu: ['filter_by_value', 'filter_action_bar', 'undo'],
             className: 'controlsQuickFilter htCenter htMiddle',
             colHeaders: allHeaders,
-            //className: 'htCenter htMiddle',
             columns: columns,
             colWidths: 100,
             columnHeaderHeight: 225,
@@ -319,7 +303,6 @@ fetch('/assignment/load_data')
                             }
                         }
                     });
-                    //storeDataLocally(data);
                 }
             },
             afterSetCellMeta: function (row, col, key, value) {
@@ -443,57 +426,88 @@ fetch('/assignment/load_data')
         });
 
         $(document).ready(function () {
-            $('#button-export').click(exportToCSV);
-            $('#button-create-assignments').click(saveAssignments);
-            $('#button-clear-assignments').click(clearAssignments)
-            $('#button-publish-assignments').click(publishAssignments);
-        });
-
-        function exportToCSV() {
-            console.log('Export to CSV clicked');
-        }
-
-        function saveAssignments() {
-            storeDataLocally(data);
-        }
-
-        function clearAssignments() {
-            resetDataLocally();
-        }
-
-        async function publishAssignments() {
-            const slicedData = data.slice(lenFixedRowsText);
-            const result = [];
-
-            for (let i = 1; i < slicedData.length - 1; i += 2) {
-                const row = slicedData[i];
-                let temp_result = Object.keys(row).reduce((filteredRow, key) => {
-                    if (row[key] !== null && row[key] !== "") {
-                        filteredRow[key] = row[key];
-                    }
-                    return filteredRow;
-                }, {});
-                result.push(temp_result);
+            function updateToastContent(message) {
+                let toastBody = document.querySelector('#toast-notification .toast-body');
+                toastBody.textContent = message;
             }
 
-            try {
-                const response = await fetch('/assignment/publish_assignments', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(result),
+            let toastNotification = new bootstrap.Toast(document.getElementById('toast-notification'));
+
+            $('#button-export').click(function () {
+                const exportPlugin = table.getPlugin('exportFile');
+                exportPlugin.downloadFile('csv', {
+                    bom: false,
+                    columnDelimiter: ',',
+                    columnHeaders: true,
+                    exportHiddenColumns: false,
+                    exportHiddenRows: false,
+                    fileExtension: 'csv',
+                    filename: 'ICTM-CSV-file_[YYYY]-[MM]-[DD]',
+                    mimeType: 'text/csv',
+                    rowDelimiter: '\r\n',
+                    rowHeaders: true
                 });
+                    updateToastContent('Data exported to CSV');
+                toastNotification.show();
+            })
+                $('#button-create-assignments').click(function () {
+                    storeDataLocally(data);
+                    updateToastContent('Data saved');
+                    toastNotification.show();
+                });
+                $('#button-clear-assignments').click(function () {
+                    resetDataLocally();
+                    updateToastContent('Data cleared');
+                    toastNotification.show();
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1500);
+                })
+                $('#button-publish-assignments').click(async function () {
+                    const slicedData = data.slice(lenFixedRowsText);
+                    console.log("Sliced Data", slicedData);
+                    const result = [];
 
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log('Success:', responseData);
-                } else {
-                    console.error('Failed to publish assignments:', response.statusText);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-    });
+                    for (let i = 0; i < slicedData.length; i += 2) {
+                        const user_row = slicedData[i];
+                        const course_row = slicedData[i + 1];
+
+                        const userData = {
+                            user_id: user_row.researchers.fgs,
+                            load_q1: user_row.charge3,
+                            load_q2: user_row.check,
+                        }
+
+                        const courseData = {};
+                        courses.forEach(course => {
+                            if (course_row[course.code] !== '') {
+                                courseData[course.id] = course_row[course.code];
+                            }
+                        })
+                        result.push({userData, courseData});
+                    }
+
+                    try {
+                        const response = await fetch('/assignment/publish_assignments', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(result),
+                        });
+
+                        if (response.ok) {
+                            updateToastContent('Assignments published');
+                            toastNotification.show();
+                        } else {
+                            updateToastContent('Failed to publish assignments' + response.statusText);
+                            toastNotification.show();
+                        }
+                    } catch (error) {
+                        updateToastContent('Error: ' + error);
+                        toastNotification.show();
+                    }
+                });
+            });
+        });
 

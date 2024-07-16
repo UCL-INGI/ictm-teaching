@@ -1,5 +1,5 @@
 from decorators import login_required
-from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization
+from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, PublishAssignment
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -42,7 +42,30 @@ def load_data():
     return jsonify(data)
 
 
-@assignment_bp.route('/publish_assignments', methods=['POST, GET'])
+@assignment_bp.route('/publish_assignments', methods=['POST'])
 @login_required
 def publish_assignments():
-    pass
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    current_year = get_current_year()
+
+    for item in data:
+        user_data = item.get('userData')
+        course_data = item.get('courseData')
+
+        if course_data and user_data:
+            for id, pos in course_data.items():
+                try:
+                    assignment = PublishAssignment(course_id=id, course_year=current_year,
+                                                   user_id=user_data.get('user_id'),
+                                                   load_q1=user_data.get('load_q1'), load_q2=user_data.get('load_q2'),
+                                                   position=pos)
+                    db.session.add(assignment)
+                except Exception as e:
+                    return jsonify({"error": str(e)}), 400
+
+            db.session.commit()
+
+    return jsonify({"message": "Assignments published successfully"}), 200

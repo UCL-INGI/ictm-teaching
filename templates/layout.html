@@ -8,12 +8,14 @@
     <link href="{{ url_for('static', filename='select2.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='fontawesome-6.5.2/css/all.min.css') }}" rel="stylesheet">
 
+
     <script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
     <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/util.js') }}"></script>
+
 
     <style>
         .form-select {
@@ -94,6 +96,19 @@
                             <li>
                             <a class="nav-link"
                                href="{{ url_for('config.manage_years', configurations=configurations) }}">Configurations</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="assignmentDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Assignments
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="assignmentDropdown">
+                                    <li>
+                                        <a class="dropdown-item" id="assignmentList"
+                                           href="{{ url_for('assignment.assignments') }}"> Load Assignment
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         {% endif %}
                         {% block additionalnav %}{% endblock %}

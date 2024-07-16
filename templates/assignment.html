@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block pagetitle %}Edit assignment{% endblock %}
+
+{% block additionalpageheader %}
+    <script src="{{ url_for('static', filename='handsontable.full.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/textEditor.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='handsontable.full.min.css') }}">
+
+{% endblock %}
+
+{% block pagecontent %}
+    <div class="row">
+        <div class="col">
+            <h1>Edit assignment</h1>
+            <hr>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-5 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Controls</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-outline-dark btn-sm" id="button-export">Export to
+                        CSV
+                    </button>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-dark btn-sm w-100"
+                                    id="button-create-assignments">Save assignments
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-dark btn-sm w-100"
+                                    id="button-clear-assignments">Clear assignments
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-dark btn-sm"
+                            id="button-publish-assignments">Publish assignments
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col">
+            <div id="handsontable">
+                <script src="{{ url_for('static', filename='scripts/index.js') }}"></script>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block additionalfooter %}
+{% endblock %}

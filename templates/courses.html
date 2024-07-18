@@ -28,7 +28,7 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ request.endpoint }}">
+                    <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ url_for('course.courses', current_year=dynamic_year) }}">
                 </th>
             </tr>
             </thead>
@@ -61,7 +61,7 @@
     <script>
         $(document).ready(function () {
             let params = {
-                'current_endpoint': $('#current_endpoint').val()
+                'current_endpoint': $('#current_endpoint').val(),
             };
             handleYearSelectChange(params);
         });

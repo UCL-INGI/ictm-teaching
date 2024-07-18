@@ -29,19 +29,3 @@ def next_year():
         raise e
 
     return redirect(url_for("index"))
-
-
-@config_bp.route('/update_current_year', methods=['GET', 'POST', 'PUT'])
-@login_required
-@check_access_level('admin')
-def update_current_year():
-    current_year = int(request.form.get('selected_year'))
-    endpoint = request.form.get('current_endpoint')
-
-    if endpoint == 'user.user_profile':
-        user_id = request.form.get('user_id')
-        url = url_for(endpoint, user_id=user_id, current_year=current_year)
-    else :
-        url = url_for(endpoint, current_year=current_year)
-
-    return url

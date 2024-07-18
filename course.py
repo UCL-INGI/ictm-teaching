@@ -28,13 +28,6 @@ def validate_number_pattern(number):
     return re.match(pattern, number) is not None
 
 
-@course_bp.route('/form_course')
-@login_required
-@check_access_level('admin')
-def form_course():
-    return render_template('add_course.html')
-
-
 def validate_form_data(form, extra_fields_needed=False):
     mandatory_fields = {
         'code': validate_course_code,
@@ -50,6 +43,9 @@ def validate_form_data(form, extra_fields_needed=False):
         'nbr_monitor_students': validate_number_pattern,
     }
 
+    if extra_fields_needed:
+        mandatory_fields.update(extra_fields)
+
     for field, validator in mandatory_fields.items():
         value = form.get(field)
         if not value:
@@ -57,41 +53,32 @@ def validate_form_data(form, extra_fields_needed=False):
         if not validator(value):
             return f"Invalid {field}", 400
 
-    if extra_fields_needed:
-        for field, validator in extra_fields.items():
-            value = form.get(field)
-            if not value:
-                return f"Missing {field}", 400
-            if not validator(value):
-                return f"Invalid {field}", 400
 
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
         for teacher_id in assigned_teachers:
-            existing_teacher = db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                                                Teacher.user_id == teacher_id,
-                                                                Teacher.course_year == course_year).first()
-
-            if existing_teacher is None:
-                new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
-                db.session.add(new_teacher)
+            new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
+            db.session.add(new_teacher)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         raise e
 
 
-@course_bp.route('/add_course', methods=['POST'])
+@course_bp.route('/add_course', methods=['POST', 'GET'])
 @login_required
 @check_access_level('admin')
 def add_course():
+    if request.method == 'GET':
+        return redirect(url_for('course.form_course'))
+
     form = request.form
     if not form:
         return make_response("Problem with form request", 500)
 
     error = validate_form_data(form)
     if error:
-        return make_response(error[0], error[1])
+        return make_response(*error)
 
     code = request.form['code']
     title = request.form['title']
@@ -124,7 +111,6 @@ def add_course():
 @login_required
 @check_access_level('admin')
 def courses(current_year=None):
-    current_year = request.args.get('current_year') if request.args.get('current_year') else current_year
     courses = db.session.query(Course).filter_by(year=current_year).all()
     return render_template('courses.html', courses=courses, current_year=current_year)
 
@@ -166,7 +152,7 @@ def update_course_info():
 
     error = validate_form_data(form)
     if error:
-        return make_response(error[0], error[1])
+        return make_response(*error)
 
     code = request.form['code']
     title = request.form['title']
@@ -238,7 +224,7 @@ def add_duplicate_course():
 
     error = validate_form_data(form, extra_fields_needed=True)
     if error:
-        return make_response(error[0], error[1])
+        return make_response(*error)
 
     code = request.form['code']
     title = request.form['title']

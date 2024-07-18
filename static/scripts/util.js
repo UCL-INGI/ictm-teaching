@@ -1,4 +1,5 @@
 // Utility function to send an AJAX POST request
+
 function sendPostRequest(url, data, successCallback, errorCallback) {
     $.ajax({
         type: 'POST',
@@ -12,16 +13,12 @@ function sendPostRequest(url, data, successCallback, errorCallback) {
 // Function to handle the change event of the yearSelect dropdown
 function handleYearSelectChange(params) {
     $('#yearSelect').change(function () {
-        params.selected_year = $(this).val();
-        let updatedUrl = "/config/update_current_year";
+        const selectedYear = $(this).val();
+        let currentEndpoint = params.current_endpoint;
+        let parts = currentEndpoint.split('/');
 
-        sendPostRequest(
-            updatedUrl,
-            params,
-            function (response) {
-                window.location.href = response;
-            }
-        );
+        parts[parts.length - 1] = selectedYear; // Update the year in the endpoint
+        window.location.href = parts.join('/');
     });
 }
 

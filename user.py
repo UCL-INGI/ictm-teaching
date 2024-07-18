@@ -12,7 +12,7 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/register')
 @login_required
 def register():
-    supervisors = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
+    supervisors = db.session.query(User).filter(User.is_teacher == True, User.active == True).all()
     return render_template('register.html', supervisors=supervisors)
 
 

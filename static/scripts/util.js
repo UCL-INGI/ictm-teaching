@@ -1,5 +1,4 @@
 // Utility function to send an AJAX POST request
-
 function sendPostRequest(url, data, successCallback, errorCallback) {
     $.ajax({
         type: 'POST',
@@ -104,5 +103,4 @@ $(document).on('click', '.remove-tag', function (e) {
     e.preventDefault();
     $(this).parent('.badge').remove();
 });
-
 

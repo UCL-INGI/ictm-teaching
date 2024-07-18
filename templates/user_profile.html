@@ -270,7 +270,7 @@
                                             {% endfor %}
                                         </select>
                                         <input type="hidden" name="current_endpoint" id="current_endpoint"
-                                               value="{{ request.endpoint }}">
+                                               value="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=dynamic_year) }}">
                                     </th>
                                 </tr>
                                 </thead>
@@ -396,7 +396,6 @@
             //Handle year select change
             let params = {
                 'current_endpoint': $('#current_endpoint').val(),
-                'user_id': $('#user_id').val()
             };
 
             handleYearSelectChange(params);

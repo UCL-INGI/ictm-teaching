@@ -1,5 +1,4 @@
 // Utility function to send an AJAX POST request
-
 function sendPostRequest(url, data, successCallback, errorCallback) {
     $.ajax({
         type: 'POST',

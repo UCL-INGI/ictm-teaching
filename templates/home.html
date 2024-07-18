@@ -60,7 +60,8 @@
                 </div>
             </div>
         </div>
-    {% elif user.is_teacher %}
+    {% endif %}
+    {% if user.is_teacher %}
         <h2 class="sub-header">My courses for ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
         <table class="table table-hover">
             <thead>

@@ -79,7 +79,7 @@
                                     <li role="separator" class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" id="newCourse"
-                                           href="{{ url_for('course.form_course') }}">New course</a>
+                                           href="{{ url_for('course.add_course') }}">New course</a>
                                     </li>
                                 </ul>
                             </li>
@@ -99,10 +99,8 @@
                         {% endif %}
                         {% block additionalnav %}{% endblock %}
                     </ul>
-                    <div class="navbar-text ms-auto">
-                        &nbsp;&nbsp;&nbsp;&nbsp;
+                    <div class="navbar-text ms-auto me-3">
                         Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
                     </div>
                 </div>

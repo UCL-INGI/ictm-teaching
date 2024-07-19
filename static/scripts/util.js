@@ -14,11 +14,7 @@ function sendPostRequest(url, data, successCallback, errorCallback) {
 function handleYearSelectChange(params) {
     $('#yearSelect').change(function () {
         const selectedYear = $(this).val();
-        let currentEndpoint = params.current_endpoint;
-        let parts = currentEndpoint.split('/');
-
-        parts[parts.length - 1] = selectedYear; // Update the year in the endpoint
-        window.location.href = parts.join('/');
+        window.location.href = params.current_endpoint.replace('/0', `/${selectedYear}`);
     });
 }
 

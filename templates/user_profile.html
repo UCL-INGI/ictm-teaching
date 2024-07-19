@@ -270,7 +270,7 @@
                                             {% endfor %}
                                         </select>
                                         <input type="hidden" name="current_endpoint" id="current_endpoint"
-                                               value="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=dynamic_year) }}">
+                                               value="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=0) }}">
                                     </th>
                                 </tr>
                                 </thead>

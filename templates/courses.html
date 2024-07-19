@@ -34,7 +34,7 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ url_for('course.courses', current_year=dynamic_year) }}">
+                    <input type="hidden" name="current_endpoint" id="current_endpoint" value="{{ url_for('course.courses', current_year=0) }}">
                 </th>
             </tr>
             </thead>

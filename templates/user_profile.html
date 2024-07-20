@@ -264,13 +264,11 @@
                                                 {% if session.is_admin == False %} disabled {% endif %}>
                                             {% for config in configurations %}
                                                 <option value="{{ config.year }}" {% if config.year == current_year %}
-                                                        selected {% endif %}>
+                                                        selected {% endif %} data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
                                                     {{ config.year }}-{{ config.year + 1 }}
                                                 </option>
                                             {% endfor %}
                                         </select>
-                                        <input type="hidden" name="current_endpoint" id="current_endpoint"
-                                               value="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=0) }}">
                                     </th>
                                 </tr>
                                 </thead>
@@ -393,12 +391,7 @@
                 });
             });
 
-            //Handle year select change
-            let params = {
-                'current_endpoint': $('#current_endpoint').val(),
-            };
-
-            handleYearSelectChange(params);
+            handleYearSelectChange();
         });
     </script>
 {% endblock %}

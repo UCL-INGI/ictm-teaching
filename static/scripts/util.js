@@ -11,10 +11,9 @@ function sendPostRequest(url, data, successCallback, errorCallback) {
 }
 
 // Function to handle the change event of the yearSelect dropdown
-function handleYearSelectChange(params) {
+function handleYearSelectChange() {
     $('#yearSelect').change(function () {
-        const selectedYear = $(this).val();
-        window.location.href = params.current_endpoint.replace('/0', `/${selectedYear}`);
+        window.location.href = $(this).find(':selected').data("redirect");
     });
 }
 

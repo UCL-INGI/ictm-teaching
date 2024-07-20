@@ -139,8 +139,8 @@ class Organization(db.Model):
 class CourseOrganization(db.Model):
     __tablename__ = 'course_organization'
 
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
-    course_year = db.Column(db.Integer, db.ForeignKey('course.year'), primary_key=True)
+    course_id = db.Column(db.Integer, primary_key=True)
+    course_year = db.Column(db.Integer, primary_key=True)
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), primary_key=True)
 
     __table_args__ = (

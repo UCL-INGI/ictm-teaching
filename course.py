@@ -69,7 +69,7 @@ def assign_teachers_to_course(course_id, course_year, assigned_teachers):
 @login_required
 def add_course():
     if request.method == 'GET':
-        return redirect(url_for('course.form_course'))
+        return render_template('add_course.html')
 
     form = request.form
     if not form:
@@ -100,7 +100,7 @@ def add_course():
 
         db.session.add(new_course)
         db.session.commit()
-        return redirect(url_for("course.form_course"))
+        return redirect(url_for("course.courses", current_year=year))
     except Exception as e:
         db.session.rollback()
         raise e

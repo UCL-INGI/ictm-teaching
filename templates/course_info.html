@@ -1,0 +1,33 @@
+{% extends "course_template.html" %}
+{% block tabs %}
+    <div class="row">
+        <div class="col-sm-12">
+            <ul class="nav nav-tabs">
+                {% for year in all_years %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if year.year == course.year %} active {% endif %}"
+                           data-bs-toggle="tab" href="#{{ year.year }}" aria-expanded="false">
+                            {{ year.year }}-{{ year.year + 1 }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <br>
+{% endblock %}
+
+{% block beforeform %}
+    {% for course in all_years %}
+        <div class="tab-pane {% if course.year == current_year %} active {% endif %}"
+             id="{{ course.year }}">
+            <form class="form" action="{{ url_for('course.update_course_info') }}" method="post"
+                  id="courseInfo">
+                {% with page='course_info' %}
+                    {% include 'course_info_template.html' %}
+                {% endwith %}
+            </form>
+        </div>
+    {% endfor %}
+{% endblock %}
+

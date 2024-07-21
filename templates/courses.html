@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block pagetitle %}List of Courses{% endblock %}
+{% block additionalpageheader %}
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+{% endblock %}
+{% block pagecontent %}
+    <div class="container">
+        <h2>List of Courses</h2>
+        <hr>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Teachers</th>
+                <th>Organizations</th>
+                <th>
+                    <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
+                            {% if session.is_admin == False %} disabled {% endif %}>
+                        {% for config in configurations %}
+                            <option value="{{ config.year }}" {% if config.year == current_year %}
+                                    selected {% endif %} data-redirect="{{ url_for('course.courses', current_year=config.year) }}">
+                                {{ config.year }}-{{ config.year + 1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for course in courses %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for("course.course_info", course_id=course.id, current_year=current_year) }}">
+                            {{ course.code }} - {{ course.title }}
+                        </a>
+                    </td>
+                    <td>
+                        {% for teacher in course.course_teacher %}
+                            <span class="badge bg-primary">{{ teacher.user.name }} {{ teacher.user.first_name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for org in course.organizations %}
+                            <span class="badge bg-primary">{{ org.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            handleYearSelectChange();
+        });
+    </script>
+{% endblock %}

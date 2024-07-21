@@ -1,0 +1,397 @@
+{% extends "layout.html" %}
+{% block pagetitle %}My profile{% endblock %}
+{% block additionalpageheader %}
+    <style>
+        .move-icon {
+            cursor: move;
+        }
+
+        .delete-icon {
+            cursor: pointer;
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block pagecontent %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <br>
+                <h1>{{ requested_user.first_name }} {{ requested_user.name }}</h1>
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
+                    </li>
+                    {% if requested_user.is_researcher == true %}
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
+                            preferences</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane active" id="profile">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <br>
+                        <h2>Your informations</h2>
+                    </div>
+                </div>
+                <form class="form" action="{{ url_for('user.update_user_profile') }}" method="post"
+                      id="profileForm">
+                    <input type="hidden" name="user_id" id="user_id" value="{{ requested_user.id }}">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-6">
+                            <dl>
+                                <dt>First name</dt>
+                                <dd>
+                                    <input type="text" class="form-control" name="first_name" id="first_name"
+                                           placeholder="first name" value="{{ requested_user.first_name }}">
+                                </dd>
+                                <dt>Last name</dt>
+                                <dd>
+                                    <input type="text" class="form-control" name="name" id="name"
+                                           placeholder="last name" value="{{ requested_user.name }}">
+                                </dd>
+                                <dt>Email</dt>
+                                <dd>
+                                    <input type="email" class="form-control" name="email" id="email"
+                                           value="{{ requested_user.email }}" {% if current_user %}
+                                           readonly {% endif %}>
+                                </dd>
+                                <dt>Organization code</dt>
+                                <dd>
+                                    <select class="form-select" id="organization_code" name="organization_code"
+                                            {% if current_user %}
+                                            disabled {% endif %}>
+                                        {% if requested_user.organization == None and current_user %}
+                                            <option value="None" selected>None</option>
+                                        {% else %}
+                                            {% for code in organizations_code %}
+                                                <option value="{{ code.id }}"
+                                                        {% if code.id == requested_user.organization_id %}
+                                                        selected {% endif %}>{{ code.name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-sm-6 col-md-6">
+                            <dl>
+                                <dt>Status</dt>
+                                <dd>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="is_teacher"
+                                               name="is_teacher"
+                                               {% if requested_user.is_teacher %}checked{% endif %}
+                                                {% if current_user %}
+                                               disabled {% endif %}>
+                                        <label class="form-check-label" for="is_teacher">Teacher</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="is_researcher"
+                                               name="is_researcher"
+                                               {% if requested_user.is_researcher %}checked{% endif %}
+                                                {% if current_user %} disabled {% endif %}>
+                                        <label class="form-check-label" for="is_researcher">Researcher</label>
+                                    </div>
+                                </dd>
+                                <div class="form-group" id="supervisor_select" style="display: none;">
+                                    <dt>Supervisor</dt>
+                                    <dd>
+                                        <select class="form-select" id="supervisor" name="supervisor"
+                                                {% if current_user %} disabled {% endif %}>
+                                            {% if requested_user.supervisor == None and current_user %}
+                                                <option value="" selected>None</option>
+                                            {% else %}
+                                                {% for supervisor in supervisors %}
+                                                    <option value="{{ supervisor.id }}"
+                                                            {% if supervisor.id == requested_user.supervisor.id %}selected{% endif %}>
+                                                        {{ supervisor.first_name }} {{ supervisor.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </dd>
+                                </div>
+                                <div class="form-group" id="researcher_type_display" style="display: none;">
+                                    <dt>Researcher type</dt>
+                                    <dd>
+                                        <select class="form-select" id="researcher_type" name="researcher_type"
+                                                {% if current_user %} disabled {% endif %}>
+                                            {% if requested_user.is_researcher and current_user %}
+                                                <option value="" selected>None</option>
+                                            {% else %}
+                                                {% for type in researcher_type %}
+                                                    <option value="{{ type }}"
+                                                            {% if type == researcher.researcher_type %}selected{% endif %}>
+                                                        {{ type }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </dd>
+                                </div>
+                                <div class="col-2" id="max_load_display">
+                                    <dt>Max load</dt>
+                                    <dd>
+                                        <input type="text" class="form-control" id="max_load" name="max_load"
+                                               value="{{ researcher.max_loads }}" {% if current_user %}
+                                               readonly {% endif %}>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% if requested_user.is_researcher %}
+                <div class="tab-pane" id="preferences">
+                    <div class="container-fluid">
+                        {% if current_user %}
+                            <form id="preferencesForm" method="post">
+                                <br>
+                                <h2>Preferences for next year</h2>
+                                <table class="table table-hover" id="staticPreferencesTable">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Title</th>
+                                        <th>Semester</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider">
+                                    {% for preference in preferences %}
+                                        <tr>
+                                            <td>{{ preference.course.code }}</td>
+                                            <td>{{ preference.course.title }}</td>
+                                            <td>{{ preference.course.quadri }}</td>
+                                            <td>
+                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
+                                                   class="delete-icon">
+                                                    <i class="fas fa-trash delete-icon"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider">
+                                    {% for preference in preferences %}
+                                        <tr>
+                                            <td>
+                                                <select class="form-control course-select">
+                                                    {% for course in courses %}
+                                                        <option value="{{ course.id }}-{{ course.year }}"
+                                                                {% if course.id == preference.course.id %}selected{% endif %}>
+                                                            {{ course.code }} - {{ course.title }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-trash delete-icon"></i>
+                                                <i class="fas fa-arrows-alt move-icon"></i>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+
+                                    <!-- Hidden row template -->
+                                    <tr id="template-row" style="display: none;">
+                                        <td>
+                                            <select class="form-control course-select">
+                                                {% for course in courses %}
+                                                    <option value="{{ course.id }}-{{ course.year }}">
+                                                        {{ course.code }} - {{ course.title }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-trash delete-icon"></i>
+                                            <i class="fas fa-arrows-alt move-icon"></i>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences
+                                </button>
+                                <button type="button" id="savePreferencesButton" class="btn btn-success"
+                                        style="display: none;">
+                                    Save Preferences
+                                </button>
+                                <button type="button" id="cancelEditButton" class="btn btn-secondary"
+                                        style="display: none;">
+                                    Cancel
+                                </button>
+                                <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">
+                                    Add Row
+                                </button>
+                            </form>
+                        {% else %}
+                            <br>
+                            <h2>Course preferences</h2>
+                            <table class="table table-hover" id="preferencesTable">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Title</th>
+                                    <th>Semester</th>
+                                    <th>
+                                        <select class="form-select form-select-sm d-inline" id="yearSelect"
+                                                name="yearSelect"
+                                                {% if session.is_admin == False %} disabled {% endif %}>
+                                            {% for config in configurations %}
+                                                <option value="{{ config.year }}" {% if config.year == current_year %}
+                                                        selected {% endif %} data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
+                                                    {{ config.year }}-{{ config.year + 1 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                {% for preference in preferences %}
+                                    <tr>
+                                        <td>{{ preference.course.code }}</td>
+                                        <td>{{ preference.course.title }}</td>
+                                        <td>{{ preference.course.quadri }}</td>
+                                        <td></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        //Handle user status
+        $(document).ready(function () {
+            function toggleSupervisorSelect() {
+                if ($('#is_researcher').is(':checked')) {
+                    $('#supervisor_select').show();
+                    $('#researcher_type_display').show();
+                    $('#max_load_display').show();
+                } else {
+                    $('#supervisor_select').hide();
+                    $('#researcher_type_display').hide();
+                    $('#max_load_display').hide();
+                }
+            }
+
+            toggleSupervisorSelect();
+
+            $('#is_researcher').change(function () {
+                toggleSupervisorSelect();
+            });
+
+            //Handle preferences
+            $('#addPreferencesButton').click(function () {
+                $('#staticPreferencesTable').hide();
+                $('#editablePreferencesTable').show();
+                $('#addPreferencesButton').hide();
+                $('#savePreferencesButton').show();
+                $('#cancelEditButton').show();
+                $('#addRowButton').show();
+            });
+
+            $('#cancelEditButton').click(function () {
+                $('#editablePreferencesTable').hide();
+                $('#staticPreferencesTable').show();
+                $('#addPreferencesButton').show();
+                $('#savePreferencesButton').hide();
+                $('#cancelEditButton').hide();
+                $('#addRowButton').hide();
+            });
+
+            $('#addRowButton').click(function () {
+                const newRow = $('#template-row').clone().removeAttr('id').removeAttr('style');
+                $('#editablePreferencesTable tbody').append(newRow);
+
+                $("#editablePreferencesTable tbody").sortable({
+                    items: 'tr',
+                    handle: '.move-icon',
+                    axis: 'y',
+                    cursor: 'move'
+                });
+            });
+
+            // Event listener pour le bouton de suppression
+            $(document).on('click', '.delete-icon', function () {
+                $(this).closest('tr').remove();
+            });
+
+            $('#savePreferencesButton').click(function () {
+                const preferences = [];
+                !$('#editablePreferencesTable tbody tr').not('#template-row').each(function () {
+                    const courseValue = $(this).find('select.course-select').val();
+
+                    if (courseValue) {
+                        const [course_id, course_year] = courseValue.split("-");
+                        preferences.push({course_id: course_id, course_year: course_year});
+                    }
+                });
+
+                const data = {
+                    preferences: preferences,
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('course_preference.save_preference') }}",
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert('Preferences updated successfully.');
+                        location.reload(); // Refresh the page to show the updated preferences
+                    },
+                    error: function (error) {
+                        alert('Error updating the preferences.');
+                    }
+                });
+            });
+
+            $("#editablePreferencesTable tbody").sortable({
+                items: 'tr',
+                handle: '.move-icon',
+                axis: 'y',
+                cursor: 'move'
+            });
+
+            $('#profileForm').submit(function (event) {
+                $(':disabled', this).each(function () {
+                    $(this).prop('disabled', false);
+                });
+            });
+
+            handleYearSelectChange();
+        });
+    </script>
+{% endblock %}

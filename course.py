@@ -28,13 +28,6 @@ def validate_number_pattern(number):
     return re.match(pattern, number) is not None
 
 
-@course_bp.route('/form_course')
-@login_required
-@check_access_level('admin')
-def form_course():
-    return render_template('add_course.html')
-
-
 def validate_form_data(form, extra_fields_needed=False):
     mandatory_fields = {
         'code': validate_course_code,

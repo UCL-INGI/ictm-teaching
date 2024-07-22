@@ -53,8 +53,6 @@ def validate_form_data(form, extra_fields_needed=False):
         if not validator(value):
             return f"Invalid {field}", 400
 
-
-
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
         for teacher_id in assigned_teachers:

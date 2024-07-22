@@ -58,3 +58,32 @@ $(document).on('click', '.remove-tag', function (e) {
     $(this).parent('.badge').remove();
 });
 
+$(document).on('click', '#filterIcon', function (e) {
+    e.preventDefault();
+    $('#filterRow').toggle();
+});
+
+$(document).on('keyup', '#filterRow input', function () {
+    let column = $(this).data('column');
+    let value = $(this).val().toLowerCase();
+    $('table tbody tr').filter(function () {
+        $(this).toggle($(this).find('td').eq(column).text().toLowerCase().indexOf(value) > -1);
+    });
+});
+
+/*
+$('#filterIcon').click(function () {
+    $('#filterRow').toggle();
+});
+*/
+
+/*
+$('#filterRow input').on('keyup', function () {
+    let column = $(this).data('column');
+    let value = $(this).val().toLowerCase();
+    $('table tbody tr').filter(function () {
+        $(this).toggle($(this).find('td').eq(column).text().toLowerCase().indexOf(value) > -1);
+    });
+});
+ */
+

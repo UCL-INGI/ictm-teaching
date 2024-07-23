@@ -14,3 +14,32 @@
         </div>
     </div>
 </div>
+<div class="col-sm-12 d-flex">
+    <button type="button" class="btn btn-outline-secondary btn-sm" id="checkAllBtn">Check All</button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" id="uncheckAllBtn">Uncheck All</button>
+</div>
+
+<script>
+    function setupBadgeCheckboxHandlers(filterType) {
+        $(document).on('change', '.badge-checkbox', function () {
+            changeBadgeColorCheckbox($(this));
+            filter(filterType);
+        });
+
+        // Check All button functionality
+        $(document).on('click', '#checkAllBtn', function () {
+            $('.badge-checkbox').prop('checked', true).each(function () {
+                changeBadgeColorCheckbox($(this));
+            });
+            filter(filterType);
+        });
+
+        // Uncheck All button functionality
+        $(document).on('click', '#uncheckAllBtn', function () {
+            $('.badge-checkbox').prop('checked', false).each(function () {
+                changeBadgeColorCheckbox($(this));
+            });
+            filter(filterType);
+        });
+    }
+</script>

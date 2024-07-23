@@ -79,7 +79,7 @@ function filter(page) {
             let showItem;
 
             if (page === "course") {
-                organizations = $(this).data('organizations').split(',');
+                organizations = $(this).data('organizations').toString().split(',');
                 showItem = activeOrganizations.some(org => organizations.includes(org.toString()));
             }
             else if (page === "user") {

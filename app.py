@@ -7,7 +7,7 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization
+from db import db, Configuration, Organization, User, Course, Teacher
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -39,16 +39,17 @@ def get_organization():
 
 @app.context_processor
 def inject_configurations():
-    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI, language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year())
+    return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI,
+                language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year())
 
 
 # Routes
 @app.route('/')
+@login_required
 def index():  # put application's code here
-    if session and session['logged_in']:
-        return render_template("home.html")
-    else:
-        return redirect(url_for("auth.login"))
+    user = db.session.query(User).filter_by(email=session['email']).first()
+    courses_teacher = db.session.query(Course).join(Teacher).filter(Teacher.user_id == user.id).all()
+    return render_template("home.html", user=user, courses=courses_teacher)
 
 
 if __name__ == '__main__':

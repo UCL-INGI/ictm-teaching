@@ -1,5 +1,100 @@
 {% extends "layout.html" %}
 {% block pagetitle %}Home Page{% endblock %}
 {% block pagecontent %}
+    <br>
     <h1>{{ session.first_name }} {{ session.name }}</h1>
+    <hr>
+    {% if user.is_researcher %}
+        <h2 class="sub-header">Course(s) assigned this year ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Title</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="2">No courses assigned this year.</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="container-fluid">
+            <h2 class="sub-header">History</h2>
+            <hr>
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="assistants-tab" data-bs-toggle="tab" href="#assistants" role="tab"
+                       aria-controls="assistants" aria-selected="true">Assistants</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="evaluations-tab" data-bs-toggle="tab" href="#evaluations" role="tab"
+                       aria-controls="evaluations" aria-selected="false">Evaluations</a>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <!-- Assistants Pane -->
+                <div class="tab-pane fade show active" id="assistants" role="tabpanel"
+                     aria-labelledby="assistants-tab">
+                    <table class="table table-hover mt-3">
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Title</th>
+                            <th>Year</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Evaluations Pane -->
+                <div class="tab-pane fade show" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
+                    <!-- Content for Evaluations -->
+                    <br>
+                    <p>Content for evaluations will go here.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if user.is_teacher %}
+        <h2 class="sub-header">My courses for ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Title</th>
+                <th>Assistants</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for course in courses %}
+                <tr>
+                    <td>{{ course.code }}</td>
+                    <td>{{ course.title }}</td>
+                    <td>None</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <h2 class="sub-header">Course assignments for my researchers</h2>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Title</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="2">No course(s) this year.</td>
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
 {% endblock %}

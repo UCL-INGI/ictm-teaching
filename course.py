@@ -250,36 +250,37 @@ def add_duplicate_course():
     return redirect(url_for('course.course_info', course_id=course_id, current_year=year))
 
 
-@course_bp.route('/evaluations')
+@course_bp.route('/evaluations/<int:user_id>/<int:current_year>')
 @login_required
-def evaluations():
-    user_id = request.args.get('user_id')
-    current_year = request.args.get('current_year')
+def evaluations(user_id, current_year):
     courses = db.session.query(Course).filter_by(year=current_year).all()
 
     return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id)
 
 
-@course_bp.route('/create_evaluations', methods=['POST'])
+@course_bp.route('/create_evaluations/<int:user_id>/<int:current_year>', methods=['POST'])
 @login_required
-def create_evaluation():
+def create_evaluation(user_id, current_year):
     form = request.form
     if not form:
         return make_response("Problem with form request", 500)
 
-    course_id = request.form['course_id']
-    current_year = request.args.get('current_year')
-    user_id = request.args.get('user_id')
+    course_id = request.form.get('course_id')
     tasks = request.form.getlist('tasks[]')
-    evaluation_hour = request.form['evaluation_hour']
-    workload = request.form['workload']
-    comment = request.form['comment']
-    second_course = True if request.form.get('second_course') == 'Yes' else False
+    other_task = request.form.get('other_task')
+    evaluation_hour = request.form.get('evaluation_hour')
+    workload = request.form.get('workload')
+    comment = request.form.get('comment')
+    second_course = request.form.get('second_course') == 'Yes'
 
-    tasks_str = ', '.join(tasks)
+    if not all([course_id, evaluation_hour, workload, comment is not None]):
+        return make_response("Missing required fields", 400)
+
+    if other_task:
+        tasks.append(other_task)
 
     try:
-        new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks_str,
+        new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
                                     nbr_hours=evaluation_hour, workload=workload, comment=comment,
                                     second_course=second_course)
         db.session.add(new_evaluation)

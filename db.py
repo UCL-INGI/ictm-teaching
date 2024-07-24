@@ -157,9 +157,9 @@ class Evaluation(db.Model):
     course_id = db.Column(db.Integer, primary_key=True)
     course_year = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    task = db.Column(db.String)
-    nbr_hours = db.Column(db.String)
-    workload = db.Column(db.String)
+    task = db.Column(db.JSON, nullable=False)
+    nbr_hours = db.Column(db.String, nullable=False)
+    workload = db.Column(db.String, nullable=False)
     comment = db.Column(db.String)
     second_course = db.Column(db.Boolean)
 

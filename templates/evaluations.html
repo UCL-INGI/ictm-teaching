@@ -31,8 +31,10 @@
                         <label class="form-check-label" for="{{ task }}">{{ task }}</label>
                     </div>
                 {% endfor %}
-                <input class="form-control" type="text" name="tasks[]" id="other"
-                               placeholder="Other" value="">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="tasks[]" id="other" value="Other">
+                    <input class="form-control" type="text" name="other_task" id="other_task" placeholder="Other" value="">
+                </div>
             </div>
             <br>
             <div class="form-group">

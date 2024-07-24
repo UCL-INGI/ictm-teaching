@@ -29,19 +29,19 @@
     </style>
 {% endblock %}
 {% block pagecontent %}
-    <div class="container-fluid">
-        <br>
-        <h2>User list</h2>
-        <hr>
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="container">
+        <h2 class="mt-3">List of Users</h2>
+        <hr class="mb-3">
+        {% include 'filter.html' %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
                 <h4>Users</h4>
                 <i class="fa-solid fa-filter" id="filterIcon" style="cursor: pointer;"></i>
-            </div>
-            <div class="card-body">
-                <table class="table table-hover">
-                    <thead>
-                    <tr id="filterRow" style="display: none;">
+        </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+            <tr id="filterRow" style="display: none;">
                         <th><input type="text" class="form-control form-control-sm" placeholder="Filter Last Name"
                                    data-column="0"></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Filter First Name"
@@ -62,65 +62,63 @@
                         {% endif %}
                         <th></th>
                     </tr>
-                    <tr>
-                        <th>Last Name</th>
-                        <th>First Name</th>
-                        <th>Email</th>
-                        <th>Organization Code</th>
-                        {% if user_type == 'researcher' %}
-                            <th>Status</th>
-                            <th>Max load</th>
+            <tr>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Email</th>
+                <th>Organization Code</th>
+                {% if user_type == 'researcher' %}
+                    <th>Status</th>
+                    <th>Max load</th>
+                {% endif %}
+                {% if user_type == 'archived' %}
+                    <th>Type</th>
+                {% endif %}
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
+                        {{ user.name }}
+                    </a></td>
+                   <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
+                        {{ user.first_name }}
+                    </a></td>
+                    <td>{{ user.email }}</td>
+                    <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
+                    {% if user_type == 'researcher' %}
+                        <td>{{ user.user_researcher.researcher_type }}</td>
+                        <td>{{ user.user_researcher.max_loads }}</td>
+                        <td></td>
+                    {% endif %}
+                    {% if user_type == 'archived' %}
+                        {% if user.is_teacher %}
+                            <td>Teacher</td>
+                        {% else %}
+                            <td>{{ user.user_researcher.researcher_type }}</td>
                         {% endif %}
-                        {% if user_type == 'archived' %}
-                            <th>Type</th>
-                        {% endif %}
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in users %}
-                        <tr>
-                            <td>
-                                <a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
-                                    {{ user.name }}
-                                </a></td>
-                            <td>
-                                <a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
-                                    {{ user.first_name }}
-                                </a></td>
-                            <td>{{ user.email }}</td>
-                            <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
-                            {% if user_type == 'researcher' %}
-                                <td>{{ user.user_researcher.researcher_type }}</td>
-                                <td>{{ user.user_researcher.max_loads }}</td>
-                                <td></td>
-                            {% endif %}
-                            {% if user_type == 'archived' %}
-                                {% if user.is_teacher %}
-                                    <td>Teacher</td>
-                                {% else %}
-                                    <td>{{ user.user_researcher.researcher_type }}</td>
-                                {% endif %}
-                                <td>
-                                    <a href="{{ url_for('user.enable', user_id=user.id) }}"
-                                       class="restore-icon">
-                                        <i class="fas fa-trash-restore restore-icon"></i>
-                                    </a>
-                                </td>
-                            {% else %}
-                                <td>
-                                    <a href="{{ url_for('user.disable', user_id=user.id, user_type=user_type) }}"
-                                       class="delete-icon">
-                                        <i class="fas fa-trash delete-icon"></i>
-                                    </a>
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        <td>
+                            <a href="{{ url_for('user.enable', user_id=user.id) }}"
+                               class="restore-icon">
+                                <i class="fas fa-trash-restore restore-icon"></i>
+                            </a>
+                        </td>
+                    {% else %}
+                        <td>
+                            <a href="{{ url_for('user.disable', user_id=user.id, user_type=user_type) }}"
+                               class="delete-icon">
+                                <i class="fas fa-trash delete-icon"></i>
+                            </a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
         <div id="errorPopup" class="modal fade">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -137,4 +135,28 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            var errorPopup = $('#errorPopup');
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            $('#errorMessage').text('{{ message }}');
+                            errorPopup.modal('show');
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            $('#okButton').click(function () {
+                errorPopup.modal('hide');
+            });
+
+            setupBadgeCheckboxHandlers('user');
+        });
+    </script>
 {% endblock %}

@@ -52,6 +52,53 @@ function addBadge(selectElement, containerSelector) {
     }
 }
 
+function changeBadgeColorCheckbox(checkboxValue) {
+    const badge = $('span.badge', checkboxValue.parent());
+    if (checkboxValue.is(':checked')) {
+        badge.removeClass('bg-secondary').addClass('bg-primary');
+    } else {
+        badge.removeClass('bg-primary').addClass('bg-secondary');
+    }
+}
+
+function filter(page) {
+    let activeOrganizations = $('.badge-checkbox:checked').map(function () {
+        return $(this).data('id');
+    }).get();
+
+    let items;
+    if (page === "course") {
+        items = $('.course-item')
+    } else if (page === "user") {
+        items = $('.user-item')
+    }
+
+    if (activeOrganizations.length > 0) {
+        items.each(function () {
+            let organizations;
+            let showItem;
+
+            if (page === "course") {
+                organizations = $(this).data('organizations').toString().split(',');
+                showItem = activeOrganizations.some(org => organizations.includes(org.toString()));
+            }
+            else if (page === "user") {
+                organizations = $(this).data('organizations');
+                showItem = activeOrganizations.includes(organizations);
+            }
+
+            if (showItem) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    } else {
+        // If no organization is selected, hide all courses
+        items.hide();
+    }
+}
+
 // Event listener for removing the organization tag
 $(document).on('click', '.remove-tag', function (e) {
     e.preventDefault();

@@ -1,11 +1,17 @@
+from enum import Enum
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
-
 from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 
+
+class Role(Enum):
+    ADMIN = "admin"
+    RESEARCHER = "researcher"
+    TEACHER = "teacher"
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -33,11 +39,11 @@ class User(db.Model):
         return value
 
     def allowed(self, access_level):
-        if access_level == 'admin':
+        if access_level == Role.ADMIN:
             return self.admin
-        elif access_level == 'researcher':
+        elif access_level == Role.RESEARCHER:
             return self.is_researcher
-        elif access_level == 'teacher':
+        elif access_level == Role.TEACHER:
             return self.is_teacher
         else:
             return False

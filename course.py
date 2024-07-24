@@ -1,5 +1,5 @@
 from decorators import login_required, check_access_level
-from db import db, User, Course, Teacher, Organization, Configuration
+from db import db, User, Course, Teacher, Organization, Configuration, Role
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -26,6 +26,13 @@ def validate_string_pattern(string):
 def validate_number_pattern(number):
     pattern = r'^(0|[1-9][0-9]*)$'
     return re.match(pattern, number) is not None
+
+
+@course_bp.route('/form_course')
+@login_required
+@check_access_level(Role.ADMIN)
+def form_course():
+    return render_template('add_course.html')
 
 
 def validate_form_data(form, extra_fields_needed=False):
@@ -67,7 +74,7 @@ def assign_teachers_to_course(course_id, course_year, assigned_teachers):
 
 @course_bp.route('/add_course', methods=['POST', 'GET'])
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def add_course():
     if request.method == 'GET':
         return render_template('add_course.html')
@@ -109,7 +116,7 @@ def add_course():
 
 @course_bp.route('/courses/<int:current_year>')
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def courses(current_year=None):
     courses = db.session.query(Course).filter_by(year=current_year).all()
     return render_template('courses.html', courses=courses, current_year=current_year)
@@ -129,7 +136,7 @@ def search_teachers():
 
 @course_bp.route('<int:course_id>')
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def course_info(course_id):
     dynamic_year = get_current_year()
     current_year = int(request.args.get('current_year')) if request.args.get('current_year') else dynamic_year
@@ -144,7 +151,7 @@ def course_info(course_id):
 
 @course_bp.route('/update_course_info', methods=['POST'])
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def update_course_info():
     form = request.form
     if not form:
@@ -205,7 +212,7 @@ def update_course_info():
 
 @course_bp.route('/duplicate_course')
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def duplicate_course():
     course_id = request.args.get('course_id')
     course_year = request.args.get('year')
@@ -216,7 +223,7 @@ def duplicate_course():
 
 @course_bp.route('/add_duplicate_course', methods=['POST'])
 @login_required
-@check_access_level('admin')
+@check_access_level(Role.ADMIN)
 def add_duplicate_course():
     form = request.form
     if not form:

@@ -1,5 +1,5 @@
 from decorators import login_required, check_access_level
-from db import db, Researcher, PreferenceAssignment
+from db import db, Researcher, PreferenceAssignment, Role
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 import json
@@ -24,7 +24,7 @@ def delete_old_preferences(researcher_id, course_ids, current_year):
 
 @course_preference_bp.route('/save_preference', methods=['POST'])
 @login_required
-@check_access_level('researcher')
+@check_access_level(Role.RESEARCHER)
 def save_preference():
     data = request.get_json()
     current_year = get_current_year()
@@ -61,7 +61,7 @@ def save_preference():
 
 @course_preference_bp.route('/delete_preference', methods=['GET'])
 @login_required
-@check_access_level('researcher')
+@check_access_level(Role.RESEARCHER)
 def delete_preference():
     preference_id = request.args.get('preference')
     current_year = get_current_year()

@@ -71,19 +71,3 @@ $(document).on('keyup', '#filterRow input', function () {
     });
 });
 
-/*
-$('#filterIcon').click(function () {
-    $('#filterRow').toggle();
-});
-*/
-
-/*
-$('#filterRow input').on('keyup', function () {
-    let column = $(this).data('column');
-    let value = $(this).val().toLowerCase();
-    $('table tbody tr').filter(function () {
-        $(this).toggle($(this).find('td').eq(column).text().toLowerCase().indexOf(value) > -1);
-    });
-});
- */
-

@@ -146,6 +146,7 @@ def course_info(course_id):
 
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
+
     return render_template('course_info.html', course=course, all_years=all_years, current_year=current_year)
 
 

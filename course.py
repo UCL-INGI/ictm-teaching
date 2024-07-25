@@ -282,6 +282,15 @@ def create_evaluation(user_id, current_year):
         tasks.append(other_task)
 
     try:
+        existing_evaluation = db.session.query(Evaluation).filter_by(course_id=course_id, course_year=current_year,
+                                                                     user_id=user_id).first()
+        if existing_evaluation:
+            db.session.delete(existing_evaluation)
+            db.session.commit()
+            flash('Existing evaluation was replaced.', 'success')
+        else:
+            flash('Evaluation created successfully!', 'success')
+
         new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
                                     nbr_hours=evaluation_hour, workload=workload, comment=comment,
                                     second_course=second_course)
@@ -289,6 +298,7 @@ def create_evaluation(user_id, current_year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
+        flash(f'An error occurred: {str(e)}', 'danger')
         raise e
 
     return redirect(url_for('course.evaluations', user_id=user_id, current_year=current_year))

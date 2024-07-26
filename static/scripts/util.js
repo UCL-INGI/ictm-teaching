@@ -111,10 +111,22 @@ $(document).on('click', '#filterIcon', function (e) {
 });
 
 $(document).on('keyup', '#filterRow input', function () {
+    // Get the index of the column from the data-column attribute of the input
     let column = $(this).data('column');
+
+    // Get the value entered in the input and convert it to lowercase
     let value = $(this).val().toLowerCase();
-    $('table tbody tr').filter(function () {
-        $(this).toggle($(this).find('td').eq(column).text().toLowerCase().indexOf(value) > -1);
+
+    // Iterate through each row in the table body
+    $('table tbody tr').each(function () {
+        // Get the text content of the cell at the specified column index and convert it to lowercase
+        let cellText = $(this).find('td').eq(column).text().toLowerCase();
+
+        // Check if the cell text contains the searched value
+        let containsValue = cellText.indexOf(value) > -1;
+
+        // Show or hide the row based on whether the cell text contains the searched value
+        $(this).toggle(containsValue);
     });
 });
 

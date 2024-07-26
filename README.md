@@ -137,10 +137,3 @@
     Replace the `<tags>` with the desired information for the first admin.
 
 1. Run the IdP server and the app.
-
-### Setting up Handsontable
-
-1. Install the npm package `handsontable`:
-    ```shell
-    [user@localhost ictm-teaching]$ npm install handsontable
-    ```

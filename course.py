@@ -299,6 +299,5 @@ def create_evaluation(user_id, current_year):
     except Exception as e:
         db.session.rollback()
         flash(f'An error occurred: {str(e)}', 'danger')
-        raise e
 
     return redirect(url_for('course.evaluations', user_id=user_id, current_year=current_year))

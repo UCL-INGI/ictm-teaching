@@ -165,3 +165,23 @@ class CourseOrganization(db.Model):
             ['course.id', 'course.year']
         ),
     )
+
+
+class Evaluation(db.Model):
+    __tablename__ = 'evaluation'
+
+    course_id = db.Column(db.Integer, primary_key=True)
+    course_year = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    task = db.Column(db.JSON, nullable=False)
+    nbr_hours = db.Column(db.String, nullable=False)
+    workload = db.Column(db.String, nullable=False)
+    comment = db.Column(db.String)
+    second_course = db.Column(db.Boolean)
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )

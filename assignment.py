@@ -22,20 +22,20 @@ def serialize_model(model):
 @login_required
 def load_data():
     current_year = get_current_year()
-    courses = db.session.query(Course).order_by(Course.quadri).all()
-    users = db.session.query(User).filter_by(admin=False, active=True).all()
-    teachers = db.session.query(Teacher).all()
+    courses = (db.session.query(Course).filter_by(year=current_year).order_by(Course.quadri).all())
+    users = db.session.query(User).filter_by(active=True).all()
+    teachers = db.session.query(Teacher).filter_by(course_year=current_year).all()
     researchers = db.session.query(Researcher).all()
-    preferences = db.session.query(PreferenceAssignment).all()
+    preferences = db.session.query(PreferenceAssignment).filter_by(course_year=current_year).all()
     organizations = db.session.query(Organization).all()
 
     data = {
-        'courses': [serialize_model(course) for course in courses if course.year == current_year],
-        'users': [serialize_model(user) for user in users],
-        'teachers': [serialize_model(teacher) for teacher in teachers],
-        'researchers': [serialize_model(researcher) for researcher in researchers],
-        'preferences': [serialize_model(preference) for preference in preferences],
-        'organizations': [serialize_model(organization) for organization in organizations],
+        'courses': [serialize_model(course) for course in courses],
+        'users': {user.id: serialize_model(user) for user in users},
+        'teachers': {teacher.id: serialize_model(teacher) for teacher in teachers},
+        'researchers': {researcher.user_id: serialize_model(researcher) for researcher in researchers},
+        'preferences': {preference.id: serialize_model(preference) for preference in preferences},
+        'organizations': {organization.id: serialize_model(organization) for organization in organizations},
         'current_year': current_year
     }
 

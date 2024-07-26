@@ -1,22 +1,19 @@
 fetch('/assignment/load_data')
     .then(response => response.json())
     .then(loadData => {
-        console.log(loadData);
 
         const {courses, users, teachers, researchers, preferences, organizations, current_year} = loadData;
-        const example = document.getElementById("handsontable");
-
-        courses.map(course => {
-            let teachersId = teachers.filter(teacher => teacher.course_id === course.id && teacher.course_year === current_year);
+        courses.forEach(course => {
+            let teachersId = Object.values(teachers).filter(teacher => teacher.course_id === course.id);
             let teachersName = teachersId.map(teacher => {
-                let teacherUser = users.find(user => user.id === teacher.user_id);
-                return teacherUser ? teacherUser.name + " " + teacherUser.first_name : '';
+                let teacherUser = users[teacher.user_id];
+                return teacherUser ? `${teacherUser.name} ${teacherUser.first_name}` : '';
             });
             course.assigned_teachers = teachersName.join(', ');
         });
 
         const fixedHeaders = [
-            "Fgs",
+            "Id",
             "Researchers",
             "Org",
             "Promoter",
@@ -29,13 +26,14 @@ fetch('/assignment/load_data')
             "Id",
             "Quadri",
             "Acads",
-            "Nbr Student 22/23",
+            "Nbr Students",
             "Assistant",
             "Total for now",
         ];
 
         const lenFixedRowsText = fixedRowsText.length
         const lenFixedHeaders = fixedHeaders.length
+        const borderStyle = {width: 2, color: 'black'};
 
         //Split long text in the course header
         const coursesHeaders = courses.map(course => {
@@ -58,30 +56,37 @@ fetch('/assignment/load_data')
 
         function fixedRowsData() {
             let rows = [];
-            const properties = ['id', 'quadri', 'assigned_teachers', 'nbr_students', 'nbr_teaching_assistants', 'tutors'];
+
+            const allProperties = Object.keys(courses[0]);
+            const requiredProperties = ['id', 'quadri', 'assigned_teachers', 'nbr_students', 'nbr_teaching_assistants', 'tutors'];
+            const properties = allProperties.filter(prop => requiredProperties.includes(prop));
+            console.log("Properties", properties);
             for (let i = 0; i < lenFixedRowsText; i++) {
-                let row = {};
-                row.researchers = {};
-                row.researchers.fgs = "";
-                row.researchers.name = "";
-                row.org = "";
-                row.charge1 = "";
-                row.charge2 = "";
-                row.charge3 = "";
-                row.check = "";
+                let row = {
+                    researchers: {
+                        id: "",
+                        name: ""
+                    },
+                    org: "",
+                    promoter: "",
+                    totalLoad: "",
+                    loadQ1: "",
+                    loadQ2: ""
+                };
 
                 courses.forEach(course => {
-                    row[course.code] = properties[i] !== 'tutors' ? course[properties[i]] : 0;
+                    row[course.code] = properties.includes('tutors') && properties[i] === 'tutors' ? 0 : course[properties[i]];
                 });
                 rows.push(row);
             }
+
             return rows;
         }
 
         function buildRow(user, isFilled) {
             const row = {};
             row.researchers = {
-                fgs: user.id,
+                id: user.id,
                 name: isFilled ? `${user.name} ${user.first_name}` : ""
             };
             return row;
@@ -89,33 +94,33 @@ fetch('/assignment/load_data')
 
         function userRowsData() {
             const rows = [];
-            const researcherUsers = users.filter(user => user.is_researcher === true);
+            const researcherUsers = Object.values(users).filter(user => user.is_researcher === true);
 
             researcherUsers.forEach(user => {
+                //The first line displays the preferences for each user
                 const row = buildRow(user, true);
+                //The second line allows admins to assign a course to the user
                 const emptyRow = buildRow(user, false);
-
-                const matchingAssistant = researchers.find(researcher => researcher.user_id === user.id);
-                const assistantOrg = organizations.find(org => org.id === user.organization_id);
+                const matchingAssistant = researchers[user.id];
+                const assistantOrg = organizations[user.organization_id]
 
                 row.org = assistantOrg ? assistantOrg.name : "";
-                row.charge1 = matchingAssistant ? (users.find(sup => sup.id === user.supervisor_id)?.name ?? "") : "";
-                row.charge2 = matchingAssistant ? matchingAssistant.max_loads : 0;
-                row.charge3 = 0;
-                row.check = 0;
+                row.promoter = matchingAssistant ? (users[user.supervisor_id]?.name ?? "") : "";
+                row.totalLoad = matchingAssistant ? matchingAssistant.max_loads : 0;
+                row.loadQ1 = 0;
+                row.loadQ2 = 0;
 
-                emptyRow.org = "";
-                emptyRow.charge1 = "";
-                emptyRow.charge2 = "";
-                emptyRow.charge3 = "";
-                emptyRow.check = "";
+                //This line is only used to store course assignments, so the other values are empty.
+                const emptyKeys = ['org', 'promoter', 'totalLoad', 'loadQ1', 'loadQ2'];
+                emptyKeys.forEach(key => {
+                    emptyRow[key] = "";
+                });
 
-                const researcher = researchers.find(researcher => researcher.user_id === user.id);
-                const userPrefs = preferences.filter(pref => pref.researcher_id === researcher.id && pref.course_year === current_year);
+                const userPrefs = Object.values(preferences).filter(pref => pref.researcher_id === researchers[user.id].id);
 
                 let pos = 1;
                 courses.forEach(course => {
-                    const isPref = userPrefs.find(pref => pref.course_id === course.id && pref.course_year === current_year);
+                    const isPref = userPrefs.find(pref => pref.course_id === course.id);
                     const code = course.code;
                     row[code] = isPref ? pos++ : "";
                     emptyRow[code] = "";
@@ -133,13 +138,13 @@ fetch('/assignment/load_data')
 
         function getCourseColumns() {
             const fixedColumns = [
-                {data: 'researchers.fgs'},
+                {data: 'researchers.id'},
                 {data: 'researchers.name'},
                 {data: 'org'},
-                {data: 'charge1'},
-                {data: 'charge2'},
-                {data: 'charge3'},
-                {data: 'check'}
+                {data: 'promoter'},
+                {data: 'totalLoad'},
+                {data: 'loadQ1'},
+                {data: 'loadQ2'}
             ];
 
             courses.forEach(course => {
@@ -156,27 +161,16 @@ fetch('/assignment/load_data')
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
 
-        const startRow = lenFixedRowsText;
-        const startCol = 1;
-        const endRow = nbrLines;
-        const endCol = lenFixedHeaders - 1;
-
-        const mergeCellsSettings = generateMergeCellSettings(startRow, startCol, endRow, endCol);
-
-        function generateMergeCellSettings(startRow, startCol, endRow, endCol) {
-            const mergeCellsSettings = [];
-            for (let row = startRow; row < endRow; row += 2) {
-                for (let col = startCol; col <= endCol; col++) {
-                    mergeCellsSettings.push({
-                        row: row,
-                        col: col,
-                        rowspan: 2,
-                        colspan: 1
-                    });
-                }
+        const mergeCellsSettings = [];
+        for (let row = lenFixedRowsText; row < nbrLines; row += 2) {
+            for (let col = 1; col <= lenFixedHeaders - 1; col++) {
+                mergeCellsSettings.push({
+                    row: row,
+                    col: col,
+                    rowspan: 2,
+                    colspan: 1
+                });
             }
-
-            return mergeCellsSettings;
         }
 
         function storeDataLocally(data) {
@@ -208,7 +202,26 @@ fetch('/assignment/load_data')
         let comments = retrieveCellsMetaLocally();
         let isCollectedMetaData = true;
 
-        const table = new Handsontable(example, {
+        const ColumnIndices = {
+            ID: 0,
+            RESEARCHERS: 1,
+            ORG: 2,
+            PROMOTER: 3,
+            TOTAL_LOAD: 4,
+            LOAD_Q1: 5,
+            LOAD_Q2: 6,
+        };
+
+        const RowIndices = {
+            ID: 0,
+            QUADRI: 1,
+            ACADS: 2,
+            NBR_STUDENTS: 3,
+            ASSISTANTS: 4,
+            TOTAL_ASSISTANT_NOW: 5,
+        }
+
+        const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,
             fixedColumnsLeft: lenFixedHeaders,
             fixedRowsTop: lenFixedRowsText,
@@ -253,7 +266,7 @@ fetch('/assignment/load_data')
 
                 if (col > lenFixedHeaders - 1) {
                     let colData = this.getDataAtCol(col);
-                    if (colData[5] >= colData[4]) {
+                    if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
                         th.style.backgroundColor = 'green';
                     }
                 }
@@ -272,34 +285,34 @@ fetch('/assignment/load_data')
                             }
 
                             const colInfos = this.getDataAtProp(prop);
-                            let nbrAssistants = colInfos[5];
+                            let nbrAssistants = colInfos[RowIndices.TOTAL_ASSISTANT_NOW];
 
                             if (isDeleted) {
                                 nbrAssistants--;
                             } else {
                                 nbrAssistants++;
                             }
-                            this.setDataAtCell(5, col, nbrAssistants);
+                            this.setDataAtCell(RowIndices.TOTAL_ASSISTANT_NOW, col, nbrAssistants);
 
                             //Update user load
                             const rowInfos = this.getDataAtRow(row - 1);
-                            const quadri = colInfos[1];
+                            const quadri = colInfos[RowIndices.QUADRI];
                             if (quadri === 1) {
-                                let load_q1 = rowInfos[5];
+                                let load_q1 = rowInfos[ColumnIndices.LOAD_Q1];
                                 if (isDeleted) {
                                     load_q1--;
                                 } else {
                                     load_q1++;
                                 }
-                                this.setDataAtCell(row - 1, 5, load_q1);
+                                this.setDataAtCell(row - 1, ColumnIndices.LOAD_Q1, load_q1);
                             } else {
-                                let load_q2 = rowInfos[6];
+                                let load_q2 = rowInfos[ColumnIndices.LOAD_Q2];
                                 if (isDeleted) {
                                     load_q2--;
                                 } else {
                                     load_q2++;
                                 }
-                                this.setDataAtCell(row - 1, 6, load_q2);
+                                this.setDataAtCell(row - 1, ColumnIndices.LOAD_Q2, load_q2);
                             }
                         }
                     });
@@ -326,10 +339,10 @@ fetch('/assignment/load_data')
                 //(row%2) === 1 to avoid empty lines
                 if (row >= lenFixedRowsText && (row % 2) === 0 && col < lenFixedHeaders) {
                     const rowValue = this.getDataAtRow(row);
-                    if (col === 5 || col === 6) {
-                        const total_load = rowValue[4];
-                        const load_q1 = rowValue[5];
-                        const load_q2 = rowValue[6];
+                    if (col === ColumnIndices.LOAD_Q1 || col === ColumnIndices.LOAD_Q2) {
+                        const total_load = rowValue[ColumnIndices.TOTAL_LOAD];
+                        const load_q1 = rowValue[ColumnIndices.LOAD_Q1];
+                        const load_q2 = rowValue[ColumnIndices.LOAD_Q2];
 
                         //First case: load Q1 + Q2 = total load
                         //Second case: load Q1 or Q2 = half of total load
@@ -352,65 +365,50 @@ fetch('/assignment/load_data')
             customBorders: [
                 {
                     range: {
-                        from: {
-                            row: 0,
-                            col: 0,
-                        },
-                        to: {
-                            row: nbrLines,
-                            col: 6,
-                        },
+                        from: {row: 0, col: 0},
+                        to: {row: nbrLines, col: 6}
                     },
-                    end: {
-                        width: 2,
-                        color: 'black'
-                    },
+                    end: borderStyle,
                 },
                 {
                     range: {
-                        from: {
-                            row: 0,
-                            col: 0,
-                        },
-                        to: {
-                            row: 5,
-                            col: nbrCols,
-                        },
+                        from: {row: 0, col: 0},
+                        to: {row: 5, col: nbrCols}
                     },
-                    bottom: {
-                        width: 2,
-                        color: 'black'
-                    },
+                    bottom: borderStyle,
                 },
                 {
                     row: 5,
                     col: 6,
-                    bottom: {
-                        width: 2,
-                        color: 'black'
-                    }
+                    bottom: borderStyle
                 },
             ],
             beforeFilter(conditionsStack) {
                 const filtersPlugin = this.getPlugin('filters');
-                const tab = this.getData();
+                //Get the user data without the fixed rows
+                const tab = this.getData().splice(lenFixedRowsText);
 
                 let values = [];
                 const filteredResults = [];
+                //Get the number of the column to filter
                 const col = conditionsStack[0].column;
 
                 if (conditionsStack && conditionsStack.length > 0) {
                     for (let i = 0; i < conditionsStack.length; i++) {
+                        //Get the matching values to filter
                         values = conditionsStack[i].conditions[0].args.flat();
 
+                        //Verify if the row value for the specific column is in the filter
                         for (const row of tab) {
                             if (values.includes(row[col])) {
+                                //Push id to the filteredResults array
                                 filteredResults.push(row[0]);
                             }
                         }
                     }
                 }
                 filtersPlugin.clearConditions();
+                //Create a new condition to filter the data based on the id
                 filtersPlugin.addCondition(0, 'by_value', [filteredResults]);
             },
             afterFilter(conditionsStack) {
@@ -447,67 +445,66 @@ fetch('/assignment/load_data')
                     rowDelimiter: '\r\n',
                     rowHeaders: true
                 });
-                    updateToastContent('Data exported to CSV');
+                updateToastContent('Data exported to CSV');
                 toastNotification.show();
             })
-                $('#button-create-assignments').click(function () {
-                    storeDataLocally(data);
-                    updateToastContent('Data saved');
-                    toastNotification.show();
-                });
-                $('#button-clear-assignments').click(function () {
-                    resetDataLocally();
-                    updateToastContent('Data cleared');
-                    toastNotification.show();
-                    setTimeout(function () {
-                        location.reload();
-                    }, 1500);
-                })
-                $('#button-publish-assignments').click(async function () {
-                    const slicedData = data.slice(lenFixedRowsText);
-                    console.log("Sliced Data", slicedData);
-                    const result = [];
+            $('#button-create-assignments').click(function () {
+                storeDataLocally(data);
+                updateToastContent('Data saved');
+                toastNotification.show();
+            });
+            $('#button-clear-assignments').click(function () {
+                resetDataLocally();
+                updateToastContent('Data cleared');
+                toastNotification.show();
+                setTimeout(function () {
+                    location.reload();
+                }, 1500);
+            })
+            $('#button-publish-assignments').click(async function () {
+                const slicedData = data.slice(lenFixedRowsText);
+                const result = [];
 
-                    for (let i = 0; i < slicedData.length; i += 2) {
-                        const user_row = slicedData[i];
-                        const course_row = slicedData[i + 1];
+                for (let i = 0; i < slicedData.length; i += 2) {
+                    const user_row = slicedData[i];
+                    const course_row = slicedData[i + 1];
 
-                        const userData = {
-                            user_id: user_row.researchers.fgs,
-                            load_q1: user_row.charge3,
-                            load_q2: user_row.check,
-                        }
-
-                        const courseData = {};
-                        courses.forEach(course => {
-                            if (course_row[course.code] !== '') {
-                                courseData[course.id] = course_row[course.code];
-                            }
-                        })
-                        result.push({userData, courseData});
+                    const userData = {
+                        user_id: user_row.researchers.id,
+                        load_q1: user_row.charge3,
+                        load_q2: user_row.check,
                     }
 
-                    try {
-                        const response = await fetch('/assignment/publish_assignments', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(result),
-                        });
-
-                        if (response.ok) {
-                            updateToastContent('Assignments published');
-                            toastNotification.show();
-                        } else {
-                            updateToastContent('Failed to publish assignments' + response.statusText);
-                            toastNotification.show();
+                    const courseData = {};
+                    courses.forEach(course => {
+                        if (course_row[course.code] !== '') {
+                            courseData[course.id] = course_row[course.code];
                         }
-                    } catch (error) {
-                        updateToastContent('Error: ' + error);
+                    })
+                    result.push({userData, courseData});
+                }
+
+                try {
+                    const response = await fetch('/assignment/publish_assignments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(result),
+                    });
+
+                    if (response.ok) {
+                        updateToastContent('Assignments published');
+                        toastNotification.show();
+                    } else {
+                        updateToastContent('Failed to publish assignments' + response.statusText);
                         toastNotification.show();
                     }
-                });
+                } catch (error) {
+                    updateToastContent('Error: ' + error);
+                    toastNotification.show();
+                }
             });
         });
+    });
 

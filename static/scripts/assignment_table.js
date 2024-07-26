@@ -168,7 +168,6 @@ fetch('/assignment/load_data')
         const columns = getCourseColumns();
 
         let data = fixedRows.concat(userRows);
-
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
 

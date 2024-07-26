@@ -1,26 +1,6 @@
 {% extends "layout.html" %}
 {% block pagetitle %}List of Users{% endblock %}
 {% block additionalpageheader %}
-    <script>
-        $(document).ready(function () {
-            var errorPopup = $('#errorPopup');
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        {% if category == 'error' %}
-                            $('#errorMessage').text('{{ message }}');
-                            errorPopup.modal('show');
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            $('#okButton').click(function () {
-                errorPopup.modal('hide');
-            });
-        });
-    </script>
     <style>
         a {
             text-decoration: none;
@@ -79,11 +59,11 @@
             </thead>
             <tbody>
             {% for user in users %}
-                <tr>
+                <tr class="user-item" data-organizations="{{ user.organization.id }}">
                     <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.name }}
                     </a></td>
-                   <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
+                    <td><a href="{{ url_for("user.user_profile", user_id=user.id, current_year=dynamic_year) }}">
                         {{ user.first_name }}
                     </a></td>
                     <td>{{ user.email }}</td>

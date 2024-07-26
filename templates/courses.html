@@ -49,7 +49,8 @@
             </thead>
             <tbody>
             {% for course in courses %}
-                <tr>
+                <tr class="course-item"
+                    data-organizations="{{ course.organizations | map(attribute='id') | join(',') }}">
                     <td>
                         <a href="{{ url_for("course.course_info", course_id=course.id, current_year=current_year) }}">
                             {{ course.code }} - {{ course.title }}

@@ -129,4 +129,3 @@ $(document).on('keyup', '#filterRow input', function () {
         $(this).toggle(containsValue);
     });
 });
-

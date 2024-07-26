@@ -2,6 +2,22 @@
 {% block pagetitle %}Home Page{% endblock %}
 {% block pagecontent %}
     <br>
+    <div class="toast-container top-0 start-50 translate-middle-x text-danger">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast" data-delay="5000">
+                        <div class="toast-header">
+                            <strong class="mr-auto text-{{ category }}">Notification</strong>
+                        </div>
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <h1>{{ session.first_name }} {{ session.name }}</h1>
     <hr>
     {% if user.is_researcher %}
@@ -97,4 +113,11 @@
             </tbody>
         </table>
     {% endif %}
+{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $('.toast').toast('show');
+        });
+    </script>
 {% endblock %}

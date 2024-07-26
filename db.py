@@ -1,11 +1,17 @@
+from enum import Enum
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
-
 from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 
+
+class Role(Enum):
+    ADMIN = "admin"
+    RESEARCHER = "researcher"
+    TEACHER = "teacher"
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -31,6 +37,16 @@ class User(db.Model):
             if self.user_teacher:
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
         return value
+
+    def allowed(self, access_level):
+        if access_level == Role.ADMIN:
+            return self.admin
+        elif access_level == Role.RESEARCHER:
+            return self.is_researcher
+        elif access_level == Role.TEACHER:
+            return self.is_teacher
+        else:
+            return False
 
 
 class Course(db.Model):
@@ -142,6 +158,26 @@ class CourseOrganization(db.Model):
     course_id = db.Column(db.Integer, primary_key=True)
     course_year = db.Column(db.Integer, primary_key=True)
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), primary_key=True)
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
+
+
+class Evaluation(db.Model):
+    __tablename__ = 'evaluation'
+
+    course_id = db.Column(db.Integer, primary_key=True)
+    course_year = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    task = db.Column(db.JSON, nullable=False)
+    nbr_hours = db.Column(db.String, nullable=False)
+    workload = db.Column(db.String, nullable=False)
+    comment = db.Column(db.String)
+    second_course = db.Column(db.Boolean)
 
     __table_args__ = (
         db.ForeignKeyConstraint(

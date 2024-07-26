@@ -1,5 +1,5 @@
-from decorators import login_required
-from db import db, User, Course, Teacher, Organization, Configuration
+from decorators import login_required, check_access_level
+from db import db, User, Course, Teacher, Organization, Evaluation, Configuration, Role
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -67,6 +67,7 @@ def assign_teachers_to_course(course_id, course_year, assigned_teachers):
 
 @course_bp.route('/add_course', methods=['POST', 'GET'])
 @login_required
+@check_access_level(Role.ADMIN)
 def add_course():
     if request.method == 'GET':
         return render_template('add_course.html')
@@ -108,6 +109,7 @@ def add_course():
 
 @course_bp.route('/courses/<int:current_year>')
 @login_required
+@check_access_level(Role.ADMIN)
 def courses(current_year=None):
     courses = db.session.query(Course).filter_by(year=current_year).all()
     return render_template('courses.html', courses=courses, current_year=current_year)
@@ -120,13 +122,15 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True, User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True,
+                                             User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
 
 @course_bp.route('<int:course_id>')
 @login_required
+@check_access_level(Role.ADMIN)
 def course_info(course_id):
     dynamic_year = get_current_year()
     current_year = int(request.args.get('current_year')) if request.args.get('current_year') else dynamic_year
@@ -142,6 +146,7 @@ def course_info(course_id):
 
 @course_bp.route('/update_course_info', methods=['POST'])
 @login_required
+@check_access_level(Role.ADMIN)
 def update_course_info():
     form = request.form
     if not form:
@@ -170,8 +175,8 @@ def update_course_info():
     # Remove all teachers assigned to the course
     try:
         db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                                              Teacher.course_year == year,
-                                                              Teacher.user_id.in_(assigned_teachers)).delete()
+                                         Teacher.course_year == year,
+                                         Teacher.user_id.in_(assigned_teachers)).delete()
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -202,6 +207,7 @@ def update_course_info():
 
 @course_bp.route('/duplicate_course')
 @login_required
+@check_access_level(Role.ADMIN)
 def duplicate_course():
     course_id = request.args.get('course_id')
     course_year = request.args.get('year')
@@ -212,6 +218,7 @@ def duplicate_course():
 
 @course_bp.route('/add_duplicate_course', methods=['POST'])
 @login_required
+@check_access_level(Role.ADMIN)
 def add_duplicate_course():
     form = request.form
     if not form:
@@ -249,3 +256,54 @@ def add_duplicate_course():
         db.session.rollback()
 
     return redirect(url_for('course.course_info', course_id=course_id, current_year=year))
+
+
+@course_bp.route('/evaluations/<int:user_id>/<int:current_year>')
+@login_required
+def evaluations(user_id, current_year):
+    courses = db.session.query(Course).filter_by(year=current_year).all()
+
+    return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id)
+
+
+@course_bp.route('/create_evaluations/<int:user_id>/<int:current_year>', methods=['POST'])
+@login_required
+def create_evaluation(user_id, current_year):
+    form = request.form
+    if not form:
+        return make_response("Problem with form request", 500)
+
+    course_id = request.form.get('course_id')
+    tasks = request.form.getlist('tasks[]')
+    other_task = request.form.get('other_task')
+    evaluation_hour = request.form.get('evaluation_hour')
+    workload = request.form.get('workload')
+    comment = request.form.get('comment')
+    second_course = request.form.get('second_course') == 'Yes'
+
+    if not all([course_id, evaluation_hour, workload, comment is not None]):
+        return make_response("Missing required fields", 400)
+
+    if other_task:
+        tasks.append(other_task)
+
+    try:
+        existing_evaluation = db.session.query(Evaluation).filter_by(course_id=course_id, course_year=current_year,
+                                                                     user_id=user_id).first()
+        if existing_evaluation:
+            db.session.delete(existing_evaluation)
+            db.session.commit()
+            flash('Existing evaluation was replaced.', 'success')
+        else:
+            flash('Evaluation created successfully!', 'success')
+
+        new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
+                                    nbr_hours=evaluation_hour, workload=workload, comment=comment,
+                                    second_course=second_course)
+        db.session.add(new_evaluation)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred: {str(e)}', 'danger')
+
+    return redirect(url_for('course.evaluations', user_id=user_id, current_year=current_year))

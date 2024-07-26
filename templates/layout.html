@@ -39,6 +39,10 @@
                                href="{{ url_for('user.user_profile', user_id=session.user_id, current_year=dynamic_year) }}">My
                                 Profile</a>
                         </li>
+                        <li>
+                            <a class="nav-link"
+                               href="{{ url_for('course.evaluations', user_id=session.user_id, current_year=dynamic_year) }}">Evaluations</a>
+                        </li>
                         {% if session.is_admin %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="usersDropdown" role="button"

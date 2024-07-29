@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block pagetitle %}Home Page{% endblock %}
 {% block pagecontent %}
+    <br>
     <div class="toast-container top-0 start-50 translate-middle-x text-danger">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

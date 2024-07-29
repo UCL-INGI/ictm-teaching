@@ -92,6 +92,7 @@ def users(user_type):
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
+@check_access_level(Role.ADMIN)
 def user_profile(user_id, current_year):
     all_users = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()

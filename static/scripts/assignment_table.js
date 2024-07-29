@@ -31,8 +31,8 @@ fetch('/assignment/load_data')
             "Total for now",
         ];
 
-        const lenFixedRowsText = fixedRowsText.length
-        const lenFixedHeaders = fixedHeaders.length
+        const lenFixedRowsText = fixedRowsText.length;
+        const lenFixedHeaders = fixedHeaders.length;
         const borderStyle = {width: 2, color: 'black'};
 
         //Split long text in the course header
@@ -58,9 +58,12 @@ fetch('/assignment/load_data')
             let rows = [];
 
             const allProperties = Object.keys(courses[0]);
-            const requiredProperties = ['id', 'quadri', 'assigned_teachers', 'nbr_students', 'nbr_teaching_assistants', 'tutors'];
+            const requiredProperties = ['id', 'quadri', 'assigned_teachers', 'nbr_students', 'nbr_teaching_assistants'];
             const properties = allProperties.filter(prop => requiredProperties.includes(prop));
-            console.log("Properties", properties);
+            // Use to keep the order of the properties
+            const orderedProperties = requiredProperties.map(prop => properties.includes(prop) ? prop : null).filter(prop => prop !== null);
+            orderedProperties.push('tutors')
+
             for (let i = 0; i < lenFixedRowsText; i++) {
                 let row = {
                     researchers: {
@@ -75,7 +78,7 @@ fetch('/assignment/load_data')
                 };
 
                 courses.forEach(course => {
-                    row[course.code] = properties.includes('tutors') && properties[i] === 'tutors' ? 0 : course[properties[i]];
+                    row[course.code] = orderedProperties.includes('tutors') && orderedProperties[i] === 'tutors' ? 0 : course[orderedProperties[i]];
                 });
                 rows.push(row);
             }
@@ -102,7 +105,7 @@ fetch('/assignment/load_data')
                 //The second line allows admins to assign a course to the user
                 const emptyRow = buildRow(user, false);
                 const matchingAssistant = researchers[user.id];
-                const assistantOrg = organizations[user.organization_id]
+                const assistantOrg = organizations[user.organization_id];
 
                 row.org = assistantOrg ? assistantOrg.name : "";
                 row.promoter = matchingAssistant ? (users[user.supervisor_id]?.name ?? "") : "";
@@ -149,7 +152,7 @@ fetch('/assignment/load_data')
 
             courses.forEach(course => {
                 const code = course.code;
-                let col = {data: code}
+                let col = {data: code};
                 fixedColumns.push(col)
             });
             return fixedColumns;
@@ -321,7 +324,7 @@ fetch('/assignment/load_data')
             afterSetCellMeta: function (row, col, key, value) {
                 if (key === 'comment' && !isCollectedMetaData) {
                     let comments = JSON.parse(localStorage.getItem('cellsMeta')) || [];
-                    const comment = {'row': row, 'col': col, 'key': key, 'value': value}
+                    const comment = {'row': row, 'col': col, 'key': key, 'value': value};
                     comments.push(comment);
                     storeCellsMeta(comments);
                 }
@@ -471,9 +474,9 @@ fetch('/assignment/load_data')
 
                     const userData = {
                         user_id: user_row.researchers.id,
-                        load_q1: user_row.charge3,
-                        load_q2: user_row.check,
-                    }
+                        load_q1: user_row.loadQ1,
+                        load_q2: user_row.loadQ2,
+                    };
 
                     const courseData = {};
                     courses.forEach(course => {

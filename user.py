@@ -92,7 +92,7 @@ def users(user_type):
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
-@check_access_level(Role.ADMIN)
+@check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def user_profile(user_id, current_year):
     all_users = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
@@ -116,6 +116,7 @@ def user_profile(user_id, current_year):
 
 @user_bp.route('/update_user_profile', methods=['POST'])
 @login_required
+@check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def update_user_profile():
     form = request.form
     if not form:

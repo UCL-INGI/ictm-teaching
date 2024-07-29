@@ -1,0 +1,29 @@
+<div class="toast-container top-0 start-50 translate-middle-x">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
+                 aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {% for category, message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+</div>
+{% block additionalfooter %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastOrg = document.querySelector('.toast');
+            if (toastOrg) {
+                const toast = new bootstrap.Toast(toastOrg);
+                toast.show();
+            }
+        });
+    </script>
+{% endblock %}

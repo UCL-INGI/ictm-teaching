@@ -66,8 +66,7 @@ def assign_teachers_to_course(course_id, course_year, assigned_teachers):
 
 
 def count_org(orgs):
-    if len(orgs) == 0:
-        return "Please select at least one organization", 400
+    return len(orgs) == 0
 
 
 @course_bp.route('/add_course', methods=['POST', 'GET'])
@@ -92,9 +91,9 @@ def add_course():
     language = request.form['language']
 
     organization_ids = request.form.getlist('organization_code[]')
-    check_orgs = count_org(organization_ids)
-    if check_orgs:
-        return make_response(*check_orgs)
+    if count_org(organization_ids):
+        flash("Please select at least one organization", "danger")
+        return redirect(url_for('course.add_course'))
 
     try:
         is_course = db.session.query(Course).filter(Course.code == code,
@@ -175,9 +174,9 @@ def update_course_info():
     nbr_monitor_students = request.form['nbr_monitor_students']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
-    check_orgs = count_org(organisation_code)
-    if check_orgs:
-        return make_response(*check_orgs)
+    if count_org(organisation_code):
+        flash("Please select at least one organization", "danger")
+        return redirect(url_for('course.course_info', course_id=course_id))
 
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
     if not course:
@@ -250,9 +249,9 @@ def add_duplicate_course():
     course_id = request.form['course_id']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
-    check_orgs = count_org(organisation_code)
-    if check_orgs:
-        return make_response(*check_orgs)
+    if count_org(organisation_code):
+        flash("Please select at least one organization", "danger")
+        return redirect(url_for('course.duplicate_course', course_id=course_id, year=year))
 
     try:
         duplicate_course = Course(id=course_id, code=code, title=title, quadri=quadri, year=year,

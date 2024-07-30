@@ -3,6 +3,8 @@ from enum import Enum
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
+
+from sqlalchemy import event
 from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
@@ -12,6 +14,7 @@ class Role(Enum):
     ADMIN = "admin"
     RESEARCHER = "researcher"
     TEACHER = "teacher"
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -47,6 +50,16 @@ class User(db.Model):
             return self.is_teacher
         else:
             return False
+
+    @staticmethod
+    def validate_unique_email(mapper, connect, target):
+        if target.email:
+            query = db.session.query(User).filter(User.email == target.email, User.id != target.id).exists()
+            if db.session.query(query).scalar():
+                raise ValueError("Email already exists")
+
+
+event.listen(User, 'before_insert', User.validate_unique_email)
 
 
 class Course(db.Model):

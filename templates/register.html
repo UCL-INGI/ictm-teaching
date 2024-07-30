@@ -24,6 +24,7 @@
 {% endblock %}
 
 {% block pagecontent %}
+    {% include "toast.html" %}
     <div class="container bootstrap snippet">
         <h2 class="text-center mb-4">New user</h2>
         <form method="post" action="{{ url_for("user.add_user") }}">

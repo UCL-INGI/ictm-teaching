@@ -38,6 +38,7 @@ def add_user():
     name = request.form['name']
     first_name = request.form['first_name']
     email = request.form['email']
+
     if not contains_valid_characters(name):
         return make_response("Invalid characters in name", 400)
     if not contains_valid_characters(first_name):
@@ -64,6 +65,9 @@ def add_user():
                                         max_loads=max_load)
             db.session.add(new_researcher)
             db.session.commit()
+    except ValueError as e:
+        db.session.rollback()
+        flash(str(e), "error")
     except:
         db.session.rollback()
         raise

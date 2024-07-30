@@ -75,18 +75,10 @@ function filter(page) {
 
     if (activeOrganizations.length > 0) {
         items.each(function () {
-            let organizations;
-            let showItem;
+            let organizations = $(this).data('organizations').toString().split(',');
+            let showItem = activeOrganizations.some(org => organizations.includes(org.toString()));
 
-            if (page === "course") {
-                organizations = $(this).data('organizations').toString().split(',');
-                showItem = activeOrganizations.some(org => organizations.includes(org.toString()));
-            }
-            else if (page === "user") {
-                organizations = $(this).data('organizations');
-                showItem = activeOrganizations.includes(organizations);
-            }
-
+            // Show or hide the item based on whether it belongs to any active organization
             if (showItem) {
                 $(this).show();
             } else {

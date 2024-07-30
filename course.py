@@ -65,10 +65,6 @@ def assign_teachers_to_course(course_id, course_year, assigned_teachers):
         raise e
 
 
-def count_org(orgs):
-    return len(orgs) == 0
-
-
 @course_bp.route('/add_course', methods=['POST', 'GET'])
 @login_required
 @check_access_level(Role.ADMIN)
@@ -91,7 +87,7 @@ def add_course():
     language = request.form['language']
 
     organization_ids = request.form.getlist('organization_code[]')
-    if count_org(organization_ids):
+    if not len(organization_ids):
         flash("Please select at least one organization", "danger")
         return redirect(url_for('course.add_course'))
 
@@ -174,7 +170,7 @@ def update_course_info():
     nbr_monitor_students = request.form['nbr_monitor_students']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
-    if count_org(organisation_code):
+    if not len(organisation_code):
         flash("Please select at least one organization", "danger")
         return redirect(url_for('course.course_info', course_id=course_id))
 
@@ -249,7 +245,7 @@ def add_duplicate_course():
     course_id = request.form['course_id']
     assigned_teachers = request.form.getlist('assigned_teachers[]')
     organisation_code = request.form.getlist('organization_code[]')
-    if count_org(organisation_code):
+    if not len(organisation_code):
         flash("Please select at least one organization", "danger")
         return redirect(url_for('course.duplicate_course', course_id=course_id, year=year))
 

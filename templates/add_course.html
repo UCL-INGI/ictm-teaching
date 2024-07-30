@@ -13,7 +13,7 @@
     </style>
 {% endblock %}
 {% block pagecontent %}
-    {% include "toast_check_orgs.html" %}
+    {% include "toast.html" %}
     <div class="container-sm">
         <h2 class="text-center mb-4">New Course</h2>
         <form method="post" action="{{ url_for('course.add_course') }}">

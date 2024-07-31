@@ -16,9 +16,9 @@ class Role(Enum):
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=True)
-    first_name = db.Column(db.String, nullable=True)
-    email = db.Column(db.String, nullable=True, unique=True)
+    name = db.Column(db.String(100), nullable=True)
+    first_name = db.Column(db.String(100), nullable=True)
+    email = db.Column(db.String(200), nullable=True, unique=True)
     admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
@@ -53,10 +53,10 @@ class Course(db.Model):
     __tablename__ = 'course'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     year = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String)
-    title = db.Column(db.String)
+    code = db.Column(db.String(10))
+    title = db.Column(db.String(100))
     quadri = db.Column(db.Integer)
-    language = db.Column(db.String)
+    language = db.Column(db.String(10))
     nbr_students = db.Column(db.Integer, default=0)
     nbr_teaching_assistants = db.Column(db.Integer, default=0)
     nbr_monitor_students = db.Column(db.Integer, default=0)
@@ -75,10 +75,10 @@ class Researcher(db.Model):
     __tablename__ = 'researcher'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    research_field = db.Column(db.String)
+    research_field = db.Column(db.String(30))
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
-    researcher_type = db.Column(db.String)
+    researcher_type = db.Column(db.String(30))
 
     user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
 
@@ -142,7 +142,7 @@ class Configuration(db.Model):
 class Organization(db.Model):
     __tablename__ = 'organization'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String(30), nullable=False, unique=True)
 
     users = db.relationship('User', back_populates='organization')
     courses = db.relationship('Course',
@@ -174,9 +174,9 @@ class Evaluation(db.Model):
     course_year = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     task = db.Column(db.JSON, nullable=False)
-    nbr_hours = db.Column(db.String, nullable=False)
-    workload = db.Column(db.String, nullable=False)
-    comment = db.Column(db.String)
+    nbr_hours = db.Column(db.String(10), nullable=False)
+    workload = db.Column(db.String(10), nullable=False)
+    comment = db.Column(db.String(500))
     second_course = db.Column(db.Boolean)
 
     __table_args__ = (

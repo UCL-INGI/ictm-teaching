@@ -92,7 +92,7 @@ def users(user_type):
 
 def is_allowed_user(user_id):
     user = db.session.query(User).filter_by(id=session["user_id"]).first()
-    return user.id != user_id and not user.allowed(Role.ADMIN)
+    return user.id != session["user_id"] and not user.allowed(Role.ADMIN)
 
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
@@ -123,15 +123,14 @@ def user_profile(user_id, current_year):
                            current_year=current_year)
 
 
-@user_bp.route('/update_user_profile', methods=['POST'])
+@user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
 @login_required
 @check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
-def update_user_profile():
+def update_user_profile(user_id):
     form = request.form
     if not form:
         return make_response("Problem with form request", 500)
 
-    user_id = request.form['user_id']
     if is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))

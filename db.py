@@ -51,16 +51,6 @@ class User(db.Model):
         else:
             return False
 
-    @staticmethod
-    def validate_unique_email(mapper, connect, target):
-        if target.email:
-            query = db.session.query(User).filter(User.email == target.email, User.id != target.id).exists()
-            if db.session.query(query).scalar():
-                raise ValueError("Email already exists")
-
-
-event.listen(User, 'before_insert', User.validate_unique_email)
-
 
 class Course(db.Model):
     __tablename__ = 'course'

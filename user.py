@@ -53,21 +53,21 @@ def add_user():
     researcher_type = request.form['researcher_type'] if is_researcher else None
 
     try:
-        new_user = User(name=name, first_name=first_name, email=email, is_teacher=is_teacher,
-                        is_researcher=is_researcher, supervisor_id=supervisor_id,
-                        organization_id=organization_code)
-        db.session.add(new_user)
-        db.session.commit()
-        if is_researcher:
-            all_loads = DEFAULT_MAX_LOAD
-            max_load = all_loads.get(researcher_type, 0)
-            new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type,
-                                        max_loads=max_load)
-            db.session.add(new_researcher)
+        if db.session.query(User).filter(User.email == email).first():
+            flash("Email already exists")
+        else:
+            new_user = User(name=name, first_name=first_name, email=email, is_teacher=is_teacher,
+                            is_researcher=is_researcher, supervisor_id=supervisor_id,
+                            organization_id=organization_code)
+            db.session.add(new_user)
             db.session.commit()
-    except ValueError as e:
-        db.session.rollback()
-        flash(str(e), "error")
+            if is_researcher:
+                all_loads = DEFAULT_MAX_LOAD
+                max_load = all_loads.get(researcher_type, 0)
+                new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type,
+                                            max_loads=max_load)
+                db.session.add(new_researcher)
+                db.session.commit()
     except:
         db.session.rollback()
         raise
@@ -209,4 +209,3 @@ def enable(user_id):
         raise e
 
     return redirect(url_for("user.users", user_type='archived'))
-

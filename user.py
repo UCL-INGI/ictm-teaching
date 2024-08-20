@@ -83,6 +83,8 @@ def users(user_type):
         base_query = base_query.filter(User.is_researcher == True, User.active == True)
     elif user_type == 'archived':
         base_query = base_query.filter(User.active == False)
+    elif user_type == 'other':
+        base_query = base_query.filter(User.active == True, User.is_teacher == False, User.is_researcher == False)
 
     all_users = base_query.all()
     return render_template('users.html', users=all_users, user_type=user_type)

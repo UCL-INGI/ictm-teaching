@@ -91,8 +91,7 @@ def users(user_type):
 
 
 def is_allowed_user(user_id):
-    user = db.session.query(User).filter_by(id=session["user_id"]).first()
-    return user.id != session["user_id"] and not user.allowed(Role.ADMIN)
+    return user_id == session["user_id"] or session["is_admin"]
 
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')

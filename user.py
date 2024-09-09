@@ -130,7 +130,7 @@ def update_user_profile(user_id):
     if not form:
         return make_response("Problem with form request", 500)
 
-    if is_allowed_user(user_id):
+    if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))
 

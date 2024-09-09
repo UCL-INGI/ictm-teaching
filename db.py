@@ -3,8 +3,6 @@ from enum import Enum
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
-
-from sqlalchemy import event
 from sqlalchemy.orm import validates
 
 db = SQLAlchemy()

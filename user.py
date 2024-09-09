@@ -98,7 +98,7 @@ def is_allowed_user(user_id):
 @login_required
 @check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def user_profile(user_id, current_year):
-    if is_allowed_user(user_id):
+    if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))
 

@@ -167,17 +167,16 @@ def update_user_profile(user_id):
         user.name = name
         user.email = email
         user.organization_id = organization_code
-        if user.admin:
-            user.is_teacher = is_teacher
-            user.is_researcher = is_researcher
-            user.supervisor_id = supervisor_id
-            if is_researcher:
-                if researcher is None:
-                    new_researcher = Researcher(user_id=user.id, researcher_type=researcher_type, max_loads=max_loads)
-                    db.session.add(new_researcher)
-                else:
-                    researcher.max_loads = max_loads
-                    researcher.researcher_type = researcher_type
+        user.is_teacher = is_teacher
+        user.is_researcher = is_researcher
+        user.supervisor_id = supervisor_id
+        if is_researcher:
+            if researcher is None:
+                new_researcher = Researcher(user_id=user.id, researcher_type=researcher_type, max_loads=max_loads)
+                db.session.add(new_researcher)
+            else:
+                researcher.max_loads = max_loads
+                researcher.researcher_type = researcher_type
         db.session.commit()
     except Exception as e:
         db.session.rollback()

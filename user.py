@@ -79,7 +79,7 @@ def add_user():
 @login_required
 @check_access_level(Role.ADMIN)
 def users(user_type):
-    base_query = db.session.query(User).filter(User.admin == False)
+    base_query = db.session.query(User).filter()
 
     if user_type == 'teacher':
         base_query = base_query.filter(User.is_teacher == True, User.active == True)
@@ -165,9 +165,9 @@ def update_user_profile(user_id):
     try:
         user.first_name = first_name
         user.name = name
-        user.email = email
-        user.organization_id = organization_code
-        if user.admin:
+        if session["is_admin"]:
+            user.email = email
+            user.organization_id = organization_code
             user.is_teacher = is_teacher
             user.is_researcher = is_researcher
             user.supervisor_id = supervisor_id

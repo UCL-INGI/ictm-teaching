@@ -135,8 +135,7 @@ def search_teachers():
 @login_required
 @check_access_level(Role.ADMIN)
 def course_info(course_id):
-    dynamic_year = get_current_year()
-    current_year = int(request.args.get('current_year')) if request.args.get('current_year') else dynamic_year
+    current_year = int(request.args.get('current_year'))
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == current_year).first()
     if not course:
         return make_response("Course not found", 404)
@@ -208,7 +207,7 @@ def update_course_info():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-    return redirect(url_for("course.course_info", course_id=course_id))
+    return redirect(url_for("course.course_info", course_id=course_id, current_year=year))
 
 
 @course_bp.route('/duplicate_course')

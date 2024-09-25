@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, flash, current_app, url_for, reque
 
 config_bp = Blueprint('config', __name__)
 
-
+# This method allows the admin to create a new academic year.
 @config_bp.route('/new_year', methods=['POST'])
 @login_required
 @check_access_level(Role.ADMIN)
@@ -29,7 +29,7 @@ def new_year():
 
     return redirect(url_for("index"))
 
-
+# This method allows the admin to move on to the next academic year for all users.
 @config_bp.route('/next_year', methods=['POST'])
 @login_required
 @check_access_level(Role.ADMIN)

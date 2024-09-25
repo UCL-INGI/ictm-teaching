@@ -135,21 +135,6 @@
 <div id="content">
     {% block pagecontent %}{% endblock %}
 </div>
-{% block additionalfooter %}
-    <script>
-        $(document).ready(function () {
-            $('#confirmationModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-
-                var message = button.data('message');
-                var url = button.data('url');
-
-                var modal = $(this);
-                modal.find('.modal-body').text(message);
-                modal.find('#confirmationForm').attr('action', url);
-            });
-        });
-    </script>
-{% endblock %}
+{% block additionalfooter %}{% endblock %}
 </body>
 </html>

@@ -1,3 +1,5 @@
+import { fixedHeaders, fixedRowsText, ColumnIndices, RowIndices, lenFixedRowsText, lenFixedHeaders, borderStyle, requiredProperties, taLoad, phdLoad, postDocLoad } from './constants.js';
+
 fetch('/assignment/load_data')
     .then(response => response.json())
     .then(loadData => {
@@ -11,29 +13,6 @@ fetch('/assignment/load_data')
             });
             course.assigned_teachers = teachersName.join(', ');
         });
-
-        const fixedHeaders = [
-            "Id",
-            "Researchers",
-            "Org",
-            "Promoter",
-            "Total Load",
-            "Load Q1",
-            "Load Q2",
-        ];
-
-        const fixedRowsText = [
-            "Id",
-            "Quadri",
-            "Acads",
-            "Nbr Students",
-            "Assistant",
-            "Total for now",
-        ];
-
-        const lenFixedRowsText = fixedRowsText.length;
-        const lenFixedHeaders = fixedHeaders.length;
-        const borderStyle = {width: 2, color: 'black'};
 
         //Split long text in the course header
         const coursesHeaders = courses.map(course => {
@@ -58,7 +37,6 @@ fetch('/assignment/load_data')
             let rows = [];
 
             const allProperties = Object.keys(courses[0]);
-            const requiredProperties = ['id', 'quadri', 'assigned_teachers', 'nbr_students', 'nbr_teaching_assistants'];
             const properties = allProperties.filter(prop => requiredProperties.includes(prop));
             // Use to keep the order of the properties
             const orderedProperties = requiredProperties.map(prop => properties.includes(prop) ? prop : null).filter(prop => prop !== null);
@@ -205,25 +183,6 @@ fetch('/assignment/load_data')
         let comments = retrieveCellsMetaLocally();
         let isCollectedMetaData = true;
 
-        const ColumnIndices = {
-            ID: 0,
-            RESEARCHERS: 1,
-            ORG: 2,
-            PROMOTER: 3,
-            TOTAL_LOAD: 4,
-            LOAD_Q1: 5,
-            LOAD_Q2: 6,
-        };
-
-        const RowIndices = {
-            ID: 0,
-            QUADRI: 1,
-            ACADS: 2,
-            NBR_STUDENTS: 3,
-            ASSISTANTS: 4,
-            TOTAL_ASSISTANT_NOW: 5,
-        }
-
         let verifiedModif = true;
 
         const table = new Handsontable(document.getElementById("handsontable"), {
@@ -341,13 +300,13 @@ fetch('/assignment/load_data')
                         //Second case: load Q1 or Q2 = half of total load
                         if (load_q1 + load_q2 > total_load) {
                             TD.style.backgroundColor = 'red';
-                        } else if ((total_load === 4 || total_load === 2) && (total_load / value <= 2 || load_q1 + load_q2 === total_load)) {
+                        } else if ((total_load === taLoad || total_load === phdLoad) && (total_load / value <= phdLoad || load_q1 + load_q2 === total_load)) {
                             TD.style.backgroundColor = 'green';
-                        } else if (total_load === 1) {
-                            if (value === 1) {
+                        } else if (total_load === postDocLoad) {
+                            if (value === postDocLoad) {
                                 TD.style.backgroundColor = 'green';
                             } else {
-                                if ((load_q1 === 1 && load_q2 === 0) || (load_q1 === 0 && load_q2 === 1)) {
+                                if ((load_q1 === postDocLoad && load_q2 === 0) || (load_q1 === 0 && load_q2 === postDocLoad)) {
                                     TD.style.backgroundColor = 'green';
                                 }
                             }
@@ -379,7 +338,6 @@ fetch('/assignment/load_data')
             beforeFilter(conditionsStack) {
                 const filtersPlugin = this.getPlugin('filters');
                 //Get the user data without the fixed rows
-                // const tab = this.getData().splice(lenFixedRowsText);
                 const tab = this.getData().slice(lenFixedRowsText);
 
                 let values = [];

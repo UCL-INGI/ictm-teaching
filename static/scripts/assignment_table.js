@@ -224,6 +224,8 @@ fetch('/assignment/load_data')
             TOTAL_ASSISTANT_NOW: 5,
         }
 
+        let verifiedModif = true;
+
         const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,
             fixedColumnsLeft: lenFixedHeaders,
@@ -279,43 +281,31 @@ fetch('/assignment/load_data')
                     changes.forEach(([row, prop, oldValue, newValue]) => {
                         let col = this.propToCol(prop);
                         if ((col >= lenFixedHeaders && row >= lenFixedRowsText) && (row % 2 === 1)) {
-                            //Boolean to determine whether a cell is updated or empty
-                            let isDeleted = false;
-
-                            //Update total course assistants
-                            if (oldValue !== null && newValue === null) {
-                                isDeleted = true;
-                            }
 
                             const colInfos = this.getDataAtProp(prop);
                             let nbrAssistants = colInfos[RowIndices.TOTAL_ASSISTANT_NOW];
-
-                            if (isDeleted) {
-                                nbrAssistants--;
-                            } else {
-                                nbrAssistants++;
-                            }
-                            this.setDataAtCell(RowIndices.TOTAL_ASSISTANT_NOW, col, nbrAssistants);
-
-                            //Update user load
                             const rowInfos = this.getDataAtRow(row - 1);
                             const quadri = colInfos[RowIndices.QUADRI];
-                            if (quadri === 1) {
-                                let load_q1 = rowInfos[ColumnIndices.LOAD_Q1];
-                                if (isDeleted) {
-                                    load_q1--;
-                                } else {
-                                    load_q1++;
+
+                            let loadKey = quadri === 1 ? ColumnIndices.LOAD_Q1 : ColumnIndices.LOAD_Q2;
+                            let loadValue = rowInfos[loadKey];
+
+                            // Old non-empty value and new empty value: loadValue-- and nbrAssistants--.
+                            // Old non-empty value and new non-empty value: loadValue++ and nbrAssistants++.
+                            // Old null value and new non-empty value: loadValue++ and nbrAssistants++.
+                            // Old non-null value and new null value: loadValue-- and nbrAssistants--.
+                            if (oldValue !== newValue) {
+                                if ((oldValue !== '' && newValue === '') || (oldValue !== null && newValue === null)) {
+                                    if (loadValue > 0 && nbrAssistants > 0) {
+                                        loadValue--;
+                                        nbrAssistants--;
+                                    }
+                                } else if ((oldValue === '' && newValue !== '') || (oldValue === null && newValue !== null)) {
+                                    loadValue++;
+                                    nbrAssistants++;
                                 }
-                                this.setDataAtCell(row - 1, ColumnIndices.LOAD_Q1, load_q1);
-                            } else {
-                                let load_q2 = rowInfos[ColumnIndices.LOAD_Q2];
-                                if (isDeleted) {
-                                    load_q2--;
-                                } else {
-                                    load_q2++;
-                                }
-                                this.setDataAtCell(row - 1, ColumnIndices.LOAD_Q2, load_q2);
+                                this.setDataAtCell(row - 1, loadKey, loadValue);
+                                this.setDataAtCell(RowIndices.TOTAL_ASSISTANT_NOW, col, nbrAssistants);
                             }
                         }
                     });
@@ -389,30 +379,34 @@ fetch('/assignment/load_data')
             beforeFilter(conditionsStack) {
                 const filtersPlugin = this.getPlugin('filters');
                 //Get the user data without the fixed rows
-                const tab = this.getData().splice(lenFixedRowsText);
+                // const tab = this.getData().splice(lenFixedRowsText);
+                const tab = this.getData().slice(lenFixedRowsText);
 
                 let values = [];
                 const filteredResults = [];
                 //Get the number of the column to filter
-                const col = conditionsStack[0].column;
 
                 if (conditionsStack && conditionsStack.length > 0) {
-                    for (let i = 0; i < conditionsStack.length; i++) {
-                        //Get the matching values to filter
-                        values = conditionsStack[i].conditions[0].args.flat();
+                    const col = conditionsStack[0].column;
 
-                        //Verify if the row value for the specific column is in the filter
-                        for (const row of tab) {
-                            if (values.includes(row[col])) {
-                                //Push id to the filteredResults array
-                                filteredResults.push(row[0]);
+                    if (conditionsStack && conditionsStack.length > 0) {
+                        for (let i = 0; i < conditionsStack.length; i++) {
+                            //Get the matching values to filter
+                            values = conditionsStack[i].conditions[0].args.flat();
+
+                            //Verify if the row value for the specific column is in the filter
+                            for (const row of tab) {
+                                if (values.includes(row[col])) {
+                                    //Push id to the filteredResults array
+                                    filteredResults.push(row[0]);
+                                }
                             }
                         }
                     }
+                    filtersPlugin.clearConditions();
+                    //Create a new condition to filter the data based on the id
+                    filtersPlugin.addCondition(0, 'by_value', [filteredResults]);
                 }
-                filtersPlugin.clearConditions();
-                //Create a new condition to filter the data based on the id
-                filtersPlugin.addCondition(0, 'by_value', [filteredResults]);
             },
             afterFilter(conditionsStack) {
                 const filtersPlugin = this.getPlugin('filters');

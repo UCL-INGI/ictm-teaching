@@ -81,7 +81,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="coursesDropdown">
                                     <li>
                                         <a class="dropdown-item" id="courseList"
-                                           href="{{ url_for('course.courses', current_year=dynamic_year) }}">Course
+                                           href="{{ url_for('course.courses', year=dynamic_year) }}">Course
                                             list</a>
                                     </li>
                                     <li role="separator" class="dropdown-divider"></li>
@@ -99,7 +99,14 @@
                                 <ul class="dropdown-menu" aria-labelledby="configDropdown">
                                     <li>
                                         <button class="dropdown-item" data-bs-toggle="modal"
-                                                data-bs-target="#confirmationModal">Add New Year
+                                                data-bs-target="#confirmationModal"
+                                                data-message="Are you sure you want to add a new year?"
+                                                data-url="{{ url_for('config.new_year') }}">Add New Year
+                                        </button>
+                                        <button class="dropdown-item" data-bs-toggle="modal"
+                                                data-bs-target="#confirmationModal"
+                                                data-message="Are you sure you want to move on to the next year?"
+                                                data-url="{{ url_for('config.next_year') }}">Move on to the next year
                                         </button>
                                     </li>
                                 </ul>
@@ -107,9 +114,18 @@
                         {% endif %}
                         {% block additionalnav %}{% endblock %}
                     </ul>
-                    <div class="navbar-text ms-auto me-3">
-                        Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                    <div class="d-flex align-items-center ms-auto">
+                        <div class="me-0">
+                            <div class="navbar-text me-2">
+                                <input type="text" class="form-control form-control-sm" id="dynamicYearInput"
+                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;" disabled>
+                            </div>
+                        </div>
+
+                        <div class="navbar-text ms-0"> <!-- Ajustez ici -->
+                            Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,10 +143,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to add a new year?
             </div>
             <div class="modal-footer">
-                <form action="{{ url_for('config.next_year') }}" method="POST" id="nextYearForm">
+                <form action="{{ url_for('config.new_year') }}" method="POST" id="confirmationForm">
                     <button type="submit" class="btn btn-primary">Yes</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                 </form>
@@ -142,6 +157,21 @@
 <div id="content">
     {% block pagecontent %}{% endblock %}
 </div>
-{% block additionalfooter %}{% endblock %}
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $('#confirmationModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+
+                var message = button.data('message');
+                var url = button.data('url');
+
+                var modal = $(this);
+                modal.find('.modal-body').text(message);
+                modal.find('#confirmationForm').attr('action', url);
+            });
+        });
+    </script>
+{% endblock %}
 </body>
 </html>

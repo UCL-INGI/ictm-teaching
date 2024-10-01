@@ -39,7 +39,7 @@
                             {% if session.is_admin == False %} disabled {% endif %}>
                         {% for config in configurations %}
                             <option value="{{ config.year }}" {% if config.year == current_year %}
-                                    selected {% endif %} data-redirect="{{ url_for('course.courses', current_year=config.year) }}">
+                                    selected {% endif %} data-redirect="{{ url_for('course.courses', year=config.year) }}">
                                 {{ config.year }}-{{ config.year + 1 }}
                             </option>
                         {% endfor %}
@@ -52,7 +52,7 @@
                 <tr class="course-item"
                     data-organizations="{{ course.organizations | map(attribute='id') | join(',') }}">
                     <td>
-                        <a href="{{ url_for("course.course_info", course_id=course.id, current_year=current_year) }}">
+                        <a href="{{ url_for("course.course_info", course_id=course.id, year=current_year) }}">
                             {{ course.code }} - {{ course.title }}
                         </a>
                     </td>

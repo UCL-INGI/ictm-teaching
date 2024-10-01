@@ -81,7 +81,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="coursesDropdown">
                                     <li>
                                         <a class="dropdown-item" id="courseList"
-                                           href="{{ url_for('course.courses', current_year=dynamic_year) }}">Course
+                                           href="{{ url_for('course.courses', year=dynamic_year) }}">Course
                                             list</a>
                                     </li>
                                     <li role="separator" class="dropdown-divider"></li>
@@ -114,9 +114,18 @@
                         {% endif %}
                         {% block additionalnav %}{% endblock %}
                     </ul>
-                    <div class="navbar-text ms-auto me-3">
-                        Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                    <div class="d-flex align-items-center ms-auto">
+                        <div class="me-0">
+                            <div class="navbar-text me-2">
+                                <input type="text" class="form-control form-control-sm" id="dynamicYearInput"
+                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;" disabled>
+                            </div>
+                        </div>
+
+                        <div class="navbar-text ms-0"> <!-- Ajustez ici -->
+                            Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+                        </div>
                     </div>
                 </div>
             </div>

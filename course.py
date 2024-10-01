@@ -110,12 +110,12 @@ def add_course():
         raise e
 
 
-@course_bp.route('/courses/<int:current_year>')
+@course_bp.route('/courses/<int:year>')
 @login_required
 @check_access_level(Role.ADMIN)
-def courses(current_year=None):
-    courses = db.session.query(Course).filter_by(year=current_year).all()
-    return render_template('courses.html', courses=courses, current_year=current_year)
+def courses(year):
+    courses = db.session.query(Course).filter_by(year=year).all()
+    return render_template('courses.html', courses=courses, current_year=year)
 
 
 @course_bp.route('/search_teachers')
@@ -131,19 +131,18 @@ def search_teachers():
     return jsonify(results)
 
 
-@course_bp.route('<int:course_id>')
+@course_bp.route('<int:course_id>/<int:year>')
 @login_required
 @check_access_level(Role.ADMIN)
-def course_info(course_id):
-    current_year = int(request.args.get('current_year'))
-    course = db.session.query(Course).filter(Course.id == course_id, Course.year == current_year).first()
+def course_info(course_id, year):
+    course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
     if not course:
         return make_response("Course not found", 404)
 
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    return render_template('course_info.html', course=course, all_years=all_years, current_year=current_year)
+    return render_template('course_info.html', course=course, all_years=all_years, current_year=year)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])
@@ -207,17 +206,14 @@ def update_course_info():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-    return redirect(url_for("course.course_info", course_id=course_id, current_year=year))
+    return redirect(url_for("course.course_info", course_id=course_id, year=year))
 
 
-@course_bp.route('/duplicate_course')
+@course_bp.route('/duplicate_course/<int:course_id>/<int:year>')
 @login_required
 @check_access_level(Role.ADMIN)
-def duplicate_course():
-    course_id = request.args.get('course_id')
-    course_year = request.args.get('year')
-    course = db.session.query(Course).filter(Course.id == course_id, Course.year == course_year).first()
-
+def duplicate_course(course_id, year):
+    course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
     return render_template('duplicate_course.html', course=course)
 
 
@@ -263,7 +259,7 @@ def add_duplicate_course():
     except Exception as e:
         db.session.rollback()
 
-    return redirect(url_for('course.course_info', course_id=course_id, current_year=year))
+    return redirect(url_for('course.course_info', course_id=course_id, year=year))
 
 
 @course_bp.route('/evaluations/<int:user_id>/<int:current_year>')

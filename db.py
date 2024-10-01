@@ -12,6 +12,7 @@ class Role(Enum):
     ADMIN = "admin"
     RESEARCHER = "researcher"
     TEACHER = "teacher"
+    USER = "user"
 
 
 class User(db.Model):
@@ -40,14 +41,14 @@ class User(db.Model):
         return value
 
     def allowed(self, access_level):
-        if access_level == Role.ADMIN:
-            return self.admin
-        elif access_level == Role.RESEARCHER:
-            return self.is_researcher
-        elif access_level == Role.TEACHER:
-            return self.is_teacher
-        else:
-            return False
+        role_access = {
+            Role.USER: True,
+            Role.ADMIN: self.admin,
+            Role.RESEARCHER: self.is_researcher,
+            Role.TEACHER: self.is_teacher
+        }
+
+        return role_access.get(access_level, False)
 
 
 class Course(db.Model):

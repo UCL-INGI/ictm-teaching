@@ -28,7 +28,7 @@
         {% for selected in researcher.researcher_supervisor %}
             <div class="badge bg-primary" data-id="{{ selected.supervisor.id }}">
                 {{ selected.supervisor.name }} {{ selected.supervisor.first_name }}&nbsp;
-                <a href="#" class="remove-tag">&times;</a>
+                {% if session["is_admin"] %} <a href="#" class="remove-tag">&times;</a> {% endif %}
                 <input type="hidden" name="supervisor[]" value="{{ selected.supervisor.id }}">
             </div>
         {% endfor %}

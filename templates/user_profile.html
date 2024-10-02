@@ -86,7 +86,6 @@
                                 <dd>
                                     {% if session["is_admin"] %}
                                         <div class="form-check">
-
                                             <input type="checkbox" class="form-check-input" id="is_admin"
                                                    name="is_admin"
                                                    {% if requested_user.is_admin %}checked{% endif %}
@@ -113,19 +112,9 @@
                                 <div class="form-group" id="supervisor_select" style="display: none;">
                                     <dt>Supervisor</dt>
                                     <dd>
-                                        <select class="form-select" id="supervisor" name="supervisor"
-                                                {% if not session.is_admin %} disabled {% endif %}>
-                                            {% if requested_user.supervisor == None and not session.is_admin %}
-                                                <option value="" selected>None</option>
-                                            {% else %}
-                                                {% for supervisor in supervisors %}
-                                                    <option value="{{ supervisor.id }}"
-                                                            {% if supervisor.id == requested_user.supervisor.id %}selected{% endif %}>
-                                                        {{ supervisor.first_name }} {{ supervisor.name }}
-                                                    </option>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </select>
+                                        {% with is_disabled=(not session["is_admin"]), show_tags_container=false, show_selected_supervisors=true %}
+                                            {% include "search_supervisor.html" %}
+                                        {% endwith %}
                                     </dd>
                                 </div>
                                 <div class="form-group" id="researcher_type_display" style="display: none;">
@@ -133,16 +122,12 @@
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
                                                 {% if not session.is_admin %} disabled {% endif %}>
-                                            {% if is_researcher and not session.is_admin %}
-                                                <option value="" selected>None</option>
-                                            {% else %}
                                                 {% for type in researcher_type %}
                                                     <option value="{{ type }}"
                                                             {% if type == researcher.researcher_type %}selected{% endif %}>
                                                         {{ type }}
                                                     </option>
                                                 {% endfor %}
-                                            {% endif %}
                                         </select>
                                     </dd>
                                 </div>
@@ -198,38 +183,20 @@
                                     </tbody>
                                 </table>
 
-                                <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
-                                    <thead>
+                            <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                {% for preference in preferences %}
                                     <tr>
-                                        <th>Code</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider">
-                                    {% for preference in preferences %}
-                                        <tr>
-                                            <td>
-                                                <select class="form-control course-select">
-                                                    {% for course in courses %}
-                                                        <option value="{{ course.id }}-{{ course.year }}"
-                                                                {% if course.id == preference.course.id %}selected{% endif %}>
-                                                            {{ course.code }} - {{ course.title }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <i class="fas fa-trash delete-icon"></i>
-                                                <i class="fas fa-arrows-alt move-icon"></i>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-
-                                    <!-- Hidden row template -->
-                                    <tr id="template-row" style="display: none;">
                                         <td>
                                             <select class="form-control course-select">
                                                 {% for course in courses %}
-                                                    <option value="{{ course.id }}-{{ course.year }}">
+                                                    <option value="{{ course.id }}-{{ course.year }}"
+                                                            {% if course.id == preference.course.id %}selected{% endif %}>
                                                         {{ course.code }} - {{ course.title }}
                                                     </option>
                                                 {% endfor %}
@@ -240,63 +207,82 @@
                                             <i class="fas fa-arrows-alt move-icon"></i>
                                         </td>
                                     </tr>
-                                    </tbody>
-                                </table>
+                                {% endfor %}
 
-                                <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences
-                                </button>
-                                <button type="button" id="savePreferencesButton" class="btn btn-success"
-                                        style="display: none;">
-                                    Save Preferences
-                                </button>
-                                <button type="button" id="cancelEditButton" class="btn btn-secondary"
-                                        style="display: none;">
-                                    Cancel
-                                </button>
-                                <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">
-                                    Add Row
-                                </button>
-                            </form>
-                        {% else %}
-                            <br>
-                            <h2>Course preferences</h2>
-                            <table class="table table-hover" id="preferencesTable">
-                                <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Title</th>
-                                    <th>Semester</th>
-                                    <th>
-                                        <select class="form-select form-select-sm d-inline" id="yearSelect"
-                                                name="yearSelect"
-                                                {% if session.is_admin == False %} disabled {% endif %}>
-                                            {% for config in configurations %}
-                                                <option value="{{ config.year }}" {% if config.year == current_year %}
-                                                        selected {% endif %} data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
-                                                    {{ config.year }}-{{ config.year + 1 }}
+                                <!-- Hidden row template -->
+                                <tr id="template-row" style="display: none;">
+                                    <td>
+                                        <select class="form-control course-select">
+                                            {% for course in courses %}
+                                                <option value="{{ course.id }}-{{ course.year }}">
+                                                    {{ course.code }} - {{ course.title }}
                                                 </option>
                                             {% endfor %}
                                         </select>
-                                    </th>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-trash delete-icon"></i>
+                                        <i class="fas fa-arrows-alt move-icon"></i>
+                                    </td>
                                 </tr>
-                                </thead>
-                                <tbody class="table-group-divider">
-                                {% for preference in preferences %}
-                                    <tr>
-                                        <td>{{ preference.course.code }}</td>
-                                        <td>{{ preference.course.title }}</td>
-                                        <td>{{ preference.course.quadri }}</td>
-                                        <td></td>
-                                    </tr>
-                                {% endfor %}
                                 </tbody>
                             </table>
-                        {% endif %}
-                    </div>
+
+                            <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences
+                            </button>
+                            <button type="button" id="savePreferencesButton" class="btn btn-success"
+                                    style="display: none;">
+                                Save Preferences
+                            </button>
+                            <button type="button" id="cancelEditButton" class="btn btn-secondary"
+                                    style="display: none;">
+                                Cancel
+                            </button>
+                            <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">
+                                Add Row
+                            </button>
+                        </form>
+                    {% else %}
+                        <br>
+                        <h2>Course preferences</h2>
+                        <table class="table table-hover" id="preferencesTable">
+                            <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Semester</th>
+                                <th>
+                                    <select class="form-select form-select-sm d-inline" id="yearSelect"
+                                            name="yearSelect"
+                                            {% if session.is_admin == False %} disabled {% endif %}>
+                                        {% for config in configurations %}
+                                            <option value="{{ config.year }}" {% if config.year == current_year %}
+                                                    selected {% endif %}
+                                                    data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
+                                                {{ config.year }}-{{ config.year + 1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                            {% for preference in preferences %}
+                                <tr>
+                                    <td>{{ preference.course.code }}</td>
+                                    <td>{{ preference.course.title }}</td>
+                                    <td>{{ preference.course.quadri }}</td>
+                                    <td></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
+</div>
 {% endblock %}
 {% block additionalfooter %}
     <script>

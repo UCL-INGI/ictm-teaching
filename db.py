@@ -81,6 +81,15 @@ class Researcher(db.Model):
     user = db.relationship('User', backref=db.backref('researcher_profile', uselist=False))
 
 
+class ResearcherSupervisor(db.Model):
+    __tablename__ = 'researcher_supervisor'
+    researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), primary_key=True)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+    researcher = db.relationship('Researcher', backref=db.backref('researcher_supervisor', lazy=True))
+    supervisor = db.relationship('User', backref=db.backref('supervisor_researcher', lazy=True))
+
+
 class Teacher(db.Model):
     __tablename__ = 'teacher'
     id = db.Column(db.Integer, primary_key=True)

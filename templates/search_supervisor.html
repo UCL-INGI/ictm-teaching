@@ -1,0 +1,56 @@
+<style>
+    .badge a {
+        color: black;
+        text-decoration: none;
+    }
+
+    .badge a:hover {
+        color: red;
+    }
+</style>
+
+<select class="form-select" id="supervisor" name="supervisor"
+        {% if page == 'profile' %}
+            {% if current_user and not requested_user.admin %} disabled {% endif %}
+        {% endif %}
+>
+<option value="" disabled selected>Select a supervisor</option>
+{% for supervisor in supervisors %}
+    <option value="{{ supervisor.id }}">
+        {{ supervisor.first_name }} {{ supervisor.name }}
+    </option>
+{% endfor %}
+</select>
+{% if page == 'register' %}
+    <div id="tags-container"></div>
+{% elif page == 'profile' %}
+    <div id="selected-supervisors">
+        {% for selected in researcher.researcher_supervisor %}
+            <div class="badge bg-primary" data-id="{{ selected.supervisor.id }}">
+                {{ selected.supervisor.name }} {{ selected.supervisor.first_name }}&nbsp;
+                <a href="#" class="remove-tag">&times;</a>
+                <input type="hidden" name="supervisor[]" value="{{ selected.supervisor.id }}">
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script>
+    $(document).ready(function () {
+        $(document).on('change', '#supervisor', function () {
+            var containerSelector;
+
+            {% if page == 'register' %}
+                containerSelector = '#tags-container';
+            {% elif page == 'profile' %}
+                containerSelector = $('#selected-supervisors', $(this).parent());
+            {% endif %}
+
+            if (containerSelector) {
+                addBadge($(this), containerSelector, 'supervisor');
+            }
+        });
+    });
+</script>
+
+

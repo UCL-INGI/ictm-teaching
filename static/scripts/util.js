@@ -17,7 +17,7 @@ function handleYearSelectChange() {
     });
 }
 
-function addBadge(selectElement, containerSelector) {
+function addBadge(selectElement, containerSelector, name) {
     var selectedOption = $(selectElement).find('option:selected');
     var selectedValue = selectedOption.val();
     var selectedText = selectedOption.text();
@@ -41,7 +41,7 @@ function addBadge(selectElement, containerSelector) {
             }).appendTo(tagHtml);
             $('<input>', {
                 type: 'hidden',
-                name: 'organization_code[]',
+                name: name + '[]',
                 value: selectedValue
             }).appendTo(tagHtml);
 

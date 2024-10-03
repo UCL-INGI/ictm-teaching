@@ -8,16 +8,20 @@
         <p>Please note that your answers are confidential and that if there are any problems or changes we have to
             report, we'll do so anonymously.</p>
         <hr>
-        <form action="{{ url_for("course.create_evaluation", current_year=current_year, user_id=user_id) }}"
+        <form action="{{ url_for("course.create_evaluation", current_year=current_year, user_id=session["user_id"]) }}"
               method="POST">
             <strong>If you gave two courses during this semester, choose one of them and create a new evaluation for the
                 second one </strong>
             <div class="form-group">
                 <br>
-                <label for="course1">1. What is the course you gave this semester?</label>
-                <select class="form-control" id="course" name="course_id" required>
+                <label for="course">1. What is the course you gave this semester?</label>
+                <select class="form-control" id="course" name="course_id" required
+                        {% if evaluation %} disabled {% endif %}>
                     {% for course in courses %}
-                        <option value="{{ course.id }}">{{ course.code }} - {{ course.title }}</option>
+                        <option value="{{ course.id }}"
+                            {% if evaluation and evaluation.course_id == course.id %} selected {% endif %}>
+                            {{ course.code }} - {{ course.title }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>
@@ -28,32 +32,37 @@
                 {% for task in tasks %}
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="tasks[]" id="{{ task }}"
-                               value="{{ task }}">
+                               value="{{ task }}"
+                                {% if evaluation and task in evaluation.task %} checked disabled {% endif %}>
                         <label class="form-check-label" for="{{ task }}">{{ task }}</label>
                     </div>
                 {% endfor %}
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="tasks[]" id="other" value="Other">
+                    <input class="form-check-input" type="checkbox" name="tasks[]" id="other" value="Other"
+                            {% if evaluation and "Other" in evaluation.task %} checked disabled{% endif %}>
                     <input class="form-control" type="text" name="other_task" id="other_task" placeholder="Other"
-                           value="">
+                           value="{{ evaluation.other_task if evaluation else '' }}" {% if evaluation %} disabled {% endif %}>
                 </div>
             </div>
             <br>
             <div class="form-group">
                 <label>3. On average, how many hours a week were devoted to this course (preparation, time in exercise
                     sessions, projects, etc., all included)?</label><br>
-                <select class="form-control" name="evaluation_hour" required>
+                <select class="form-control" name="evaluation_hour" required {% if evaluation %} disabled {% endif %}>
                     {% for hour in evaluation_hour %}
-                        <option value="{{ hour }}">{{ hour }}</option>
+                        <option value="{{ hour }}" {% if evaluation and evaluation.nbr_hours == hour %}
+                                selected {% endif %}>{{ hour }}</option>
                     {% endfor %}
                 </select>
             </div>
             <br>
             <div class="form-group">
                 <label>4. How would you rate your workload for this course?</label><br>
-                <select class="form-control" name="workload" required>
+                <select class="form-control" name="workload" required {% if evaluation %} disabled {% endif %}>
                     {% for workload in workloads %}
-                        <option value="{{ workload }}">{{ workload }}</option>
+                        <option value="{{ workload }}"
+                                {% if evaluation and evaluation.workload == workload %} selected {% endif %}>
+                            {{ workload }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -62,10 +71,14 @@
                 <label for="comments">5. Do you have any comments to make about the course load? (For example: if you
                     know that the course will change a lot less next year, or will be strongly
                     reorganized,...)</label><br>
-                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                <textarea class="form-control" id="comment" name="comment"
+                          rows="3" {% if evaluation %} disabled {% endif %}>{{ evaluation.comment if evaluation else '' }}</textarea>
             </div>
+
+        {% if not evaluation %}
             <br>
             <button type="submit" class="btn btn-primary">Submit</button>
+        {% endif %}
         </form>
     </div>
 {% endblock %}

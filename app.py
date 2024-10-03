@@ -8,7 +8,7 @@ from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
 from assignment import assignment_bp
-from db import db, Year, Organization, User, Course, Teacher, Researcher
+from db import db, Year, Organization, User, Course, Teacher, Researcher, Evaluation
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -57,7 +57,12 @@ def index():  # put application's code here
     current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
     courses_teacher = db.session.query(Course).filter_by(year=current_year).join(Teacher).filter(Teacher.user_id == user.id).all()
-    return render_template("home.html", user=user, courses=courses_teacher)
+    current_year = get_current_year()
+    evaluations = db.session.query(Evaluation).filter(
+        Evaluation.user_id == user.id,
+        Evaluation.course_year < current_year
+    ).all()
+    return render_template("home.html", user=user, courses=courses_teacher, evaluations=evaluations)
 
 
 if __name__ == '__main__':

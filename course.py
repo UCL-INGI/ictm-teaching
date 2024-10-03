@@ -144,7 +144,13 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    return render_template('course_info.html', course=course, all_years=all_years, current_year=year)
+    evaluations = db.session.query(Evaluation).filter(
+        Evaluation.course_id == course_id,
+        Evaluation.course_year < course.year
+    ).all()
+
+    return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
+                           evaluations=evaluations)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])
@@ -262,16 +268,27 @@ def add_duplicate_course():
     return redirect(url_for('course.course_info', course_id=course_id, year=year))
 
 
-@course_bp.route('/evaluations/<int:user_id>/<int:current_year>')
+@course_bp.route('/evaluations/<int:user_id>/<int:current_year>', defaults={'evaluation_id': None})
+@course_bp.route('/evaluation/<int:evaluation_id>', defaults={'user_id': None, 'current_year': None})
 @login_required
-def evaluations(user_id, current_year):
-    courses = db.session.query(Course).filter_by(year=current_year).all()
+def evaluations(user_id=None, current_year=None, evaluation_id=None):
 
-    return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id)
+    evaluation = db.session.query(Evaluation).get(evaluation_id) \
+                if evaluation_id else None
+    year = evaluation.course_year if evaluation else current_year
+    courses = db.session.query(Course).filter_by(year=year).all()
+    if evaluation:
+        return render_template('evaluations.html', evaluation=evaluation, current_year=evaluation.course_year,
+                               courses=courses)
+
+    if user_id and current_year:
+        return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id,
+                               evaluation=evaluation)
 
 
 @course_bp.route('/create_evaluations/<int:user_id>/<int:current_year>', methods=['POST'])
 @login_required
+@check_access_level(Role.RESEARCHER)
 def create_evaluation(user_id, current_year):
     form = request.form
     if not form:
@@ -287,9 +304,6 @@ def create_evaluation(user_id, current_year):
     if not all([course_id, evaluation_hour, workload, comment is not None]):
         return make_response("Missing required fields", 400)
 
-    if other_task:
-        tasks.append(other_task)
-
     try:
         existing_evaluation = db.session.query(Evaluation).filter_by(course_id=course_id, course_year=current_year,
                                                                      user_id=user_id).first()
@@ -301,7 +315,8 @@ def create_evaluation(user_id, current_year):
             flash('Evaluation created successfully!', 'success')
 
         new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
-                                    nbr_hours=evaluation_hour, workload=workload, comment=comment)
+                                    other_task=other_task ,nbr_hours=evaluation_hour, workload=workload,
+                                    comment=comment)
         db.session.add(new_evaluation)
         db.session.commit()
     except Exception as e:

@@ -122,9 +122,10 @@ def is_allowed_user(user_id):
     return user_id == session["user_id"] or session["is_admin"]
 
 
-@user_bp.route('/profile/<int:user_id>/<int:current_year>')
+@user_bp.route('/profile/<int:user_id>')
 @login_required
-def user_profile(user_id, current_year):
+def user_profile(user_id, ):
+    current_year = get_current_year()
     if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))
@@ -137,8 +138,8 @@ def user_profile(user_id, current_year):
     preferences = []
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
-                                                                       course_year=current_year).all()
-
+                                                                       course_year=current_year).order_by(
+            PreferenceAssignment.id).all()
     courses = []
     if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,
@@ -155,6 +156,32 @@ def delete_researcher(user_id):
     if researcher:
         db.session.delete(researcher)
         db.session.commit()
+
+
+@user_bp.route('/<int:user_id>/preferences/<int:current_year>', methods=['GET'])
+@login_required
+@check_access_level(Role.ADMIN, Role.RESEARCHER)
+def preferences(user_id, current_year):
+    if not is_allowed_user(user_id):
+        flash("Permission denied. You do not have access to this page.", "error")
+
+    researcher = db.session.query(Researcher).filter(Researcher.user_id == user_id).first()
+    user = db.session.query(User).filter(User.id == session["user_id"]).first()
+
+    preferences = []
+    if researcher:
+        preferences = (db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
+                                                                        course_year=current_year)
+                       .order_by(PreferenceAssignment.id).all())
+
+    courses = []
+    if user.organization:
+        courses = db.session.query(Course).filter(Course.year == current_year,
+                                                  Course.organizations.contains(user.organization)
+                                                  ).all()
+
+    return render_template('preferences.html', preferences=preferences, current_year=current_year,
+                           researcher_id=researcher, courses=courses)
 
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
@@ -201,7 +228,6 @@ def update_user_profile(user_id):
             user.organization_id = organization_code
             user.is_admin = is_admin
             user.is_teacher = is_teacher
-            user.is_researcher = is_researcher
             if is_researcher:
                 if researcher is None:
                     create_researcher(user.id, researcher_type, max_loads)

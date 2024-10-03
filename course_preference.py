@@ -56,7 +56,7 @@ def save_preference():
             db.session.rollback()
             raise e
 
-    return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))
+    return redirect(url_for("user.preferences", user_id=user_id, current_year=current_year))
 
 
 @course_preference_bp.route('/delete_preference', methods=['GET'])
@@ -72,4 +72,4 @@ def delete_preference():
         db.session.rollback()
         raise e
 
-    return redirect(url_for("user.user_profile", user_id=session["user_id"], current_year=current_year))
+    return redirect(url_for("user.preferences", user_id=session["user_id"], current_year=current_year))

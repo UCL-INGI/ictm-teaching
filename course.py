@@ -144,10 +144,8 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    evaluations = db.session.query(Evaluation).filter(
-        Evaluation.course_id == course_id,
-        Evaluation.course_year < course.year
-    ).all()
+    evaluations = db.session.query(Evaluation).filter(Evaluation.course_id == course_id).order_by(
+        Evaluation.course_year.desc()).all()
 
     return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
                            evaluations=evaluations)
@@ -272,9 +270,8 @@ def add_duplicate_course():
 @course_bp.route('/evaluation/<int:evaluation_id>', defaults={'user_id': None, 'current_year': None})
 @login_required
 def evaluations(user_id=None, current_year=None, evaluation_id=None):
-
     evaluation = db.session.query(Evaluation).get(evaluation_id) \
-                if evaluation_id else None
+        if evaluation_id else None
     year = evaluation.course_year if evaluation else current_year
     courses = db.session.query(Course).filter_by(year=year).all()
     if evaluation:
@@ -315,7 +312,7 @@ def create_evaluation(user_id, current_year):
             flash('Evaluation created successfully!', 'success')
 
         new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
-                                    other_task=other_task ,nbr_hours=evaluation_hour, workload=workload,
+                                    other_task=other_task, nbr_hours=evaluation_hour, workload=workload,
                                     comment=comment)
         db.session.add(new_evaluation)
         db.session.commit()

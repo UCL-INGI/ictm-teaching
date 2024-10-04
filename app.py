@@ -7,7 +7,7 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization, User, Course, Teacher
+from db import db, Configuration, Organization, User, Course, Teacher, Evaluation
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -30,27 +30,37 @@ app.register_blueprint(course_preference_bp, url_prefix="/course_preference")
 
 
 def get_configurations():
-    return db.session.query(Configuration).all()
+    return db.session.query(Configuration).order_by(Configuration.year.asc()).all()
 
 
 def get_organization():
     return db.session.query(Organization).all()
 
 
+def is_researcher():
+    return db.session.query(User).get(session['user_id']).is_researcher
+
+
 @app.context_processor
 def inject_configurations():
     return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI,
                 language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year(),
-                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD)
+                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD, is_researcher=is_researcher())
 
 
 # Routes
 @app.route('/')
 @login_required
 def index():  # put application's code here
+    current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
     courses_teacher = db.session.query(Course).join(Teacher).filter(Teacher.user_id == user.id).all()
-    return render_template("home.html", user=user, courses=courses_teacher)
+    current_year = get_current_year()
+    evaluations = db.session.query(Evaluation).filter(
+        Evaluation.user_id == user.id,
+        Evaluation.course_year < current_year
+    ).all()
+    return render_template("home.html", user=user, courses=courses_teacher, evaluations=evaluations)
 
 
 if __name__ == '__main__':

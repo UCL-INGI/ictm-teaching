@@ -60,7 +60,7 @@
                                 <dt>Email</dt>
                                 <dd>
                                     <input type="email" class="form-control" name="email" id="email"
-                                           value="{{ requested_user.email }}" {% if current_user %}
+                                           value="{{ requested_user.email }}" {% if not session.is_admin %}
                                            readonly {% endif %}>
                                 </dd>
                                 <dt>Organization code</dt>

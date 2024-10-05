@@ -66,9 +66,9 @@
                                 <dt>Organization code</dt>
                                 <dd>
                                     <select class="form-select" id="organization_code" name="organization_code"
-                                            {% if current_user and not requested_user.admin %}
+                                            {% if not session.is_admin %}
                                             disabled {% endif %}>
-                                        {% if requested_user.organization == None and current_user  %}
+                                        {% if requested_user.organization == None and not session.is_admin  %}
                                             <option value="None" selected>None</option>
                                         {% else %}
                                             {% for code in organizations_code %}
@@ -89,7 +89,7 @@
                                         <input type="checkbox" class="form-check-input" id="is_teacher"
                                                name="is_teacher"
                                                {% if requested_user.is_teacher %}checked{% endif %}
-                                                {% if current_user and not requested_user.admin %}
+                                                {% if not session.is_admin %}
                                                disabled {% endif %}>
                                         <label class="form-check-label" for="is_teacher">Teacher</label>
                                     </div>
@@ -97,7 +97,7 @@
                                         <input type="checkbox" class="form-check-input" id="is_researcher"
                                                name="is_researcher"
                                                {% if requested_user.is_researcher %}checked{% endif %}
-                                                {% if current_user and not requested_user.admin %} disabled {% endif %}>
+                                                {% if not session.is_admin %} disabled {% endif %}>
                                         <label class="form-check-label" for="is_researcher">Researcher</label>
                                     </div>
                                 </dd>
@@ -105,8 +105,8 @@
                                     <dt>Supervisor</dt>
                                     <dd>
                                         <select class="form-select" id="supervisor" name="supervisor"
-                                                {% if current_user and not requested_user.admin %} disabled {% endif %}>
-                                            {% if requested_user.supervisor == None and current_user and not requested_user.admin %}
+                                                {% if not session.is_admin %} disabled {% endif %}>
+                                            {% if requested_user.supervisor == None and not session.is_admin %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for supervisor in supervisors %}
@@ -123,8 +123,8 @@
                                     <dt>Researcher type</dt>
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
-                                                {% if current_user and not requested_user.admin %} disabled {% endif %}>
-                                            {% if requested_user.is_researcher and current_user and not requested_user.admin %}
+                                                {% if not session.is_admin %} disabled {% endif %}>
+                                            {% if requested_user.is_researcher and not session.is_admin %}
                                                 <option value="" selected>None</option>
                                             {% else %}
                                                 {% for type in researcher_type %}
@@ -141,7 +141,7 @@
                                     <dt>Max load</dt>
                                     <dd>
                                         <input type="text" class="form-control" id="max_load" name="max_load"
-                                               value="{{ researcher.max_loads }}" {% if current_user and not requested_user.admin %}
+                                               value="{{ researcher.max_loads }}" {% if not session.is_admin %}
                                                readonly {% endif %}>
                                     </dd>
                                 </div>

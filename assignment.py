@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, \
     ResearcherSupervisor, Role, AssignmentDraft, AssignmentPublished
@@ -11,6 +12,7 @@ assignment_bp = Blueprint('assignment', __name__)
 
 @assignment_bp.route('/assignments', methods=['GET'])
 @login_required
+@check_access_level(Role.ADMIN)
 def assignments():
     return render_template('assignment.html')
 
@@ -72,6 +74,7 @@ def load_data():
 
 @assignment_bp.route('/publish_assignments', methods=['POST'])
 @login_required
+@check_access_level(Role.ADMIN)
 def publish_assignments():
     data = request.get_json()
     if not data:
@@ -130,3 +133,25 @@ def publish_assignments():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to publish assignments: {str(e)}"}), 500
+
+
+def count_course_assignments():
+    # Counts the number of times each user has taught each course
+    assignment_counts = db.session.query(
+        AssignmentDraft.user_id,
+        AssignmentDraft.course_id,
+        func.count(AssignmentDraft.course_id).label('count')
+    ).group_by(
+        AssignmentDraft.user_id,
+        AssignmentDraft.course_id
+    ).all()
+
+    return assignment_counts
+
+
+@assignment_bp.route('/course_assignments_count', methods=['GET'])
+@login_required
+@check_access_level(Role.ADMIN)
+def get_course_assignments_count():
+    results = count_course_assignments()
+    return jsonify(results=[{'user_id': user_id, 'course_id': course_id, 'count': count} for user_id, course_id, count in results])

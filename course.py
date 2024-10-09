@@ -125,10 +125,8 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).join(Teacher).filter(
-        User.active == True,
-        User.name.ilike(f'%{search_term}%')
-    ).all()
+    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True,
+                                             User.name.ilike(f'%{search_term}%')).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 

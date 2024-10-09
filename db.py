@@ -24,16 +24,14 @@ class User(db.Model):
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
-    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
 
-    supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
     organization = db.relationship('Organization', back_populates='users')
 
     @validates('active')
     def validate_active(self, key, value):
         if not value:
-            if self.supervisees:
+            if self.supervisor_researcher:
                 raise ValueError("Cannot deactivate a supervisor who has supervisees.")
             if self.user_teacher:
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
@@ -82,6 +80,15 @@ class Researcher(db.Model):
     researcher_type = db.Column(db.String(30))
 
     user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
+
+
+class ResearcherSupervisor(db.Model):
+    __tablename__ = 'researcher_supervisor'
+    researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), primary_key=True)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+    researcher = db.relationship('Researcher', backref=db.backref('researcher_supervisor', lazy=True))
+    supervisor = db.relationship('User', backref=db.backref('supervisor_researcher', lazy=True))
 
 
 class Teacher(db.Model):

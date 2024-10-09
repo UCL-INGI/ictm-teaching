@@ -1,5 +1,5 @@
 from decorators import login_required, check_access_level
-from db import db, User, Researcher, Course, PreferenceAssignment, Teacher, Role
+from db import db, User, Researcher, Course, PreferenceAssignment, Teacher, Role, ResearcherSupervisor
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, session, \
     Flask
 from enums import DEFAULT_MAX_LOAD
@@ -49,7 +49,7 @@ def add_user():
     organization_code = request.form['organization_code']
     is_teacher = 'is_teacher' in request.form
     is_researcher = 'is_researcher' in request.form
-    supervisor_id = request.form.get('supervisor') if is_researcher else None
+    supervisor_ids = request.form.getlist('supervisor[]') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
 
     try:
@@ -57,8 +57,7 @@ def add_user():
             flash("Email already exists")
         else:
             new_user = User(name=name, first_name=first_name, email=email, is_teacher=is_teacher,
-                            is_researcher=is_researcher, supervisor_id=supervisor_id,
-                            organization_id=organization_code)
+                            is_researcher=is_researcher, organization_id=organization_code)
             db.session.add(new_user)
             db.session.commit()
             if is_researcher:
@@ -68,6 +67,13 @@ def add_user():
                                             max_loads=max_load)
                 db.session.add(new_researcher)
                 db.session.commit()
+
+                if supervisor_ids:
+                    supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
+                    new_researcher.researcher_supervisor = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    db.session.commit()
+
+            flash("User added successfully.", "success")
     except:
         db.session.rollback()
         raise
@@ -112,9 +118,12 @@ def user_profile(user_id, current_year):
     current_user = requested_user.email == session["email"]
 
     preferences = []
+    selected_supervisor = []
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).all()
+        selected_supervisor = researcher.researcher_supervisor
+
     courses = []
     if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,
@@ -123,7 +132,7 @@ def user_profile(user_id, current_year):
 
     return render_template('user_profile.html', requested_user=requested_user, supervisors=all_users,
                            researcher=researcher, courses=courses, preferences=preferences, current_user=current_user,
-                           current_year=current_year)
+                           current_year=current_year, selected_supervisor=selected_supervisor)
 
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
@@ -153,7 +162,7 @@ def update_user_profile(user_id):
     organization_code = None if request.form['organization_code'] == 'None' else request.form['organization_code']
     is_teacher = True if 'is_teacher' in request.form else False
     is_researcher = True if 'is_researcher' in request.form else False
-    supervisor_id = request.form.get('supervisor') if is_researcher else None
+    supervisor_ids = request.form.getlist('supervisor[]') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
     max_loads = request.form['max_load'] if is_researcher else None
 
@@ -170,7 +179,6 @@ def update_user_profile(user_id):
             user.organization_id = organization_code
             user.is_teacher = is_teacher
             user.is_researcher = is_researcher
-            user.supervisor_id = supervisor_id
             if is_researcher:
                 if researcher is None:
                     new_researcher = Researcher(user_id=user.id, researcher_type=researcher_type, max_loads=max_loads)
@@ -178,6 +186,12 @@ def update_user_profile(user_id):
                 else:
                     researcher.max_loads = max_loads
                     researcher.researcher_type = researcher_type
+
+                if supervisor_ids:
+                    db.session.query(ResearcherSupervisor).filter_by(researcher_id=researcher.id).delete()
+                    supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
+                    researcher.researcher_supervisor = [ResearcherSupervisor(researcher=researcher, supervisor=s) for s in supervisors]
+
         db.session.commit()
     except Exception as e:
         db.session.rollback()

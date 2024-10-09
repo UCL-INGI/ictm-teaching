@@ -79,7 +79,7 @@ def add_user():
 @login_required
 @check_access_level(Role.ADMIN)
 def users(user_type):
-    base_query = db.session.query(User).filter()
+    base_query = db.session.query(User)
     list_name = ''
 
     if user_type == 'teacher':

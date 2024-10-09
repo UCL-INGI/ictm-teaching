@@ -70,13 +70,12 @@
                                             disabled {% endif %}>
                                         {% if requested_user.organization == None and current_user  %}
                                             <option value="None" selected>None</option>
-                                        {% else %}
-                                            {% for code in organizations_code %}
-                                                <option value="{{ code.id }}"
-                                                        {% if code.id == requested_user.organization_id %}
-                                                        selected {% endif %}>{{ code.name }}</option>
-                                            {% endfor %}
                                         {% endif %}
+                                        {% for code in organizations_code %}
+                                            <option value="{{ code.id }}"
+                                                    {% if code.id == requested_user.organization_id %}
+                                                    selected {% endif %}>{{ code.name }}</option>
+                                        {% endfor %}
                                     </select>
                                 </dd>
                             </dl>

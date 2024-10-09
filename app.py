@@ -30,7 +30,7 @@ app.register_blueprint(course_preference_bp, url_prefix="/course_preference")
 
 
 def get_configurations():
-    return db.session.query(Configuration).all()
+    return db.session.query(Configuration).order_by(Configuration.year.asc()).all()
 
 
 def get_organization():
@@ -48,8 +48,9 @@ def inject_configurations():
 @app.route('/')
 @login_required
 def index():  # put application's code here
+    current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
-    courses_teacher = db.session.query(Course).join(Teacher).filter(Teacher.user_id == user.id).all()
+    courses_teacher = db.session.query(Course).filter_by(year=current_year).join(Teacher).filter(Teacher.user_id == user.id).all()
     return render_template("home.html", user=user, courses=courses_teacher)
 
 

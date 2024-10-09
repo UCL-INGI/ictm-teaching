@@ -106,6 +106,7 @@ class Teacher(db.Model):
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
     id = db.Column(db.Integer, primary_key=True)
+    rank = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, nullable=False)
     course_year = db.Column(db.Integer, nullable=False)
     researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), nullable=False)
@@ -127,7 +128,7 @@ class Configuration(db.Model):
     __tablename__ = 'configuration'
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
-    is_current_year = db.Column(db.Boolean, default=True)
+    is_current_year = db.Column(db.Boolean, default=False)
 
     @classmethod
     def update_current_year(cls, config_id):

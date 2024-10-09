@@ -30,7 +30,7 @@ def initialize_configuration():
     existing_year = Configuration.query.filter_by(year=current_year).first()
 
     if existing_year is None:
-        config = Configuration(year=current_year)
+        config = Configuration(year=current_year, is_current_year=True)
         db.session.add(config)
         db.session.commit()
 

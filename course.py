@@ -179,8 +179,7 @@ def update_course_info():
     # Remove all teachers assigned to the course
     try:
         db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                         Teacher.course_year == year,
-                                         Teacher.user_id.in_(assigned_teachers)).delete()
+                                         Teacher.course_year == year).delete()
         db.session.commit()
     except Exception as e:
         db.session.rollback()

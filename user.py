@@ -172,7 +172,7 @@ def preferences(user_id, current_year):
     if researcher:
         preferences = (db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                         course_year=current_year)
-                       .order_by(PreferenceAssignment.id).all())
+                       .order_by(PreferenceAssignment.rank).all())
 
     courses = []
     if user.organization:

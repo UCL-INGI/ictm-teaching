@@ -181,7 +181,7 @@ def preferences(user_id, current_year):
                                                   ).all()
 
     return render_template('preferences.html', preferences=preferences, current_year=current_year,
-                           researcher_id=researcher, courses=courses)
+                           researcher=researcher, courses=courses)
 
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])

@@ -23,16 +23,14 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
-    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
 
-    supervisor = db.relationship('User', remote_side=[id], backref='supervisees')
     organization = db.relationship('Organization', back_populates='users')
 
     @validates('active')
     def validate_active(self, key, value):
         if not value:
-            if self.supervisees:
+            if self.supervisor_researcher:
                 raise ValueError("Cannot deactivate a supervisor who has supervisees.")
             if self.user_teacher:
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")

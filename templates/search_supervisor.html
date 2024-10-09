@@ -17,7 +17,7 @@
 <option value="" disabled selected>Select a supervisor</option>
 {% for supervisor in supervisors %}
     <option value="{{ supervisor.id }}">
-        {{ supervisor.first_name }} {{ supervisor.name }}
+        {{ supervisor.name }} {{ supervisor.first_name }}
     </option>
 {% endfor %}
 </select>

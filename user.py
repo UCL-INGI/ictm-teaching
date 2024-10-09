@@ -79,19 +79,24 @@ def add_user():
 @login_required
 @check_access_level(Role.ADMIN)
 def users(user_type):
-    base_query = db.session.query(User).filter()
+    base_query = db.session.query(User)
+    list_name = ''
 
     if user_type == 'teacher':
         base_query = base_query.filter(User.is_teacher == True, User.active == True)
+        list_name = 'Teachers'
     elif user_type == 'researcher':
         base_query = base_query.filter(User.is_researcher == True, User.active == True)
+        list_name = 'Researchers'
     elif user_type == 'archived':
         base_query = base_query.filter(User.active == False)
+        list_name = 'Archived Users'
     elif user_type == 'other':
         base_query = base_query.filter(User.active == True, User.is_teacher == False, User.is_researcher == False)
+        list_name = 'Other Users'
 
     all_users = base_query.all()
-    return render_template('users.html', users=all_users, user_type=user_type)
+    return render_template('users.html', users=all_users, user_type=user_type, list_name=list_name)
 
 
 def is_allowed_user(user_id):

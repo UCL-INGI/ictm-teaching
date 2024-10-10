@@ -9,12 +9,32 @@ import re, json
 user_bp = Blueprint('user', __name__)
 
 
+def create_teacher(user_id):
+    if db.session.query(Teacher).filter_by(user_id=user_id).first() is None:
+        new_teacher = Teacher(user_id=user_id)
+        db.session.add(new_teacher)
+        db.session.commit()
+
+
+def get_teachers():
+    return db.session.query(User).join(Teacher).filter(User.active == True).all()
+
+
+def create_researcher(user_id, researcher_type, max_loads):
+    new_researcher = Researcher(user_id=user_id, researcher_type=researcher_type, max_loads=max_loads)
+    db.session.add(new_researcher)
+    db.session.commit()
+
+
+def get_researchers():
+    return db.session.query(User).join(Researcher).filter(User.active == True).all()
+
+
 @user_bp.route('/register')
 @login_required
 @check_access_level(Role.ADMIN)
 def register():
-    supervisors = db.session.query(User).filter(User.is_teacher == True, User.active == True).all()
-    return render_template('register.html', supervisors=supervisors)
+    return render_template('register.html', supervisors=get_teachers())
 
 
 def is_valid_email(email):
@@ -56,18 +76,16 @@ def add_user():
         if db.session.query(User).filter(User.email == email).first():
             flash("Email already exists")
         else:
-            new_user = User(name=name, first_name=first_name, email=email, is_teacher=is_teacher,
-                            is_researcher=is_researcher, supervisor_id=supervisor_id,
+            new_user = User(name=name, first_name=first_name, email=email, supervisor_id=supervisor_id,
                             organization_id=organization_code)
             db.session.add(new_user)
             db.session.commit()
             if is_researcher:
                 all_loads = DEFAULT_MAX_LOAD
                 max_load = all_loads.get(researcher_type, 0)
-                new_researcher = Researcher(user_id=new_user.id, researcher_type=researcher_type,
-                                            max_loads=max_load)
-                db.session.add(new_researcher)
-                db.session.commit()
+                create_researcher(new_user.id, researcher_type, max_load)
+            if is_teacher:
+                create_teacher(new_user.id)
     except:
         db.session.rollback()
         raise
@@ -83,16 +101,20 @@ def users(user_type):
     list_name = ''
 
     if user_type == 'teacher':
-        base_query = base_query.filter(User.is_teacher == True, User.active == True)
+        base_query = base_query.join(Teacher).filter(User.active == True)
         list_name = 'Teachers'
     elif user_type == 'researcher':
-        base_query = base_query.filter(User.is_researcher == True, User.active == True)
+        base_query = base_query.join(Researcher).filter(User.active == True)
         list_name = 'Researchers'
     elif user_type == 'archived':
         base_query = base_query.filter(User.active == False)
         list_name = 'Archived Users'
     elif user_type == 'other':
-        base_query = base_query.filter(User.active == True, User.is_teacher == False, User.is_researcher == False)
+        base_query = base_query.outerjoin(Teacher).outerjoin(Researcher).filter(
+            User.active == True,
+            Teacher.id == None,
+            Researcher.id == None
+        )
         list_name = 'Other Users'
 
     all_users = base_query.all()
@@ -110,10 +132,16 @@ def user_profile(user_id, current_year):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))
 
-    all_users = db.session.query(User).filter(User.is_admin == False, User.is_teacher == True, User.active == True).all()
+    all_users = get_teachers()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_user = requested_user.email == session["email"]
+
+    user_teacher = None
+    user_researcher = None
+    if not current_user:
+        user_teacher = db.session.query(Teacher).filter(Teacher.user_id == user_id).first()
+        user_researcher = researcher is not None
 
     preferences = []
     if researcher:
@@ -127,7 +155,21 @@ def user_profile(user_id, current_year):
 
     return render_template('user_profile.html', requested_user=requested_user, supervisors=all_users,
                            researcher=researcher, courses=courses, preferences=preferences, current_user=current_user,
-                           current_year=current_year)
+                           current_year=current_year, user_teacher=user_teacher, user_researcher=user_researcher)
+
+
+def delete_researcher(user_id):
+    researcher = db.session.query(Researcher).filter(Researcher.user_id == user_id).first()
+    if researcher:
+        db.session.delete(researcher)
+        db.session.commit()
+
+
+def delete_teacher(user_id):
+    teacher = db.session.query(Teacher).filter(Teacher.user_id == user_id).first()
+    if teacher:
+        db.session.delete(teacher)
+        db.session.commit()
 
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
@@ -163,6 +205,7 @@ def update_user_profile(user_id):
 
     user = db.session.query(User).filter(User.id == user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == user.id).first()
+    teacher = db.session.query(Teacher).filter(Teacher.user_id == user.id).first()
     if user is None:
         return make_response("User not found", 404)
 
@@ -172,17 +215,23 @@ def update_user_profile(user_id):
         if session["is_admin"]:
             user.email = email
             user.organization_id = organization_code
-            user.admin = is_admin
+            user.is_admin = is_admin
             user.is_teacher = is_teacher
-            user.is_researcher = is_researcher
             user.supervisor_id = supervisor_id
             if is_researcher:
                 if researcher is None:
-                    new_researcher = Researcher(user_id=user.id, researcher_type=researcher_type, max_loads=max_loads)
-                    db.session.add(new_researcher)
+                    create_researcher(user.id, researcher_type, max_loads)
                 else:
                     researcher.max_loads = max_loads
                     researcher.researcher_type = researcher_type
+            else:
+                delete_researcher(user.id)
+            if is_teacher:
+                if teacher is None:
+                    create_teacher(user.id)
+            else:
+                delete_teacher(user.id)
+
         db.session.commit()
     except Exception as e:
         db.session.rollback()

@@ -22,7 +22,6 @@ class User(db.Model):
     email = db.Column(db.String(200), nullable=True, unique=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
-    is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))

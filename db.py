@@ -21,8 +21,6 @@ class User(db.Model):
     first_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(200), nullable=True, unique=True)
     admin = db.Column(db.Boolean, default=False)
-    is_teacher = db.Column(db.Boolean, default=False)
-    is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
@@ -43,9 +41,9 @@ class User(db.Model):
         if access_level == Role.ADMIN:
             return self.admin
         elif access_level == Role.RESEARCHER:
-            return self.is_researcher
+            return self.user_researcher is not None
         elif access_level == Role.TEACHER:
-            return self.is_teacher
+            return self.user_teacher is not None
         else:
             return False
 

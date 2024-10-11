@@ -156,6 +156,7 @@ def update_user_profile(user_id):
         return make_response("Invalid email format", 400)
 
     organization_code = None if request.form['organization_code'] == 'None' else request.form['organization_code']
+    is_admin = True if 'is_admin' in request.form else False
     is_teacher = True if 'is_teacher' in request.form else False
     is_researcher = True if 'is_researcher' in request.form else False
     supervisor_id = request.form.get('supervisor') if is_researcher else None
@@ -173,6 +174,7 @@ def update_user_profile(user_id):
         if session["is_admin"]:
             user.email = email
             user.organization_id = organization_code
+            user.admin = is_admin
             user.is_teacher = is_teacher
             user.is_researcher = is_researcher
             user.supervisor_id = supervisor_id

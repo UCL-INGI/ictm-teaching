@@ -203,6 +203,7 @@ class AssignmentPublished(db.Model):
     load_q2 = db.Column(db.Integer)
     position = db.Column(db.Integer)
     comment = db.Column(db.String(500))
+    is_teacher_publication = db.Column(db.Boolean, default=False)
 
     __table_args__ = (
         db.ForeignKeyConstraint(

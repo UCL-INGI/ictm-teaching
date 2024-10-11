@@ -413,7 +413,7 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             });
 
-            async function saveAssignment(isDraft = false) {
+            async function saveAssignment(isDraft = false, isTeacherPublication = false) {
                 const slicedData = data.slice(lenFixedRowsText);
                 const savedData = [];
                 const commentsPlugin = table.getPlugin('comments');
@@ -451,7 +451,8 @@ fetch('/assignment/load_data')
 
                 const tableData = {
                     data: savedData,
-                    isDraft: isDraft
+                    isDraft: isDraft,
+                    isTeacherPublication: isTeacherPublication,
                 };
 
                 try {
@@ -495,6 +496,14 @@ fetch('/assignment/load_data')
             });
 
             $('#button-publish-assignments').click(async function () {
+
+            });
+
+            $('#button-publish-teachers').click(async function () {
+                await saveAssignment(isTeacherPublication=true);
+            });
+
+            $('#button-publish-everyone').click(async function () {
                 await saveAssignment();
             });
         });

@@ -288,7 +288,6 @@ def create_evaluation(user_id, current_year):
     evaluation_hour = request.form.get('evaluation_hour')
     workload = request.form.get('workload')
     comment = request.form.get('comment')
-    second_course = request.form.get('second_course') == 'Yes'
 
     if not all([course_id, evaluation_hour, workload, comment is not None]):
         return make_response("Missing required fields", 400)
@@ -307,8 +306,7 @@ def create_evaluation(user_id, current_year):
             flash('Evaluation created successfully!', 'success')
 
         new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
-                                    nbr_hours=evaluation_hour, workload=workload, comment=comment,
-                                    second_course=second_course)
+                                    nbr_hours=evaluation_hour, workload=workload, comment=comment)
         db.session.add(new_evaluation)
         db.session.commit()
     except Exception as e:

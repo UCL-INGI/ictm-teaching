@@ -178,7 +178,6 @@ class Evaluation(db.Model):
     nbr_hours = db.Column(db.String(10), nullable=False)
     workload = db.Column(db.String(10), nullable=False)
     comment = db.Column(db.String(500))
-    second_course = db.Column(db.Boolean)
 
     __table_args__ = (
         db.ForeignKeyConstraint(

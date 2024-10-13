@@ -79,12 +79,13 @@
                     <br>
                     <div class="form-group">
                         <label for="supervisor">Supervisor</label>
-                        {% with page='register' %}
-                            {% include "search_supervisor.html" %}
+                        {% with is_disabled=false, show_tags_container=true, show_selected_supervisors=false %}
+                            {% include "search_supervisor.html"%}
                         {% endwith %}
                     </div>
                 </div>
             </div>
+
             <div class="row justify-content-center">
                 <div class="col-sm-4" id="researcher_type_select" style="display: none;">
                     <br>

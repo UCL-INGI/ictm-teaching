@@ -9,23 +9,20 @@
     }
 </style>
 
-<select class="form-select" id="supervisor" name="supervisor"
-        {% if page == 'profile' %}
-            {% if current_user and not requested_user.admin %} disabled {% endif %}
-        {% endif %}
->
-<option value="" disabled selected>Select a supervisor</option>
-{% for supervisor in supervisors %}
-    <option value="{{ supervisor.id }}">
-        {{ supervisor.name }} {{ supervisor.first_name }}
-    </option>
-{% endfor %}
+<select class="form-select" id="supervisor" name="supervisor" {% if is_disabled %} disabled {% endif %}>
+    <option value="" disabled selected>Select a supervisor</option>
+    {% for supervisor in supervisors %}
+        <option value="{{ supervisor.id }}">
+            {{ supervisor.name }} {{ supervisor.first_name }}
+        </option>
+    {% endfor %}
 </select>
-{% if page == 'register' %}
+
+{% if show_tags_container %}
     <div id="tags-container"></div>
-{% elif page == 'profile' %}
-    <div id="selected-supervisors">
-        {% for selected in researcher.researcher_supervisor %}
+{% elif show_selected_supervisors %}
+    <div id="tags-container">
+        {% for selected in researcher.supervisors %}
             <div class="badge bg-primary" data-id="{{ selected.supervisor.id }}">
                 {{ selected.supervisor.name }} {{ selected.supervisor.first_name }}&nbsp;
                 {% if session["is_admin"] %} <a href="#" class="remove-tag">&times;</a> {% endif %}
@@ -38,19 +35,9 @@
 <script>
     $(document).ready(function () {
         $(document).on('change', '#supervisor', function () {
-            var containerSelector;
+            var containerSelector = '#tags-container';
 
-            {% if page == 'register' %}
-                containerSelector = '#tags-container';
-            {% elif page == 'profile' %}
-                containerSelector = $('#selected-supervisors', $(this).parent());
-            {% endif %}
-
-            if (containerSelector) {
-                addBadge($(this), containerSelector, 'supervisor');
-            }
+            addBadge($(this), containerSelector, 'supervisor');
         });
     });
 </script>
-
-

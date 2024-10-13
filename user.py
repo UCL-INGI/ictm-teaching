@@ -80,7 +80,7 @@ def add_user():
 
                 if supervisor_ids:
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    new_researcher.researcher_supervisor = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    new_researcher.supervisors = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
                     db.session.commit()
 
             flash("User added successfully.", "success")
@@ -211,7 +211,7 @@ def update_user_profile(user_id):
                 if supervisor_ids:
                     db.session.query(ResearcherSupervisor).filter_by(researcher_id=researcher.id).delete()
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    researcher.researcher_supervisor = [ResearcherSupervisor(researcher=researcher, supervisor=s) for s in supervisors]
+                    researcher.supervisors = [ResearcherSupervisor(researcher=researcher, supervisor=s) for s in supervisors]
             else:
                 delete_researcher(user.id)
         db.session.commit()

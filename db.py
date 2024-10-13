@@ -30,7 +30,7 @@ class User(db.Model):
     @validates('active')
     def validate_active(self, key, value):
         if not value:
-            if self.supervisor_researcher:
+            if self.researchers:
                 raise ValueError("Cannot deactivate a supervisor who has supervisees.")
             if self.user_teacher:
                 raise ValueError("Cannot deactivate a teacher assigned to a course.")
@@ -84,8 +84,8 @@ class ResearcherSupervisor(db.Model):
     researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), primary_key=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
 
-    researcher = db.relationship('Researcher', backref=db.backref('researcher_supervisor', lazy=True))
-    supervisor = db.relationship('User', backref=db.backref('supervisor_researcher', lazy=True))
+    researcher = db.relationship('Researcher', backref=db.backref('supervisors', lazy=True))
+    supervisor = db.relationship('User', backref=db.backref('researchers', lazy=True))
 
 
 class Teacher(db.Model):

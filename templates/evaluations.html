@@ -10,12 +10,11 @@
         <hr>
         <form action="{{ url_for("course.create_evaluation", current_year=current_year, user_id=user_id) }}"
               method="POST">
-            <h4>Focus on your (first) course of the semester</h4>
-            <p>If you gave two courses during this semester, choose one of them and create a new evaluation for the
-                second one </p>
-            <br>
+            <strong>If you gave two courses during this semester, choose one of them and create a new evaluation for the
+                second one </strong>
             <div class="form-group">
-                <label for="course1">1. What is the (first) course you gave this semester?</label>
+                <br>
+                <label for="course1">1. What is the course you gave this semester?</label>
                 <select class="form-control" id="course" name="course_id" required>
                     {% for course in courses %}
                         <option value="{{ course.id }}">{{ course.code }} - {{ course.title }}</option>
@@ -64,20 +63,6 @@
                     know that the course will change a lot less next year, or will be strongly
                     reorganized,...)</label><br>
                 <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-            </div>
-            <br>
-            <div class="form-group">
-                <label>6. Did you give a second course this term?</label><br>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="second_course" id="second_course_yes" value="Yes"
-                           required>
-                    <label class="form-check-label" for="second_course_yes">Yes</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="second_course" id="second_course_no" value="No"
-                           required>
-                    <label class="form-check-label" for="second_course_no">No</label>
-                </div>
             </div>
             <br>
             <button type="submit" class="btn btn-primary">Submit</button>

@@ -91,25 +91,9 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="configDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    Config
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="configDropdown">
-                                    <li>
-                                        <button class="dropdown-item" data-bs-toggle="modal"
-                                                data-bs-target="#confirmationModal"
-                                                data-message="Are you sure you want to add a new year?"
-                                                data-url="{{ url_for('config.new_year') }}">Add New Year
-                                        </button>
-                                        <button class="dropdown-item" data-bs-toggle="modal"
-                                                data-bs-target="#confirmationModal"
-                                                data-message="Are you sure you want to move on to the next year?"
-                                                data-url="{{ url_for('config.next_year') }}">Move on to the next year
-                                        </button>
-                                    </li>
-                                </ul>
+                            <li>
+                            <a class="nav-link"
+                               href="{{ url_for('config.manage_years', configurations=configurations) }}">Configurations</a>
                             </li>
                         {% endif %}
                         {% block additionalnav %}{% endblock %}
@@ -122,7 +106,7 @@
                             </div>
                         </div>
 
-                        <div class="navbar-text ms-0"> <!-- Ajustez ici -->
+                        <div class="navbar-text ms-0">
                             Logged as <strong>{{ session.first_name }} {{ session.name }}</strong>
                             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
                         </div>
@@ -132,27 +116,6 @@
         </nav>
     </div>
 {% endif %}
-
-<!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <form action="{{ url_for('config.new_year') }}" method="POST" id="confirmationForm">
-                    <button type="submit" class="btn btn-primary">Yes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div id="content">
     {% block pagecontent %}{% endblock %}

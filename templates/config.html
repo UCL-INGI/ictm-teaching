@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block pagetitle %}Configurations{% endblock %}
+{% block pagecontent %}
+    {% include "toast.html" %}
+    <div class="container mt-3">
+        <h3>Academic year configurations</h3>
+        <hr>
+        <div class="mb-3">
+            <label for="yearSelect" class="form-label">Academic year</label>
+            <div class="list-group">
+                {% for config in configurations %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ config.year }}-{{ config.year + 1 }}
+
+                        <div>
+                            {% if not config.is_current_year %}
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmationModal"
+                                        data-message="Are you sure you want to delete the year {{ config.year }} - {{ config.year + 1 }}?"
+                                        data-url="{{ url_for('config.delete_year', id_year=config.id) }}">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            {% else %}
+                                <span class="badge bg-success">Current Year</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <button class="btn btn-outline-dark w-100" data-bs-toggle="modal"
+                        data-bs-target="#confirmationModal"
+                        data-message="Are you sure you want to add a new year?"
+                        data-url="{{ url_for('config.new_year') }}">Add New Year
+                </button>
+            </div>
+            <div class="col-6">
+                <button class="btn btn-outline-dark w-100" data-bs-toggle="modal"
+                        data-bs-target="#confirmationModal"
+                        data-message="Are you sure you want to move on to the next year?"
+                        data-url="{{ url_for('config.next_year') }}">Move on to the next year
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <form method="POST" id="confirmationForm">
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additionalfooter %}
+    <script>
+        $(document).ready(function () {
+            $('#confirmationModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+
+                var message = button.data('message');
+                var url = button.data('url');
+
+                var modal = $(this);
+                modal.find('.modal-body').text(message);
+                modal.find('#confirmationForm').attr('action', url);
+            });
+        });
+    </script>
+{% endblock %}

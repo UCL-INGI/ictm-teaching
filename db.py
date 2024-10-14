@@ -21,7 +21,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=True)
     first_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(200), nullable=True, unique=True)
-    admin = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
@@ -42,8 +42,7 @@ class User(db.Model):
 
     def allowed(self, access_level):
         role_access = {
-            Role.USER: True,
-            Role.ADMIN: self.admin,
+            Role.ADMIN: self.is_admin,
             Role.RESEARCHER: self.is_researcher,
             Role.TEACHER: self.is_teacher
         }

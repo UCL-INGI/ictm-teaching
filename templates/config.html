@@ -17,9 +17,9 @@
                                 <button type="button" class="btn btn-outline-danger btn-sm"
                                         data-bs-toggle="modal"
                                         data-bs-target="#confirmationModal"
-                                        data-message="Are you sure you want to delete the year {{ config.year }} - {{ config.year + 1 }}?"
-                                        data-url="{{ url_for('config.delete_year', id_year=config.id) }}">
-                                    <i class="fa-solid fa-xmark"></i>
+                                        data-message="Are you sure you want to move to this year {{ config.year }} - {{ config.year + 1 }}?"
+                                        data-url="{{ url_for('config.change_year', year=config.year) }}">
+                                    <i class="fa-solid fa-backward"></i>
                                 </button>
                             {% else %}
                                 <span class="badge bg-success">Current Year</span>
@@ -31,18 +31,11 @@
 
         </div>
         <div class="row">
-            <div class="col-6">
+            <div class="col-12">
                 <button class="btn btn-outline-dark w-100" data-bs-toggle="modal"
                         data-bs-target="#confirmationModal"
                         data-message="Are you sure you want to add a new year?"
                         data-url="{{ url_for('config.new_year') }}">Add New Year
-                </button>
-            </div>
-            <div class="col-6">
-                <button class="btn btn-outline-dark w-100" data-bs-toggle="modal"
-                        data-bs-target="#confirmationModal"
-                        data-message="Are you sure you want to move on to the next year?"
-                        data-url="{{ url_for('config.next_year') }}">Move on to the next year
                 </button>
             </div>
         </div>

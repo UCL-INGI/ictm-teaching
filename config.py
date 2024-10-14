@@ -38,61 +38,24 @@ def new_year():
     except Exception as e:
         db.session.rollback()
         logging.error(f'An error occurred: {str(e)}', exc_einfo=True)
-        flash("An error has occurred. We will solve it as soon as possible", "error")
-
-        return redirect(url_for("config.manage_years"))
+        flash(f"An error occurred while creating the year {new_year} - {new_year + 1}.", "error")
 
     return redirect(url_for("config.manage_years"))
 
 
 # This method allows the admin to move on to the next academic year for all users.
-@config_bp.route('/next_year', methods=['POST'])
+@config_bp.route('/change_year/<int:year>', methods=['POST'])
 @login_required
 @check_access_level(Role.ADMIN)
-def next_year():
-    current_year = Configuration.query.filter_by(is_current_year=True).first()
+def change_year(year):
     try:
-        new_year = Configuration.query.filter_by(year=current_year.year + 1).first()
-
-        # Check if the following year already exists
-        if new_year is None:
-            # Create the new year entry automatically
-            new_year = Configuration(year=current_year.year + 1, is_current_year=True)
-            db.session.add(new_year)
-            flash("New year created automatically", "success")
-        else:
-            # If the new year exists, just update the current year status
-            new_year.is_current_year = True
-
-        current_year.is_current_year = False
-        db.session.commit()
+        new_current_year = Configuration.query.filter_by(year=year).first()
+        Configuration.update_current_year(new_current_year.id)
 
     except Exception as e:
         db.session.rollback()
         logging.error(f'An error occurred: {str(e)}', exc_einfo=True)
-        flash("An error has occurred. We will solve it as soon as possible", "error")
-
-        return redirect(url_for("config.manage_years"))
-
-    return redirect(url_for("config.manage_years"))
-
-
-@config_bp.route('/delete_year/<int:id_year>', methods=['POST'])
-@login_required
-@check_access_level(Role.ADMIN)
-def delete_year(id_year):
-    try:
-        config = Configuration.query.get(id_year)
-        if config.is_current_year:
-            flash("You cannot delete the current year", "error")
-        else:
-            db.session.delete(config)
-            db.session.commit()
-            flash("Year deleted successfully", "success")
-    except Exception as e:
-        db.session.rollback()
-        logging.error(f'An error occurred while deleting year {id_year}: {str(e)}', exc_info=True)
-        flash("An error occurred. Please try again.", "error")
+        flash(f"An error occurred while trying to change the current year to {year} - {year + 1}.", "error")
 
     return redirect(url_for("config.manage_years"))
 

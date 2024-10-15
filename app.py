@@ -62,7 +62,7 @@ def index():  # put application's code here
     courses_researcher = db.session.query(Course).join(AssignmentPublished).filter(PublishAssignment.user_id == user.id,
                                                                                  PublishAssignment.course_year == current_year)
     if researcher:
-        courses_researcher = courses_researcher.filter(AssignmentPublished.teacher_publication == False).all()
+        courses_researcher = courses_researcher.filter(AssignmentPublished.is_teacher_publication == False).all()
     else:
         courses_researcher = courses_researcher.all()
 

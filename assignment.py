@@ -79,6 +79,7 @@ def publish_assignments():
 
     current_year = get_current_year()
     is_draft = data.get('isDraft')
+    is_teacher_publication = data.get('teacher_publication')
 
     try:
         # Clear existing assignments for the current year
@@ -113,7 +114,7 @@ def publish_assignments():
                         if not is_draft:
                             assignments_to_add.append(AssignmentPublished(
                                 course_id=course_id, course_year=current_year, researcher_id=researcher_id,
-                                load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
+                                load_q1=load_q1, load_q2=load_q2, position=position, comment=comment, is_teacher_publication=is_teacher_publication
                             ))
                     except (ValueError, TypeError) as e:
                         course = db.session.query(Course).filter_by(id=course_id, year=current_year).first()

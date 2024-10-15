@@ -495,10 +495,6 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             });
 
-            $('#button-publish-assignments').click(async function () {
-
-            });
-
             $('#button-publish-teachers').click(async function () {
                 await saveAssignment(isTeacherPublication=true);
             });

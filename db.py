@@ -20,7 +20,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=True)
     first_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(200), nullable=True, unique=True)
-    admin = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
     is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
@@ -40,14 +40,13 @@ class User(db.Model):
         return value
 
     def allowed(self, access_level):
-        if access_level == Role.ADMIN:
-            return self.admin
-        elif access_level == Role.RESEARCHER:
-            return self.is_researcher
-        elif access_level == Role.TEACHER:
-            return self.is_teacher
-        else:
-            return False
+        role_access = {
+            Role.ADMIN: self.is_admin,
+            Role.RESEARCHER: self.is_researcher,
+            Role.TEACHER: self.is_teacher
+        }
+
+        return role_access.get(access_level, False)
 
 
 class Course(db.Model):

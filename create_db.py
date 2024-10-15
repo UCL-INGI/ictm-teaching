@@ -14,9 +14,9 @@ def create_database(name, first_name, email):
 
 
 def add_first_admin(name, first_name, email):
-    admin_exists = db.session.query(User).filter_by(admin=True).first()
+    admin_exists = db.session.query(User).filter_by(is_admin=True).first()
     if admin_exists is None:
-        first_admin = User(first_name=first_name, name=name, email=email, admin=True)
+        first_admin = User(first_name=first_name, name=name, email=email, is_admin=True)
         db.session.add(first_admin)
         db.session.commit()
         print(f"Admin account for {first_name} {name} created successfully.")
@@ -30,7 +30,7 @@ def initialize_configuration():
     existing_year = Configuration.query.filter_by(year=current_year).first()
 
     if existing_year is None:
-        config = Configuration(year=current_year)
+        config = Configuration(year=current_year, is_current_year=True)
         db.session.add(config)
         db.session.commit()
 

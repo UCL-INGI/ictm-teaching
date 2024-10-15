@@ -105,13 +105,12 @@ def is_allowed_user(user_id):
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
-@check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def user_profile(user_id, current_year):
     if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
         return redirect(url_for("index"))
 
-    all_users = db.session.query(User).filter(User.admin == False, User.is_teacher == True, User.active == True).all()
+    all_users = db.session.query(User).filter(User.is_admin == False, User.is_teacher == True, User.active == True).all()
     requested_user = db.session.query(User).filter_by(id=user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == requested_user.id).first()
     current_user = requested_user.email == session["email"]
@@ -133,7 +132,6 @@ def user_profile(user_id, current_year):
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
 @login_required
-@check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def update_user_profile(user_id):
     form = request.form
     if not form:

@@ -112,7 +112,7 @@
                                 <div class="form-group" id="supervisor_select" style="display: none;">
                                     <dt>Supervisor</dt>
                                     <dd>
-                                        {% with is_disabled=(not session["is_admin"]), show_tags_container=false, show_selected_supervisors=true %}
+                                        {% with is_disabled=(not session["is_admin"]), show_selected_supervisors=true %}
                                             {% include "search_supervisor.html" %}
                                         {% endwith %}
                                     </dd>

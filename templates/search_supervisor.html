@@ -18,10 +18,9 @@
     {% endfor %}
 </select>
 
-{% if show_tags_container %}
-    <div id="tags-container"></div>
-{% elif show_selected_supervisors %}
-    <div id="tags-container">
+
+<div id="tags-container">
+    {% if show_selected_supervisors %}
         {% for selected in researcher.supervisors %}
             <div class="badge bg-primary" data-id="{{ selected.supervisor.id }}">
                 {{ selected.supervisor.name }} {{ selected.supervisor.first_name }}&nbsp;
@@ -29,8 +28,9 @@
                 <input type="hidden" name="supervisor[]" value="{{ selected.supervisor.id }}">
             </div>
         {% endfor %}
-    </div>
-{% endif %}
+    {% endif %}
+</div>
+
 
 <script>
     $(document).ready(function () {

@@ -132,7 +132,6 @@ def user_profile(user_id, current_year):
 
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
 @login_required
-@check_access_level(Role.ADMIN, Role.RESEARCHER, Role.TEACHER)
 def update_user_profile(user_id):
     form = request.form
     if not form:

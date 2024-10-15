@@ -138,6 +138,7 @@ def user_profile(user_id, current_year):
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).all()
+
     courses = []
     if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,

@@ -127,7 +127,7 @@ class Configuration(db.Model):
     __tablename__ = 'configuration'
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
-    is_current_year = db.Column(db.Boolean, default=True)
+    is_current_year = db.Column(db.Boolean, default=False)
 
     @classmethod
     def update_current_year(cls, config_id):

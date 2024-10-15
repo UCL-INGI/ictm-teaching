@@ -12,7 +12,6 @@ class Role(Enum):
     ADMIN = "admin"
     RESEARCHER = "researcher"
     TEACHER = "teacher"
-    USER = "user"
 
 
 class User(db.Model):

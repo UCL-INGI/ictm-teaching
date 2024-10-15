@@ -105,7 +105,6 @@ def is_allowed_user(user_id):
 
 @user_bp.route('/profile/<int:user_id>/<int:current_year>')
 @login_required
-@check_access_level(Role.USER)
 def user_profile(user_id, current_year):
     if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")

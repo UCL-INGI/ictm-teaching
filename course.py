@@ -115,7 +115,7 @@ def add_course():
 @check_access_level(Role.ADMIN)
 def courses(year):
     courses = db.session.query(Course).filter_by(year=year).all()
-    return render_template('courses.html', courses=courses, current_year=year)
+    return render_template('courses.html', courses=courses, year=year)
 
 
 @course_bp.route('/search_teachers')

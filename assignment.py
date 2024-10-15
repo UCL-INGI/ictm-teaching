@@ -79,7 +79,7 @@ def publish_assignments():
 
     current_year = get_current_year()
     is_draft = data.get('isDraft')
-    is_teacher_publication = data.get('teacher_publication')
+    is_teacher_publication = data.get('is_teacher_publication')
 
     try:
         # Clear existing assignments for the current year

@@ -73,7 +73,7 @@ def callback():
         session["user_id"] = updated_user.id
         session["first_name"] = updated_user.first_name
         session["name"] = updated_user.name
-        session["is_admin"] = updated_user.admin
+        session["is_admin"] = updated_user.is_admin
 
         # Redirect to desired url
         self_url = OneLogin_Saml2_Utils.get_self_url(prepare_saml_request(request))

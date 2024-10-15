@@ -33,12 +33,12 @@ def save_preference():
 
     preferences = data['preferences']
     if preferences is None:
-        return make_response("No preferences received", 500)
+        flash("No preferences received", "error")
 
     user_id = session["user_id"]
     researcher = Researcher.query.filter(Researcher.user_id == user_id).first()
     if researcher is None:
-        return make_response("User is not a researcher", 500)
+        flash("Researcher not found", "error")
 
     delete_old_preferences(researcher.id, current_year)
 

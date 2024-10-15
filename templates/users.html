@@ -74,7 +74,7 @@
                         <td></td>
                     {% endif %}
                     {% if user_type == 'archived' %}
-                        {% if is_teacher %}
+                        {% if user.is_teacher %}
                             <td>Teacher</td>
                         {% else %}
                             <td>{{ user.user_researcher.researcher_type }}</td>

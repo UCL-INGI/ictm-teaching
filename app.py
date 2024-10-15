@@ -41,16 +41,11 @@ def is_researcher():
     return db.session.query(Researcher).filter_by(user_id=session['user_id']).first() is not None
 
 
-def is_teacher():
-    return db.session.query(Teacher).filter_by(user_id=session['user_id']).first() is not None
-
-
 @app.context_processor
 def inject_configurations():
     return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI,
                 language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year(),
-                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD, is_researcher=is_researcher(),
-                is_teacher=is_teacher())
+                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD, is_researcher=is_researcher())
 
 
 # Routes

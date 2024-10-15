@@ -41,7 +41,7 @@ class User(db.Model):
     def allowed(self, access_level):
         role_access = {
             Role.ADMIN: self.is_admin,
-            Role.RESEARCHER: self.is_researcher,
+            Role.RESEARCHER: self.user_researcher is not None,
             Role.TEACHER: self.is_teacher
         }
 
@@ -74,7 +74,6 @@ class Researcher(db.Model):
     __tablename__ = 'researcher'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    research_field = db.Column(db.String(30))
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String(30))

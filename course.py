@@ -57,13 +57,7 @@ def validate_form_data(form, extra_fields_needed=False):
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
         for teacher_id in assigned_teachers:
-            teacher = db.session.query(Teacher).filter(Teacher.user_id == teacher_id, Teacher.course_id == None,
-                                                       Teacher.course_year == None).first()
-            if teacher:
-                teacher.course_id = course_id
-                teacher.course_year = course_year
-            else:
-                teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
+            teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
             db.session.add(teacher)
         db.session.commit()
     except Exception as e:
@@ -186,14 +180,7 @@ def update_course_info():
 
     # Remove all teachers assigned to the course
     try:
-        db.session.query(Teacher).filter(
-            Teacher.course_id == course_id,
-            Teacher.course_year == year,
-        ).update({
-            Teacher.course_id: None,
-            Teacher.course_year: None
-        })
-
+        db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).delete()
         db.session.commit()
     except Exception as e:
         db.session.rollback()

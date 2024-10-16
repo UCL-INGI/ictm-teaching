@@ -57,8 +57,8 @@ def validate_form_data(form, extra_fields_needed=False):
 def assign_teachers_to_course(course_id, course_year, assigned_teachers):
     try:
         for teacher_id in assigned_teachers:
-            new_teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
-            db.session.add(new_teacher)
+            teacher = Teacher(user_id=teacher_id, course_id=course_id, course_year=course_year)
+            db.session.add(teacher)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -125,8 +125,10 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).filter(User.active == True, User.is_teacher == True,
-                                             User.name.ilike(f'%{search_term}%')).all()
+    teachers = db.session.query(User).join(Teacher).filter(
+        User.active == True,
+        User.name.ilike(f'%{search_term}%')
+    ).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)
 
@@ -178,9 +180,7 @@ def update_course_info():
 
     # Remove all teachers assigned to the course
     try:
-        db.session.query(Teacher).filter(Teacher.course_id == course_id,
-                                         Teacher.course_year == year,
-                                         Teacher.user_id.in_(assigned_teachers)).delete()
+        db.session.query(Teacher).filter(Teacher.course_id == course_id, Teacher.course_year == year).delete()
         db.session.commit()
     except Exception as e:
         db.session.rollback()

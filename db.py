@@ -22,7 +22,6 @@ class User(db.Model):
     email = db.Column(db.String(200), nullable=True, unique=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_teacher = db.Column(db.Boolean, default=False)
-    is_researcher = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
@@ -42,7 +41,7 @@ class User(db.Model):
     def allowed(self, access_level):
         role_access = {
             Role.ADMIN: self.is_admin,
-            Role.RESEARCHER: self.is_researcher,
+            Role.RESEARCHER: self.researcher_profile is not None,
             Role.TEACHER: self.is_teacher
         }
 
@@ -75,12 +74,11 @@ class Researcher(db.Model):
     __tablename__ = 'researcher'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    research_field = db.Column(db.String(30))
     max_loads = db.Column(db.Integer)
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String(30))
 
-    user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
+    user = db.relationship('User', backref=db.backref('researcher_profile', uselist=False))
 
 
 class Teacher(db.Model):

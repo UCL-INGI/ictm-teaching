@@ -7,7 +7,7 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization, User, Course, Teacher
+from db import db, Configuration, Organization, User, Course, Teacher, Researcher
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -37,11 +37,15 @@ def get_organization():
     return db.session.query(Organization).all()
 
 
+def is_researcher():
+    return db.session.query(Researcher).filter_by(user_id=session['user_id']).first() is not None
+
+
 @app.context_processor
 def inject_configurations():
     return dict(configurations=get_configurations(), organizations_code=get_organization(), quadri=QUADRI,
                 language=LANGUAGES, researcher_type=RESEARCHERS_TYPE, dynamic_year=get_current_year(),
-                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD)
+                tasks=TASK, evaluation_hour=EVALUATION_HOUR, workloads=WORKLOAD, is_researcher=is_researcher())
 
 
 # Routes

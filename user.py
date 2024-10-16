@@ -9,13 +9,6 @@ import re, json
 user_bp = Blueprint('user', __name__)
 
 
-def create_teacher(user_id):
-    if db.session.query(Teacher).filter_by(user_id=user_id).first() is None:
-        new_teacher = Teacher(user_id=user_id)
-        db.session.add(new_teacher)
-        db.session.commit()
-
-
 def get_teachers():
     return db.session.query(User).filter(User.is_teacher == True, User.active == True).all()
 

@@ -41,7 +41,7 @@ class User(db.Model):
     def allowed(self, access_level):
         role_access = {
             Role.ADMIN: self.is_admin,
-            Role.RESEARCHER: self.user_researcher is not None,
+            Role.RESEARCHER: self.researcher_profile is not None,
             Role.TEACHER: self.is_teacher
         }
 
@@ -78,7 +78,7 @@ class Researcher(db.Model):
     jokers = db.Column(db.Integer)
     researcher_type = db.Column(db.String(30))
 
-    user = db.relationship('User', backref=db.backref('user_researcher', uselist=False))
+    user = db.relationship('User', backref=db.backref('researcher_profile', uselist=False))
 
 
 class Teacher(db.Model):

@@ -149,13 +149,6 @@ def delete_researcher(user_id):
         db.session.commit()
 
 
-def delete_teacher(user_id):
-    teacher = db.session.query(Teacher).filter(Teacher.user_id == user_id).first()
-    if teacher:
-        db.session.delete(teacher)
-        db.session.commit()
-
-
 @user_bp.route('/update_user_profile/<int:user_id>', methods=['POST'])
 @login_required
 def update_user_profile(user_id):

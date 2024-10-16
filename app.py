@@ -54,6 +54,7 @@ def inject_configurations():
 @app.route('/')
 @login_required
 def index():
+    current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
     researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
 

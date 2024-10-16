@@ -138,7 +138,6 @@ def user_profile(user_id, current_year):
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).all()
-
     courses = []
     if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,
@@ -201,7 +200,6 @@ def update_user_profile(user_id):
             user.organization_id = organization_code
             user.is_admin = is_admin
             user.is_teacher = is_teacher
-            user.is_researcher = is_researcher
             if is_researcher:
                 if researcher is None:
                     create_researcher(user.id, researcher_type, max_loads)

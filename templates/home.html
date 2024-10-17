@@ -78,7 +78,7 @@
                                 <tbody>
                                 {% for evaluation in evaluations %}
                                     <tr>
-                                        <td><a href="{{ url_for('course.evaluations', evaluation_id=evaluation.id) }}">
+                                        <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
                                             {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
                                         </td>
                                         <td>{{ evaluation.course.year }}</td>

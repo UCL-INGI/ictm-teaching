@@ -219,7 +219,7 @@ class Evaluation(db.Model):
     course_year = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task = db.Column(db.JSON, nullable=False)
-    other_task = db.Column(db.String(100))
+    other_task = db.Column(db.String(200))
     nbr_hours = db.Column(db.String(10), nullable=False)
     workload = db.Column(db.String(10), nullable=False)
     comment = db.Column(db.String(500))
@@ -232,5 +232,6 @@ class Evaluation(db.Model):
         ),
     )
 
-    course = db.relationship('Course', backref=db.backref('course_evaluation', lazy=True))
-    user = db.relationship('User', backref=db.backref('user_evaluation', lazy=True))
+    course = db.relationship('Course', backref=db.backref('evaluations', lazy=True))
+    user = db.relationship('User',
+                           backref=db.backref('evaluations', lazy=True, order_by='desc(Evaluation.course_year)'))

@@ -57,12 +57,7 @@ def index():  # put application's code here
     current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
     courses_teacher = db.session.query(Course).filter_by(year=current_year).join(Teacher).filter(Teacher.user_id == user.id).all()
-    current_year = get_current_year()
-    evaluations = db.session.query(Evaluation).filter(
-        Evaluation.user_id == user.id,
-        Evaluation.course_year < current_year
-    ).all()
-    return render_template("home.html", user=user, courses=courses_teacher, evaluations=evaluations)
+    return render_template("home.html", user=user, courses=courses_teacher, evaluations=user.evaluations)
 
 
 if __name__ == '__main__':

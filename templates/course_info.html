@@ -97,15 +97,13 @@
                                         </tr>
                                     {% endif %}
                                     {% for evaluation in evaluations %}
-                                        {% if evaluation.course_year < course.year %}
-                                            <tr>
-                                                <td><a href="{{ url_for('course.evaluations', evaluation_id=evaluation.id) }}">
-                                                    {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
-                                                </td>
-                                                <td>{{ evaluation.course.year }}</td>
-                                                <td>{{ evaluation.user.name }} {{ evaluation.user.first_name }}</td>
-                                            </tr>
-                                        {% endif %}
+                                        <tr>
+                                            <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
+                                                {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
+                                            </td>
+                                            <td>{{ evaluation.course.year }}</td>
+                                            <td>{{ evaluation.user.name }} {{ evaluation.user.first_name }}</td>
+                                        </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>

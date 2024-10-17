@@ -77,14 +77,15 @@
             <div class="row justify-content-center">
                 <div class="col-sm-4" id="supervisor_select" style="display: none;">
                     <br>
-                    <label for="supervisor">Supervisor</label>
-                    <select class="form-select" id="supervisor" name="supervisor">
-                        {% for supervisor in supervisors %}
-                            <option value="{{ supervisor.id }}">{{ supervisor.first_name }} {{ supervisor.name }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="form-group">
+                        <label for="supervisor">Supervisor</label>
+                        {% with is_disabled=false, show_selected_supervisors=false %}
+                            {% include "search_supervisor.html"%}
+                        {% endwith %}
+                    </div>
                 </div>
             </div>
+
             <div class="row justify-content-center">
                 <div class="col-sm-4" id="researcher_type_select" style="display: none;">
                     <br>

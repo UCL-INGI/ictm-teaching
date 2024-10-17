@@ -1,0 +1,43 @@
+<style>
+    .badge a {
+        color: black;
+        text-decoration: none;
+    }
+
+    .badge a:hover {
+        color: red;
+    }
+</style>
+
+<select class="form-select" id="supervisor" name="supervisor" {% if is_disabled %} disabled {% endif %}>
+    <option value="" disabled selected>Select a supervisor</option>
+    {% for supervisor in supervisors %}
+        <option value="{{ supervisor.id }}">
+            {{ supervisor.name }} {{ supervisor.first_name }}
+        </option>
+    {% endfor %}
+</select>
+
+
+<div id="tags-container">
+    {% if show_selected_supervisors %}
+        {% for selected in researcher.supervisors %}
+            <div class="badge bg-primary" data-id="{{ selected.supervisor.id }}">
+                {{ selected.supervisor.name }} {{ selected.supervisor.first_name }}&nbsp;
+                {% if session["is_admin"] %} <a href="#" class="remove-tag">&times;</a> {% endif %}
+                <input type="hidden" name="supervisor[]" value="{{ selected.supervisor.id }}">
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $(document).on('change', '#supervisor', function () {
+            var containerSelector = '#tags-container';
+
+            addBadge($(this), containerSelector, 'supervisor');
+        });
+    });
+</script>

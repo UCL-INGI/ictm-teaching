@@ -69,15 +69,15 @@
                     <td>{{ user.email }}</td>
                     <td><span class="badge bg-primary">{{ user.organization.name }}</span></td>
                     {% if user_type == 'researcher' %}
-                        <td>{{ user.user_researcher.researcher_type }}</td>
-                        <td>{{ user.user_researcher.max_loads }}</td>
+                        <td>{{ user.researcher_profile.researcher_type }}</td>
+                        <td>{{ user.researcher_profile.max_loads }}</td>
                         <td></td>
                     {% endif %}
                     {% if user_type == 'archived' %}
                         {% if user.is_teacher %}
                             <td>Teacher</td>
                         {% else %}
-                            <td>{{ user.user_researcher.researcher_type }}</td>
+                            <td>{{ user.researcher_profile.researcher_type }}</td>
                         {% endif %}
                         <td>
                             <a href="{{ url_for('user.enable', user_id=user.id) }}"

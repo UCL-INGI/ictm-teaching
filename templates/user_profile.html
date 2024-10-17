@@ -86,7 +86,6 @@
                                 <dd>
                                     {% if session["is_admin"] %}
                                         <div class="form-check">
-
                                             <input type="checkbox" class="form-check-input" id="is_admin"
                                                    name="is_admin"
                                                    {% if requested_user.is_admin %}checked{% endif %}
@@ -113,19 +112,9 @@
                                 <div class="form-group" id="supervisor_select" style="display: none;">
                                     <dt>Supervisor</dt>
                                     <dd>
-                                        <select class="form-select" id="supervisor" name="supervisor"
-                                                {% if not session.is_admin %} disabled {% endif %}>
-                                            {% if requested_user.supervisor == None and not session.is_admin %}
-                                                <option value="" selected>None</option>
-                                            {% else %}
-                                                {% for supervisor in supervisors %}
-                                                    <option value="{{ supervisor.id }}"
-                                                            {% if supervisor.id == requested_user.supervisor.id %}selected{% endif %}>
-                                                        {{ supervisor.first_name }} {{ supervisor.name }}
-                                                    </option>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </select>
+                                        {% with is_disabled=(not session["is_admin"]), show_selected_supervisors=true %}
+                                            {% include "search_supervisor.html" %}
+                                        {% endwith %}
                                     </dd>
                                 </div>
                                 <div class="form-group" id="researcher_type_display" style="display: none;">
@@ -133,16 +122,12 @@
                                     <dd>
                                         <select class="form-select" id="researcher_type" name="researcher_type"
                                                 {% if not session.is_admin %} disabled {% endif %}>
-                                            {% if is_researcher and not session.is_admin %}
-                                                <option value="" selected>None</option>
-                                            {% else %}
                                                 {% for type in researcher_type %}
                                                     <option value="{{ type }}"
                                                             {% if type == researcher.researcher_type %}selected{% endif %}>
                                                         {{ type }}
                                                     </option>
                                                 {% endfor %}
-                                            {% endif %}
                                         </select>
                                     </dd>
                                 </div>
@@ -272,7 +257,8 @@
                                                 {% if session.is_admin == False %} disabled {% endif %}>
                                             {% for config in configurations %}
                                                 <option value="{{ config.year }}" {% if config.year == current_year %}
-                                                        selected {% endif %} data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
+                                                        selected {% endif %}
+                                                        data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
                                                     {{ config.year }}-{{ config.year + 1 }}
                                                 </option>
                                             {% endfor %}

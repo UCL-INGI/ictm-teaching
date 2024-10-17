@@ -41,10 +41,12 @@
                                href="{{ url_for('user.user_profile', user_id=session.user_id) }}">My
                                 Profile</a>
                         </li>
-                        <li>
-                            <a class="nav-link"
-                               href="{{ url_for('user.preferences', user_id=session.user_id, current_year=dynamic_year) }}">Preferences</a>
-                        </li>
+                        {% if is_researcher %}
+                            <li>
+                                <a class="nav-link"
+                                   href="{{ url_for('user.preferences', user_id=session.user_id, current_year=dynamic_year) }}">Preferences</a>
+                            </li>
+                        {% endif %}
                         <li>
                             <a class="nav-link"
                                href="{{ url_for('course.evaluations', user_id=session.user_id, current_year=dynamic_year) }}">Evaluations</a>
@@ -98,8 +100,8 @@
                                 </ul>
                             </li>
                             <li>
-                            <a class="nav-link"
-                               href="{{ url_for('config.manage_years', configurations=configurations) }}">Configurations</a>
+                                <a class="nav-link"
+                                   href="{{ url_for('config.manage_years', configurations=configurations) }}">Configurations</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="assignmentDropdown" role="button"
@@ -121,7 +123,8 @@
                         <div class="me-0">
                             <div class="navbar-text me-2">
                                 <input type="text" class="form-control form-control-sm" id="dynamicYearInput"
-                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;" disabled>
+                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;"
+                                       disabled>
                             </div>
                         </div>
 

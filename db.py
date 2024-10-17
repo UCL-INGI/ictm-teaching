@@ -125,7 +125,7 @@ class PreferenceAssignment(db.Model):
     )
 
     course = db.relationship('Course', backref=db.backref('course_preference_assignment', lazy=True))
-    researcher = db.relationship('Researcher', backref=db.backref('researcher_preference_assignment', lazy=True))
+    researcher = db.relationship('Researcher', backref=db.backref('preferences', lazy=True))
 
 
 class Year(db.Model):

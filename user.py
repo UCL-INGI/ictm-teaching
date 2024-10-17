@@ -19,6 +19,7 @@ def create_researcher(user_id, researcher_type, max_loads):
     db.session.commit()
     return new_researcher
 
+
 def get_researchers():
     return db.session.query(User).join(Researcher).filter(User.active == True).all()
 
@@ -80,7 +81,8 @@ def add_user():
 
                 if supervisor_ids:
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    new_researcher.supervisors = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    new_researcher.supervisors = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in
+                                                  supervisors]
                     db.session.commit()
 
             flash("User added successfully.", "success")
@@ -139,7 +141,7 @@ def user_profile(user_id, ):
     if researcher:
         preferences = db.session.query(PreferenceAssignment).filter_by(researcher_id=researcher.id,
                                                                        course_year=current_year).order_by(
-            PreferenceAssignment.id).all()
+            PreferenceAssignment.rank).all()
     courses = []
     if current_user and requested_user.organization:
         courses = db.session.query(Course).filter(Course.year == current_year,
@@ -238,7 +240,8 @@ def update_user_profile(user_id):
                 if supervisor_ids:
                     db.session.query(ResearcherSupervisor).filter_by(researcher_id=researcher.id).delete()
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    researcher.supervisors = [ResearcherSupervisor(researcher=researcher, supervisor=s) for s in supervisors]
+                    researcher.supervisors = [ResearcherSupervisor(researcher=researcher, supervisor=s) for s in
+                                              supervisors]
             else:
                 delete_researcher(user.id)
         db.session.commit()

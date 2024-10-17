@@ -7,7 +7,9 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from db import db, Configuration, Organization, User, Course, Teacher, Researcher
+from assignment import assignment_bp
+from db import db, Configuration, Organization, User, Course, Teacher, Researcher, PublishAssignment, \
+    PublishAssignmentLine
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -27,6 +29,7 @@ app.register_blueprint(user_bp, url_prefix="/user")
 app.register_blueprint(course_bp, url_prefix="/course")
 app.register_blueprint(config_bp, url_prefix="/config")
 app.register_blueprint(course_preference_bp, url_prefix="/course_preference")
+app.register_blueprint(assignment_bp, url_prefix="/assignment")
 
 
 def get_configurations():
@@ -51,11 +54,43 @@ def inject_configurations():
 # Routes
 @app.route('/')
 @login_required
-def index():  # put application's code here
+def index():
     current_year = get_current_year()
     user = db.session.query(User).filter_by(email=session['email']).first()
-    courses_teacher = db.session.query(Course).filter_by(year=current_year).join(Teacher).filter(Teacher.user_id == user.id).all()
-    return render_template("home.html", user=user, courses=courses_teacher)
+    researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
+    courses_teacher = db.session.query(Course).join(Teacher).filter(Teacher.user_id == user.id,
+                                                                    Course.year == current_year).all()
+
+    latest_assignment = db.session.query(PublishAssignment).order_by(PublishAssignment.id.desc()).first()
+    assistants = db.session.query(User).join(PublishAssignmentLine).filter(
+        PublishAssignmentLine.publish_assignment_id == latest_assignment.id,
+        db.and_(
+            PublishAssignmentLine.course_id.in_([course.id for course in courses_teacher]),
+            PublishAssignmentLine.course_year == current_year
+        )
+    ).all()
+
+
+    teacher_assignments = []
+    researcher_assignments = []
+
+    if user.is_teacher:
+        supervised_researchers = user.supervisees
+
+        teacher_assignments = db.session.query(PublishAssignmentLine).filter(
+            PublishAssignmentLine.user_id.in_([user.id for user in supervised_researchers]),
+            PublishAssignmentLine.publish_assignment_id == latest_assignment.id
+        ).all()
+
+    if researcher:
+        if not latest_assignment.is_teacher_publication:
+            researcher_assignments = db.session.query(PublishAssignmentLine).filter(
+                PublishAssignmentLine.user_id == user.id,
+                PublishAssignmentLine.publish_assignment_id == latest_assignment.id
+            ).order_by(PublishAssignmentLine.position.asc()).all()
+
+    return render_template("home.html", user=user, courses=courses_teacher, teacher_assignments=teacher_assignments,
+                           assistants=assistants, researcher_assignments=researcher_assignments)
 
 
 if __name__ == '__main__':

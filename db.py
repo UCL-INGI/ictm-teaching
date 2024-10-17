@@ -110,6 +110,7 @@ class Teacher(db.Model):
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
     id = db.Column(db.Integer, primary_key=True)
+    rank = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, nullable=False)
     course_year = db.Column(db.Integer, nullable=False)
     researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), nullable=False)
@@ -170,6 +171,36 @@ class CourseOrganization(db.Model):
             ['course.id', 'course.year']
         ),
     )
+
+
+class PublishAssignment(db.Model):
+    __tablename__ = 'publish_assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    is_teacher_publication = db.Column(db.Boolean, default=False)
+
+    publish_assignment_lines = db.relationship('PublishAssignmentLine', backref='publish_assignment')
+
+
+class PublishAssignmentLine(db.Model):
+    __tablename__ = 'publish_assignment_line'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    load_q1 = db.Column(db.Integer)
+    load_q2 = db.Column(db.Integer)
+    position = db.Column(db.Integer)
+
+    publish_assignment_id = db.Column(db.Integer, db.ForeignKey('publish_assignment.id'))
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
+
+    user = db.relationship('User', backref=db.backref('user_publish_assignment_line', lazy=True))
+    course = db.relationship('Course', backref=db.backref('course_publish_assignment_line', lazy=True))
 
 
 class Evaluation(db.Model):

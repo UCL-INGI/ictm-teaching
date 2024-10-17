@@ -9,12 +9,11 @@ from util import get_current_year
 course_preference_bp = Blueprint('course_preference', __name__)
 
 
-def delete_old_preferences(researcher_id, course_ids, current_year):
+def delete_old_preferences(researcher_id, current_year):
     try:
         db.session.query(PreferenceAssignment).filter(
             PreferenceAssignment.researcher_id == researcher_id,
             PreferenceAssignment.course_year == current_year,
-            PreferenceAssignment.course_id.in_(course_ids)
         ).delete()
         db.session.commit()
     except Exception as e:
@@ -41,8 +40,7 @@ def save_preference():
     if researcher is None:
         flash("Researcher not found", "error")
 
-    new_course_ids = {preference['course_id'] for preference in preferences}
-    delete_old_preferences(researcher.id, new_course_ids, current_year)
+    delete_old_preferences(researcher.id, current_year)
 
     rank = 0
     for preference in preferences:

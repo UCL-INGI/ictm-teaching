@@ -4,7 +4,7 @@ fetch('/assignment/load_data')
     .then(response => response.json())
     .then(loadData => {
 
-        const {courses, users, teachers, researchers, preferences, organizations, current_year} = loadData;
+        const {courses, users, teachers, researchers, supervisors, preferences, organizations, current_year} = loadData;
         courses.forEach(course => {
             let teachersId = Object.values(teachers).filter(teacher => teacher.course_id === course.id);
             let teachersName = teachersId.map(teacher => {
@@ -13,6 +13,16 @@ fetch('/assignment/load_data')
             });
             course.assigned_teachers = teachersName.join(', ');
         });
+
+        for (let researcherId in researchers) {
+            let researcher = researchers[researcherId];
+            let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
+            let supervisorNames = researcherSupervisor.map(supervisor => {
+                let user = users[supervisor.supervisor_id];
+                return user ? `${user.name}` : '';
+            });
+            researcher.name = supervisorNames.join(', ');
+        }
 
         //Split long text in the course header
         const coursesHeaders = courses.map(course => {
@@ -75,19 +85,20 @@ fetch('/assignment/load_data')
 
         function userRowsData() {
             const rows = [];
-            const researcherUsers = Object.values(users).filter(user => user.is_researcher === true);
 
-            researcherUsers.forEach(user => {
+            for (const researcherId in researchers) {
+                const researcher = researchers[researcherId];
+                const user = users[researcher.user_id];
                 //The first line displays the preferences for each user
                 const row = buildRow(user, true);
                 //The second line allows admins to assign a course to the user
                 const emptyRow = buildRow(user, false);
-                const matchingAssistant = researchers[user.id];
+                //const matchingAssistant = researchers[user.id];
                 const assistantOrg = organizations[user.organization_id];
 
                 row.org = assistantOrg ? assistantOrg.name : "";
-                row.promoter = matchingAssistant ? (users[user.supervisor_id]?.name ?? "") : "";
-                row.totalLoad = matchingAssistant ? matchingAssistant.max_loads : 0;
+                row.promoter = researcher.name;
+                row.totalLoad = researcher.max_loads;
                 row.loadQ1 = 0;
                 row.loadQ2 = 0;
 
@@ -97,7 +108,7 @@ fetch('/assignment/load_data')
                     emptyRow[key] = "";
                 });
 
-                const userPrefs = Object.values(preferences).filter(pref => pref.researcher_id === researchers[user.id].id);
+                const userPrefs = Object.values(preferences).filter(pref => pref.researcher_id === researcher.id);
 
                 let pos = 1;
                 courses.forEach(course => {
@@ -109,13 +120,13 @@ fetch('/assignment/load_data')
 
                 rows.push(row);
                 rows.push(emptyRow);
-            });
-
+            }
             return rows;
         }
 
         const fixedRows = fixedRowsData();
         const userRows = userRowsData();
+
 
         function getCourseColumns() {
             const fixedColumns = [

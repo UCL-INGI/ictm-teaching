@@ -1,5 +1,6 @@
 from decorators import login_required
-from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, PublishAssignment
+from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, PublishAssignment, \
+    ResearcherSupervisor
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -24,6 +25,7 @@ def load_data():
     current_year = get_current_year()
     courses = (db.session.query(Course).filter_by(year=current_year).order_by(Course.quadri).all())
     users = db.session.query(User).filter_by(active=True).all()
+    supervisors = db.session.query(ResearcherSupervisor).all()
     teachers = db.session.query(Teacher).filter_by(course_year=current_year).all()
     researchers = db.session.query(Researcher).all()
     preferences = db.session.query(PreferenceAssignment).filter_by(course_year=current_year).all()
@@ -32,8 +34,9 @@ def load_data():
     data = {
         'courses': [serialize_model(course) for course in courses],
         'users': {user.id: serialize_model(user) for user in users},
+        'supervisors': [serialize_model(supervisor) for supervisor in supervisors],
         'teachers': {teacher.id: serialize_model(teacher) for teacher in teachers},
-        'researchers': {researcher.user_id: serialize_model(researcher) for researcher in researchers},
+        'researchers': {researcher.id: serialize_model(researcher) for researcher in researchers},
         'preferences': {preference.id: serialize_model(preference) for preference in preferences},
         'organizations': {organization.id: serialize_model(organization) for organization in organizations},
         'current_year': current_year

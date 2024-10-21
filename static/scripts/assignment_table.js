@@ -377,6 +377,17 @@ fetch('/assignment/load_data')
         });
 
         $(document).ready(function () {
+            // Disable the cells that contain user preferences
+            table.updateSettings({
+                cells: function (row, col) {
+                    let cellProperties = {};
+                    // Row % 2 === 0 to get the user preferences
+                    if (row >= lenFixedRowsText && col >= lenFixedHeaders && row % 2 === 0) {
+                        cellProperties.readOnly = true;
+                    }
+                    return cellProperties;
+                }
+            });
             function updateToastContent(message) {
                 let toastBody = document.querySelector('#toast-notification .toast-body');
                 toastBody.textContent = message;

@@ -109,6 +109,7 @@ class Teacher(db.Model):
 
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
+    rank = db.Column(db.Integer, nullable=False)
     id = db.Column(db.Integer, primary_key=True)
     rank = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, nullable=False)

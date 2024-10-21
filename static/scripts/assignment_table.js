@@ -14,16 +14,6 @@ fetch('/assignment/load_data')
             course.assigned_teachers = teachersName.join(', ');
         });
 
-        for (let researcherId in researchers) {
-            let researcher = researchers[researcherId];
-            let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
-            let supervisorNames = researcherSupervisor.map(supervisor => {
-                let user = users[supervisor.supervisor_id];
-                return user ? `${user.name}` : '';
-            });
-            researcher.name = supervisorNames.join(', ');
-        }
-
         //Split long text in the course header
         const coursesHeaders = courses.map(course => {
             const maxLength = 30;
@@ -96,8 +86,15 @@ fetch('/assignment/load_data')
                 //const matchingAssistant = researchers[user.id];
                 const assistantOrg = organizations[user.organization_id];
 
+                let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
+                let supervisorNames = researcherSupervisor.map(supervisor => {
+                    let user = users[supervisor.supervisor_id];
+                    return user ? `${user.name}` : '';
+                });
+                researcher.promoters = supervisorNames.join(', ');
+
                 row.org = assistantOrg ? assistantOrg.name : "";
-                row.promoter = researcher.name;
+                row.promoter = researcher.promoters;
                 row.totalLoad = researcher.max_loads;
                 row.loadQ1 = 0;
                 row.loadQ2 = 0;
@@ -193,8 +190,6 @@ fetch('/assignment/load_data')
         retrieveDataLocally();
         let comments = retrieveCellsMetaLocally();
         let isCollectedMetaData = true;
-
-        let verifiedModif = true;
 
         const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,

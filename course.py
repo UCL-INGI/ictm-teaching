@@ -1,3 +1,5 @@
+from sqlalchemy import func
+
 from decorators import login_required, check_access_level
 from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
@@ -123,11 +125,12 @@ def search_teachers():
     search_term = request.args.get('q', '')
 
     if not validate_string_pattern(search_term):
-        return make_response("Invalid search term", 400)
+        flash("Invalid search term", "danger")
 
     teachers = db.session.query(User).filter(
+        User.active == True,
         User.is_teacher == True,
-        User.name.ilike(f'%{search_term}%')
+        func.concat(User.name, ' ', User.first_name).ilike(f'%{search_term}%')
     ).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]
     return jsonify(results)

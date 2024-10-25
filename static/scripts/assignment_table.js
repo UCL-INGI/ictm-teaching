@@ -1,10 +1,31 @@
-import { fixedHeaders, fixedRowsText, ColumnIndices, RowIndices, lenFixedRowsText, lenFixedHeaders, borderStyle, requiredProperties, taLoad, phdLoad, postDocLoad } from './constants.js';
+import {
+    fixedHeaders,
+    fixedRowsText,
+    ColumnIndices,
+    RowIndices,
+    lenFixedRowsText,
+    lenFixedHeaders,
+    borderStyle,
+    requiredProperties,
+    taLoad,
+    phdLoad,
+    postDocLoad
+} from './constants.js';
 
 fetch('/assignment/load_data')
     .then(response => response.json())
     .then(loadData => {
-
-        const {courses, users, teachers, researchers, supervisors, preferences, organizations, current_year} = loadData;
+        const {
+            courses,
+            users,
+            teachers,
+            researchers,
+            supervisors,
+            preferences,
+            organizations,
+            current_year,
+            saved_data
+        } = loadData;
         courses.forEach(course => {
             let teachersId = Object.values(teachers).filter(teacher => teacher.course_id === course.id);
             let teachersName = teachersId.map(teacher => {
@@ -146,7 +167,10 @@ fetch('/assignment/load_data')
 
         const columns = getCourseColumns();
 
-        let data = fixedRows.concat(userRows);
+        let data = saved_data ? saved_data.data : fixedRows.concat(userRows);
+        let comments = saved_data ? saved_data.comments : [];
+        let isCollectedMetaData = true;
+
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
 
@@ -162,34 +186,7 @@ fetch('/assignment/load_data')
             }
         }
 
-        function storeDataLocally(data) {
-            localStorage.setItem('table', JSON.stringify(data));
-        }
-
-        function storeCellsMeta(cellsMeta) {
-            localStorage.setItem('cellsMeta', JSON.stringify(cellsMeta));
-        }
-
-        function retrieveDataLocally() {
-            const storedData = localStorage.getItem('table');
-            if (storedData) {
-                data = JSON.parse(storedData);
-            }
-        }
-
-        function retrieveCellsMetaLocally() {
-            const cellsMeta = localStorage.getItem('cellsMeta');
-            return cellsMeta ? JSON.parse(cellsMeta) : null;
-        }
-
-        function resetDataLocally() {
-            localStorage.clear();
-        }
-
-        // Verify if the table is modified locally
-        retrieveDataLocally();
-        let comments = retrieveCellsMetaLocally();
-        let isCollectedMetaData = true;
+        localStorage.clear()
 
         const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,
@@ -199,7 +196,6 @@ fetch('/assignment/load_data')
             manualColumnResize: true,
             manualRowResize: true,
             mergeCells: mergeCellsSettings,
-            comments: true,
             hiddenColumns: {
                 columns: [0],
                 indicators: true,
@@ -209,6 +205,7 @@ fetch('/assignment/load_data')
                 indicators: true,
             },
             contextMenu: ['commentsAddEdit', 'commentsRemove', 'hidden_columns_hide', 'hidden_rows_hide', 'hidden_columns_show', 'hidden_rows_show'],
+            comments: true,
             filters: true,
             dropdownMenu: ['filter_by_value', 'filter_action_bar', 'undo'],
             className: 'controlsQuickFilter htCenter htMiddle',
@@ -218,10 +215,19 @@ fetch('/assignment/load_data')
             columnHeaderHeight: 225,
             rowHeaders: fixedRowsText,
             rowHeaderWidth: 125,
-            init: function () {
+            // Disable the cells that contain user preferences
+            cells: function (row, col) {
+                const cellProperties = {};
+                if (row >= lenFixedRowsText && col >= lenFixedHeaders && row % 2 === 0) {
+                    cellProperties.readOnly = true;
+                }
+                return cellProperties;
+            },
+            afterInit: function () {
                 if (comments) {
                     comments.forEach(comment => {
-                        this.setCellMeta(comment.row, comment.col, comment.key, comment.value);
+                        const commentsPlugin = this.getPlugin('comments');
+                        commentsPlugin.setCommentAtCell(comment.row, comment.col, comment.value.value);
                     });
                 }
                 isCollectedMetaData = false;
@@ -278,10 +284,8 @@ fetch('/assignment/load_data')
             },
             afterSetCellMeta: function (row, col, key, value) {
                 if (key === 'comment' && !isCollectedMetaData) {
-                    let comments = JSON.parse(localStorage.getItem('cellsMeta')) || [];
                     const comment = {'row': row, 'col': col, 'key': key, 'value': value};
                     comments.push(comment);
-                    storeCellsMeta(comments);
                 }
             },
             afterRenderer: function (TD, row, col, prop, value, cellProperties) {
@@ -385,17 +389,6 @@ fetch('/assignment/load_data')
         });
 
         $(document).ready(function () {
-            // Disable the cells that contain user preferences
-            table.updateSettings({
-                cells: function (row, col) {
-                    let cellProperties = {};
-                    // Row % 2 === 0 to get the user preferences
-                    if (row >= lenFixedRowsText && col >= lenFixedHeaders && row % 2 === 0) {
-                        cellProperties.readOnly = true;
-                    }
-                    return cellProperties;
-                }
-            });
             function updateToastContent(message) {
                 let toastBody = document.querySelector('#toast-notification .toast-body');
                 toastBody.textContent = message;
@@ -420,10 +413,32 @@ fetch('/assignment/load_data')
                 updateToastContent('Data exported to CSV');
                 toastNotification.show();
             })
-            $('#button-create-assignments').click(function () {
-                storeDataLocally(data);
-                updateToastContent('Data saved');
-                toastNotification.show();
+            $('#button-create-assignments').click(async function () {
+                const tableData = {
+                    tableData: data,
+                    comments: comments
+                }
+
+                try {
+                    const response = await fetch('/assignment/save_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(tableData),
+                    });
+
+                    if (response.ok) {
+                        updateToastContent('Data saved to database');
+                        toastNotification.show();
+                    } else {
+                        updateToastContent('Failed to save data: ' + response.statusText);
+                        toastNotification.show();
+                    }
+                } catch (error) {
+                    updateToastContent('Error: ' + error);
+                    toastNotification.show();
+                }
             });
             $('#button-clear-assignments').click(function () {
                 resetDataLocally();

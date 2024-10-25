@@ -190,6 +190,13 @@ class PublishAssignment(db.Model):
     )
 
 
+class SaveAssignment(db.Model):
+    __tablename__ = 'save_assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.JSON, nullable=False)
+    comments = db.Column(db.JSON, nullable=False)
+
+
 class Evaluation(db.Model):
     __tablename__ = 'evaluation'
 

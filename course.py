@@ -104,7 +104,7 @@ def add_course():
 
         db.session.add(new_course)
         db.session.commit()
-        return redirect(url_for("course.courses", current_year=year))
+        return redirect(url_for("course.courses", year=year))
     except Exception as e:
         db.session.rollback()
         raise e

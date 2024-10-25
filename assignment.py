@@ -1,6 +1,6 @@
-from decorators import login_required
+from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, PublishAssignment, \
-    ResearcherSupervisor
+    ResearcherSupervisor, Role, SaveAssignment
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -19,8 +19,35 @@ def serialize_model(model):
     return {column.name: getattr(model, column.name) for column in model.__table__.columns}
 
 
+@assignment_bp.route('/save_data', methods=['POST'])
+@login_required
+@check_access_level(Role.ADMIN)
+def save_data():
+    data = request.get_json()
+    comments = data.get('comments')
+    table_data = data.get('tableData')
+
+    try:
+        saved_data = SaveAssignment(data=table_data, comments=comments)
+        db.session.add(saved_data)
+        db.session.commit()
+    except Exception as e:
+        flash(f"An error occurred while saving the data: {str(e)}", "error")
+
+    return jsonify({"message": "Data saved successfully"}), 200
+
+
+@assignment_bp.route('/get_saved_data', methods=['GET'])
+@login_required
+@check_access_level(Role.ADMIN)
+def get_saved_data():
+    saved_data = db.session.query(SaveAssignment).first()
+    return jsonify({"data": [serialize_model(data) for data in saved_data]})
+
+
 @assignment_bp.route('/load_data', methods=['GET'])
 @login_required
+@check_access_level(Role.ADMIN)
 def load_data():
     current_year = get_current_year()
     courses = (db.session.query(Course).filter_by(year=current_year).order_by(Course.quadri).all())
@@ -30,6 +57,8 @@ def load_data():
     researchers = db.session.query(Researcher).all()
     preferences = db.session.query(PreferenceAssignment).filter_by(course_year=current_year).all()
     organizations = db.session.query(Organization).all()
+
+    saved_data = db.session.query(SaveAssignment).order_by(SaveAssignment.id.desc()).first()
 
     data = {
         'courses': [serialize_model(course) for course in courses],
@@ -41,6 +70,9 @@ def load_data():
         'organizations': {organization.id: serialize_model(organization) for organization in organizations},
         'current_year': current_year
     }
+
+    if saved_data:
+        data['saved_data'] = serialize_model(saved_data)
 
     return jsonify(data)
 

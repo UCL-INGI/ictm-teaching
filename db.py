@@ -195,6 +195,7 @@ class SaveAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.JSON, nullable=False)
     comments = db.Column(db.JSON, nullable=False)
+    user_ids = db.Column(db.JSON, nullable=False)
 
 
 class Evaluation(db.Model):

@@ -26,9 +26,10 @@ def save_data():
     data = request.get_json()
     comments = data.get('comments')
     table_data = data.get('tableData')
+    user_ids = data.get('userIds')
 
     try:
-        saved_data = SaveAssignment(data=table_data, comments=comments)
+        saved_data = SaveAssignment(data=table_data, comments=comments, user_ids=user_ids)
         db.session.add(saved_data)
         db.session.commit()
     except Exception as e:
@@ -37,28 +38,31 @@ def save_data():
     return jsonify({"message": "Data saved successfully"}), 200
 
 
-@assignment_bp.route('/get_saved_data', methods=['GET'])
-@login_required
-@check_access_level(Role.ADMIN)
-def get_saved_data():
-    saved_data = db.session.query(SaveAssignment).first()
-    return jsonify({"data": [serialize_model(data) for data in saved_data]})
-
-
 @assignment_bp.route('/load_data', methods=['GET'])
 @login_required
 @check_access_level(Role.ADMIN)
 def load_data():
     current_year = get_current_year()
     courses = (db.session.query(Course).filter_by(year=current_year).order_by(Course.quadri).all())
-    users = db.session.query(User).filter_by(active=True).all()
+    #users = db.session.query(User).filter_by(active=True).all()
     supervisors = db.session.query(ResearcherSupervisor).all()
     teachers = db.session.query(Teacher).filter_by(course_year=current_year).all()
     researchers = db.session.query(Researcher).all()
     preferences = db.session.query(PreferenceAssignment).filter_by(course_year=current_year).all()
     organizations = db.session.query(Organization).all()
+    users_with_preferences = (
+        db.session.query(User)
+        .join(Researcher, Researcher.user_id == User.id)
+        .join(PreferenceAssignment, PreferenceAssignment.researcher_id == Researcher.id)
+        .filter(PreferenceAssignment.course_year == current_year)
+        .all()
+    )
 
     saved_data = db.session.query(SaveAssignment).order_by(SaveAssignment.id.desc()).first()
+    user_ids = saved_data.user_ids if saved_data else []
+    users = db.session.query(User).filter(
+        (User.active == True) | (User.id.in_(user_ids))
+    ).all()
 
     data = {
         'courses': [serialize_model(course) for course in courses],

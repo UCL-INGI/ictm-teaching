@@ -414,9 +414,16 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             })
             $('#button-create-assignments').click(async function () {
+                const slicedData = data.slice(lenFixedRowsText);
+                const usersRow = slicedData.filter((row, index) => index % 2 === 0);
+                const userIds = usersRow.map(row => row.researchers.id);
+
+                console.log(userIds);
+
                 const tableData = {
                     tableData: data,
-                    comments: comments
+                    comments: comments,
+                    userIds: userIds,
                 }
 
                 try {

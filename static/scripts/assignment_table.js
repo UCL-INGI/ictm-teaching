@@ -167,7 +167,8 @@ fetch('/assignment/load_data')
 
         const columns = getCourseColumns();
 
-        let data = saved_data ? saved_data.data : fixedRows.concat(userRows);
+        const initialData = fixedRows.concat(userRows);
+        let data = saved_data ? saved_data.data : initialData;
         let comments = saved_data ? saved_data.comments : [];
         let isCollectedMetaData = true;
 
@@ -414,14 +415,17 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             })
             $('#button-create-assignments').click(async function () {
+                const current_data = table.getSourceData();
                 const slicedData = data.slice(lenFixedRowsText);
                 const usersRow = slicedData.filter((row, index) => index % 2 === 0);
                 const userIds = usersRow.map(row => row.researchers.id);
 
+                console.log(current_data);
+
                 console.log(userIds);
 
                 const tableData = {
-                    tableData: data,
+                    tableData: current_data,
                     comments: comments,
                     userIds: userIds,
                 }
@@ -448,13 +452,12 @@ fetch('/assignment/load_data')
                 }
             });
             $('#button-clear-assignments').click(function () {
-                resetDataLocally();
+                const resetData = JSON.parse(JSON.stringify(initialData));
+                comments = [];
+                table.loadData(resetData);
                 updateToastContent('Data cleared');
                 toastNotification.show();
-                setTimeout(function () {
-                    location.reload();
-                }, 1500);
-            })
+            });
             $('#button-publish-assignments').click(async function () {
                 const slicedData = data.slice(lenFixedRowsText);
                 const result = [];

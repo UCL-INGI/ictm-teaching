@@ -104,7 +104,6 @@ fetch('/assignment/load_data')
                 const row = buildRow(user, true);
                 //The second line allows admins to assign a course to the user
                 const emptyRow = buildRow(user, false);
-                //const matchingAssistant = researchers[user.id];
                 const assistantOrg = organizations[user.organization_id];
 
                 let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
@@ -170,7 +169,6 @@ fetch('/assignment/load_data')
         const initialData = fixedRows.concat(userRows);
         let data = saved_data ? saved_data.data : initialData;
         let comments = saved_data ? saved_data.comments : [];
-        let isCollectedMetaData = true;
 
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
@@ -231,7 +229,6 @@ fetch('/assignment/load_data')
                         commentsPlugin.setCommentAtCell(comment.row, comment.col, comment.value.value);
                     });
                 }
-                isCollectedMetaData = false;
             },
             afterGetColHeader: function (col, th) {
                 th.style.transform = 'rotate(180deg)';
@@ -284,10 +281,13 @@ fetch('/assignment/load_data')
                 }
             },
             afterSetCellMeta: function (row, col, key, value) {
-                if (key === 'comment' && !isCollectedMetaData) {
-                    const comment = {'row': row, 'col': col, 'key': key, 'value': value};
-                    comments.push(comment);
+                if (key === 'comment') {
+                    const newComment = {'row': row, 'col': col, 'key': key, 'value': value};
+                    comments = value === undefined
+                        ? comments.filter(comment => comment.row !== row || comment.col !== col)
+                        : [...comments.filter(comment => comment.row !== row || comment.col !== col), newComment];
                 }
+
             },
             afterRenderer: function (TD, row, col, prop, value, cellProperties) {
                 if ((col >= lenFixedHeaders && row >= lenFixedRowsText) && (row % 2 === 1) && (value !== '')) {
@@ -413,16 +413,13 @@ fetch('/assignment/load_data')
                 });
                 updateToastContent('Data exported to CSV');
                 toastNotification.show();
-            })
+            });
+
             $('#button-create-assignments').click(async function () {
                 const current_data = table.getSourceData();
                 const slicedData = data.slice(lenFixedRowsText);
                 const usersRow = slicedData.filter((row, index) => index % 2 === 0);
                 const userIds = usersRow.map(row => row.researchers.id);
-
-                console.log(current_data);
-
-                console.log(userIds);
 
                 const tableData = {
                     tableData: current_data,
@@ -451,6 +448,7 @@ fetch('/assignment/load_data')
                     toastNotification.show();
                 }
             });
+
             $('#button-clear-assignments').click(function () {
                 const resetData = JSON.parse(JSON.stringify(initialData));
                 comments = [];
@@ -458,6 +456,7 @@ fetch('/assignment/load_data')
                 updateToastContent('Data cleared');
                 toastNotification.show();
             });
+
             $('#button-publish-assignments').click(async function () {
                 const slicedData = data.slice(lenFixedRowsText);
                 const result = [];
@@ -477,7 +476,7 @@ fetch('/assignment/load_data')
                         if (course_row[course.code] !== '') {
                             courseData[course.id] = course_row[course.code];
                         }
-                    })
+                    });
                     result.push({userData, courseData});
                 }
 

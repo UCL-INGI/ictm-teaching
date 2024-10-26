@@ -24,7 +24,8 @@ fetch('/assignment/load_data')
             preferences,
             organizations,
             current_year,
-            saved_data
+            saved_data,
+            MAX_LOAD
         } = loadData;
         courses.forEach(course => {
             let teachersId = Object.values(teachers).filter(teacher => teacher.course_id === course.id);
@@ -311,13 +312,13 @@ fetch('/assignment/load_data')
                         //Second case: load Q1 or Q2 = half of total load
                         if (load_q1 + load_q2 > total_load) {
                             TD.style.backgroundColor = 'red';
-                        } else if ((total_load === taLoad || total_load === phdLoad) && (total_load / value <= phdLoad || load_q1 + load_q2 === total_load)) {
+                        } else if ((total_load === MAX_LOAD['Teaching assistant'] || total_load === MAX_LOAD["Phd"]) && (total_load / value <= MAX_LOAD["Phd"] || load_q1 + load_q2 === total_load)) {
                             TD.style.backgroundColor = 'green';
-                        } else if (total_load === postDocLoad) {
-                            if (value === postDocLoad) {
+                        } else if (total_load === MAX_LOAD["Postdoc"]) {
+                            if (value === MAX_LOAD["Postdoc"]) {
                                 TD.style.backgroundColor = 'green';
                             } else {
-                                if ((load_q1 === postDocLoad && load_q2 === 0) || (load_q1 === 0 && load_q2 === postDocLoad)) {
+                                if ((load_q1 === MAX_LOAD["Postdoc"] && load_q2 === 0) || (load_q1 === 0 && load_q2 === MAX_LOAD["Postdoc"])) {
                                     TD.style.backgroundColor = 'green';
                                 }
                             }

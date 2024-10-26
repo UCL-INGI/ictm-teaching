@@ -4,6 +4,7 @@ from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Orga
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
+from enums import DEFAULT_MAX_LOAD
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -72,7 +73,8 @@ def load_data():
         'researchers': {researcher.id: serialize_model(researcher) for researcher in researchers},
         'preferences': {preference.id: serialize_model(preference) for preference in preferences},
         'organizations': {organization.id: serialize_model(organization) for organization in organizations},
-        'current_year': current_year
+        'current_year': current_year,
+        'MAX_LOAD': DEFAULT_MAX_LOAD,
     }
 
     if saved_data:

@@ -2,6 +2,12 @@
   "APP_NAME": "ICTM Teaching",
   "SECRET_KEY": "ASECRETKEY",
   "SQLALCHEMY_DATABASE_URI": "DB URI",
+  "MAIL_SERVER": "MAIL SERVER",
+  "MAIL_PORT": "MAIL PORT",
+  "MAIL_USERNAME": "MAIL SENDER USERNAME",
+  "MAIL_PASSWORD": "MAIL SENDER PASSWORD",
+  "MAIL_USE_TLS": false,
+  "MAIL_USE_SSL": true,
   "SAML": {
     "attributes": {
       "sn": "urn:oid:2.5.4.4",

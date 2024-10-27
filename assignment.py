@@ -7,6 +7,7 @@ from util import get_current_year
 from enums import DEFAULT_MAX_LOAD
 
 assignment_bp = Blueprint('assignment', __name__)
+mail = Mail()
 
 
 @assignment_bp.route('/assignments', methods=['GET'])
@@ -72,6 +73,7 @@ def load_data():
 
 @assignment_bp.route('/publish_assignments', methods=['POST'])
 @login_required
+@check_access_level(Role.ADMIN)
 def publish_assignments():
     data = request.get_json()
     if not data:
@@ -125,8 +127,23 @@ def publish_assignments():
 
         db.session.add_all(assignments_to_add)
         db.session.commit()
+        send_mail(is_draft)
         return jsonify({"message": "Assignments published successfully"}), 200
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to publish assignments: {str(e)}"}), 500
+
+
+@assignment_bp.route('/send_email')
+@login_required
+@check_access_level(Role.ADMIN)
+def send_mail(teacher_publication):
+    users = db.session.query(User).filter_by(is_teacher=True).all() if teacher_publication else db.session.query(
+        User).filter_by(active=True).all()
+
+    for user in users:
+        mail_html = render_template('mail_template.html', user=user)
+        mail_message = Message("Publication of assignments", sender="ictm@uclouvain.be", html=mail_html,
+                               recipients=[user.email], cc=MAIL_ADMIN)
+        mail.send(mail_message)

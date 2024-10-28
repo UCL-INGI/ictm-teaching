@@ -62,13 +62,6 @@ def load_data():
         'MAX_LOAD': DEFAULT_MAX_LOAD,
     }
 
-    '''
-    user_ids = saved_data.user_ids if saved_data else []
-    users = db.session.query(User).filter(
-        (User.active == True) | (User.id.in_(user_ids))
-    ).all()
-    '''
-
     return jsonify(data)
 
 

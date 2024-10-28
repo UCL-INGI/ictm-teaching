@@ -111,12 +111,14 @@ fetch('/assignment/load_data')
                     return user ? `${user.name}` : '';
                 });
                 researcher.promoters = supervisorNames.join(', ');
-
+                console.log("Saved data", saved_data);
                 preferenceRow.org = assistantOrg ? assistantOrg.name : "";
                 preferenceRow.promoter = researcher.promoters;
                 preferenceRow.totalLoad = researcher.max_loads;
-                preferenceRow.loadQ1 = 0;
-                preferenceRow.loadQ2 = 0;
+
+                const foundData = saved_data && saved_data.find(data => data.user_id === user.id);
+                preferenceRow.loadQ1 = foundData && !clearData ? foundData.load_q1 : 0;
+                preferenceRow.loadQ2 = foundData && !clearData ? foundData.load_q2 : 0;
 
                 //This line is only used to store course assignments, so the other values are empty.
                 const emptyKeys = ['org', 'promoter', 'totalLoad', 'loadQ1', 'loadQ2'];

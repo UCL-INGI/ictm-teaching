@@ -173,14 +173,25 @@ class CourseOrganization(db.Model):
     )
 
 
-class PublishAssignment(db.Model):
-    __tablename__ = 'publish_assignment'
-    course_id = db.Column(db.Integer, primary_key=True)
-    course_year = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+class Assignment(db.Model):
+    __tablename__ = 'assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    is_draft = db.Column(db.Boolean, default=True)
+
+    assignment_lines = db.relationship('AssignmentLine', backref='assignments', lazy=True)
+    comments = db.relationship('Comment', backref='comments', lazy=True)
+
+
+class AssignmentLine(db.Model):
+    __tablename__ = 'assignment_line'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     load_q1 = db.Column(db.Integer)
     load_q2 = db.Column(db.Integer)
     position = db.Column(db.Integer)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'))
 
     __table_args__ = (
         db.ForeignKeyConstraint(
@@ -190,12 +201,15 @@ class PublishAssignment(db.Model):
     )
 
 
-class SaveAssignment(db.Model):
-    __tablename__ = 'save_assignment'
+class Comment(db.Model):
+    __tablename__ = 'comment'
+
     id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.JSON, nullable=False)
-    comments = db.Column(db.JSON, nullable=False)
-    user_ids = db.Column(db.JSON, nullable=False)
+    row = db.Column(db.Integer, nullable=False)
+    column = db.Column(db.Integer, nullable=False)
+    value = db.Column(db.String(500))
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'))
+
 
 
 class Evaluation(db.Model):

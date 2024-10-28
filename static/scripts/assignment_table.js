@@ -7,9 +7,6 @@ import {
     lenFixedHeaders,
     borderStyle,
     requiredProperties,
-    taLoad,
-    phdLoad,
-    postDocLoad
 } from './constants.js';
 
 fetch('/assignment/load_data')
@@ -25,6 +22,7 @@ fetch('/assignment/load_data')
             organizations,
             current_year,
             saved_data,
+            comments,
             MAX_LOAD
         } = loadData;
         courses.forEach(course => {
@@ -78,7 +76,7 @@ fetch('/assignment/load_data')
                 };
 
                 courses.forEach(course => {
-                    row[course.code] = orderedProperties.includes('tutors') && orderedProperties[i] === 'tutors' ? 0 : course[orderedProperties[i]];
+                    row[course.id] = orderedProperties.includes('tutors') && orderedProperties[i] === 'tutors' ? 0 : course[orderedProperties[i]];
                 });
                 rows.push(row);
             }
@@ -95,16 +93,16 @@ fetch('/assignment/load_data')
             return row;
         }
 
-        function userRowsData() {
+        function userRowsData(clearData=false) {
             const rows = [];
 
             for (const researcherId in researchers) {
                 const researcher = researchers[researcherId];
                 const user = users[researcher.user_id];
                 //The first line displays the preferences for each user
-                const row = buildRow(user, true);
+                const preferenceRow = buildRow(user, true);
                 //The second line allows admins to assign a course to the user
-                const emptyRow = buildRow(user, false);
+                const AssignmentRow = buildRow(user, false);
                 const assistantOrg = organizations[user.organization_id];
 
                 let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
@@ -114,16 +112,16 @@ fetch('/assignment/load_data')
                 });
                 researcher.promoters = supervisorNames.join(', ');
 
-                row.org = assistantOrg ? assistantOrg.name : "";
-                row.promoter = researcher.promoters;
-                row.totalLoad = researcher.max_loads;
-                row.loadQ1 = 0;
-                row.loadQ2 = 0;
+                preferenceRow.org = assistantOrg ? assistantOrg.name : "";
+                preferenceRow.promoter = researcher.promoters;
+                preferenceRow.totalLoad = researcher.max_loads;
+                preferenceRow.loadQ1 = 0;
+                preferenceRow.loadQ2 = 0;
 
                 //This line is only used to store course assignments, so the other values are empty.
                 const emptyKeys = ['org', 'promoter', 'totalLoad', 'loadQ1', 'loadQ2'];
                 emptyKeys.forEach(key => {
-                    emptyRow[key] = "";
+                    AssignmentRow[key] = "";
                 });
 
                 const userPrefs = Object.values(preferences).filter(pref => pref.researcher_id === researcher.id);
@@ -131,13 +129,14 @@ fetch('/assignment/load_data')
                 let pos = 1;
                 courses.forEach(course => {
                     const isPref = userPrefs.find(pref => pref.course_id === course.id);
-                    const code = course.code;
-                    row[code] = isPref ? pos++ : "";
-                    emptyRow[code] = "";
+                    const savedAssignment = saved_data && !clearData ? saved_data.find(data => data.user_id === user.id && data.course_id === course.id) : null;
+                    const code = course.id;
+                    preferenceRow[code] = isPref ? pos++ : "";
+                    AssignmentRow[code] = savedAssignment ? savedAssignment.position : "";
                 });
 
-                rows.push(row);
-                rows.push(emptyRow);
+                rows.push(preferenceRow);
+                rows.push(AssignmentRow);
             }
             return rows;
         }
@@ -158,7 +157,7 @@ fetch('/assignment/load_data')
             ];
 
             courses.forEach(course => {
-                const code = course.code;
+                const code = course.id;
                 let col = {data: code};
                 fixedColumns.push(col)
             });
@@ -167,9 +166,8 @@ fetch('/assignment/load_data')
 
         const columns = getCourseColumns();
 
-        const initialData = fixedRows.concat(userRows);
-        let data = saved_data ? saved_data.data : initialData;
-        let comments = saved_data ? saved_data.comments : [];
+        let data = fixedRows.concat(userRows);
+        let savedComments = comments ? comments : [];
 
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
@@ -185,8 +183,6 @@ fetch('/assignment/load_data')
                 });
             }
         }
-
-        localStorage.clear()
 
         const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,
@@ -224,10 +220,10 @@ fetch('/assignment/load_data')
                 return cellProperties;
             },
             afterInit: function () {
-                if (comments) {
-                    comments.forEach(comment => {
+                if (savedComments) {
+                    savedComments.forEach(comment => {
                         const commentsPlugin = this.getPlugin('comments');
-                        commentsPlugin.setCommentAtCell(comment.row, comment.col, comment.value.value);
+                        commentsPlugin.setCommentAtCell(comment.row, comment.column, comment.value);
                     });
                 }
             },
@@ -283,12 +279,15 @@ fetch('/assignment/load_data')
             },
             afterSetCellMeta: function (row, col, key, value) {
                 if (key === 'comment') {
-                    const newComment = {'row': row, 'col': col, 'key': key, 'value': value};
-                    comments = value === undefined
-                        ? comments.filter(comment => comment.row !== row || comment.col !== col)
-                        : [...comments.filter(comment => comment.row !== row || comment.col !== col), newComment];
+                    savedComments = value === undefined
+                        ? savedComments.filter(comment => comment.row !== row || comment.column !== col)
+                        : [...savedComments.filter(comment => comment.row !== row || comment.column !== col), {
+                            'row': row,
+                            'column': col,
+                            'key': key,
+                            'value': value.value
+                        }];
                 }
-
             },
             afterRenderer: function (TD, row, col, prop, value, cellProperties) {
                 if ((col >= lenFixedHeaders && row >= lenFixedRowsText) && (row % 2 === 1) && (value !== '')) {
@@ -416,51 +415,9 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             });
 
-            $('#button-create-assignments').click(async function () {
-                const current_data = table.getSourceData();
+            async function saveAssignment(isDraft = false) {
                 const slicedData = data.slice(lenFixedRowsText);
-                const usersRow = slicedData.filter((row, index) => index % 2 === 0);
-                const userIds = usersRow.map(row => row.researchers.id);
-
-                const tableData = {
-                    tableData: current_data,
-                    comments: comments,
-                    userIds: userIds,
-                }
-
-                try {
-                    const response = await fetch('/assignment/save_data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(tableData),
-                    });
-
-                    if (response.ok) {
-                        updateToastContent('Data saved to database');
-                        toastNotification.show();
-                    } else {
-                        updateToastContent('Failed to save data: ' + response.statusText);
-                        toastNotification.show();
-                    }
-                } catch (error) {
-                    updateToastContent('Error: ' + error);
-                    toastNotification.show();
-                }
-            });
-
-            $('#button-clear-assignments').click(function () {
-                const resetData = JSON.parse(JSON.stringify(initialData));
-                comments = [];
-                table.loadData(resetData);
-                updateToastContent('Data cleared');
-                toastNotification.show();
-            });
-
-            $('#button-publish-assignments').click(async function () {
-                const slicedData = data.slice(lenFixedRowsText);
-                const result = [];
+                const savedData = [];
 
                 for (let i = 0; i < slicedData.length; i += 2) {
                     const user_row = slicedData[i];
@@ -474,12 +431,18 @@ fetch('/assignment/load_data')
 
                     const courseData = {};
                     courses.forEach(course => {
-                        if (course_row[course.code] !== '') {
-                            courseData[course.id] = course_row[course.code];
+                        if (course_row[course.id] !== '') {
+                            courseData[course.id] = course_row[course.id];
                         }
                     });
-                    result.push({userData, courseData});
+                    savedData.push({userData, courseData})
                 }
+
+                const tableData = {
+                    data: savedData,
+                    comments: savedComments,
+                    isDraft: isDraft
+                };
 
                 try {
                     const response = await fetch('/assignment/publish_assignments', {
@@ -487,7 +450,7 @@ fetch('/assignment/load_data')
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(result),
+                        body: JSON.stringify(tableData),
                     });
 
                     if (response.ok) {
@@ -501,6 +464,23 @@ fetch('/assignment/load_data')
                     updateToastContent('Error: ' + error);
                     toastNotification.show();
                 }
+            }
+
+            $('#button-create-assignments').click(async function () {
+                await saveAssignment(true);
+            });
+
+            $('#button-clear-assignments').click(function () {
+                savedComments = [];
+                const newUsersRow = userRowsData(true);
+                data = fixedRows.concat(newUsersRow);
+                table.loadData(data);
+                updateToastContent('Data cleared');
+                toastNotification.show();
+            });
+
+            $('#button-publish-assignments').click(async function () {
+                await saveAssignment();
             });
         });
     });

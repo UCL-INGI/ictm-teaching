@@ -180,6 +180,12 @@ class Assignment(db.Model):
 
     assignment_lines = db.relationship('AssignmentLine', backref='assignments', lazy=True)
     comments = db.relationship('Comment', backref='comments', lazy=True)
+    users = db.relationship('User',
+                            secondary='assignment_line',
+                            primaryjoin="Assignment.id == AssignmentLine.assignment_id",
+                            secondaryjoin="AssignmentLine.user_id == User.id",
+                            backref='assignments',
+                            lazy=True)
 
 
 class AssignmentLine(db.Model):

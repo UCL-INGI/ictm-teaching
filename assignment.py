@@ -43,6 +43,11 @@ def load_data():
     saved_data_serialized = [serialize_model(line) for line in saved_data.assignment_lines] if saved_data else []
     comments = [serialize_model(comment) for comment in saved_data.comments] if saved_data else []
 
+    user_ids = [user.id for user in saved_data.users] if saved_data else []
+    users = {user.id: serialize_model(user) for user in db.session.query(User).filter(
+        (User.active == True) | (User.id.in_(user_ids))
+    ).all() or []}
+
     data = {
         'courses': courses,
         'users': users,

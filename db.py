@@ -109,8 +109,8 @@ class Teacher(db.Model):
 
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
-    rank = db.Column(db.Integer, nullable=False)
     id = db.Column(db.Integer, primary_key=True)
+    rank = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, nullable=False)
     course_year = db.Column(db.Integer, nullable=False)
     researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'), nullable=False)
@@ -179,13 +179,7 @@ class Assignment(db.Model):
     is_draft = db.Column(db.Boolean, default=True)
 
     assignment_lines = db.relationship('AssignmentLine', backref='assignments', lazy=True)
-    comments = db.relationship('Comment', backref='comments', lazy=True)
-    users = db.relationship('User',
-                            secondary='assignment_line',
-                            primaryjoin="Assignment.id == AssignmentLine.assignment_id",
-                            secondaryjoin="AssignmentLine.user_id == User.id",
-                            backref='assignments',
-                            lazy=True)
+    users = db.relationship('User', secondary='assignment_line', viewonly=True)
 
 
 class AssignmentLine(db.Model):
@@ -197,6 +191,7 @@ class AssignmentLine(db.Model):
     load_q1 = db.Column(db.Integer)
     load_q2 = db.Column(db.Integer)
     position = db.Column(db.Integer)
+    comment = db.Column(db.String(500))
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'))
 
     __table_args__ = (
@@ -205,17 +200,6 @@ class AssignmentLine(db.Model):
             ['course.id', 'course.year']
         ),
     )
-
-
-class Comment(db.Model):
-    __tablename__ = 'comment'
-
-    id = db.Column(db.Integer, primary_key=True)
-    row = db.Column(db.Integer, nullable=False)
-    column = db.Column(db.Integer, nullable=False)
-    value = db.Column(db.String(500))
-    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'))
-
 
 
 class Evaluation(db.Model):

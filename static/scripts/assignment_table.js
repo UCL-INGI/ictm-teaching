@@ -80,7 +80,6 @@ fetch('/assignment/load_data')
                 });
                 rows.push(row);
             }
-
             return rows;
         }
 
@@ -93,7 +92,7 @@ fetch('/assignment/load_data')
             return row;
         }
 
-        function userRowsData(clearData=false) {
+        function userRowsData(clearData = false) {
             const rows = [];
 
             for (const researcherId in researchers) {
@@ -102,7 +101,7 @@ fetch('/assignment/load_data')
                 //The first line displays the preferences for each user
                 const preferenceRow = buildRow(user, true);
                 //The second line allows admins to assign a course to the user
-                const AssignmentRow = buildRow(user, false);
+                const assignmentRow = buildRow(user, false);
                 const assistantOrg = organizations[user.organization_id];
 
                 let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
@@ -111,7 +110,6 @@ fetch('/assignment/load_data')
                     return user ? `${user.name}` : '';
                 });
                 researcher.promoters = supervisorNames.join(', ');
-                console.log("Saved data", saved_data);
                 preferenceRow.org = assistantOrg ? assistantOrg.name : "";
                 preferenceRow.promoter = researcher.promoters;
                 preferenceRow.totalLoad = researcher.max_loads;
@@ -123,29 +121,27 @@ fetch('/assignment/load_data')
                 //This line is only used to store course assignments, so the other values are empty.
                 const emptyKeys = ['org', 'promoter', 'totalLoad', 'loadQ1', 'loadQ2'];
                 emptyKeys.forEach(key => {
-                    AssignmentRow[key] = "";
+                    assignmentRow[key] = "";
                 });
 
                 const userPrefs = Object.values(preferences).filter(pref => pref.researcher_id === researcher.id);
 
-                let pos = 1;
                 courses.forEach(course => {
-                    const isPref = userPrefs.find(pref => pref.course_id === course.id);
+                    const existingPref = userPrefs.find(pref => pref.course_id === course.id);
                     const savedAssignment = saved_data && !clearData ? saved_data.find(data => data.user_id === user.id && data.course_id === course.id) : null;
-                    const code = course.id;
-                    preferenceRow[code] = isPref ? pos++ : "";
-                    AssignmentRow[code] = savedAssignment ? savedAssignment.position : "";
-                });
+                    preferenceRow[course.id] = existingPref ? existingPref.rank : "";
+                    assignmentRow[course.id] = savedAssignment ? savedAssignment.position : "";
 
+
+                });
                 rows.push(preferenceRow);
-                rows.push(AssignmentRow);
+                rows.push(assignmentRow);
             }
             return rows;
         }
 
         const fixedRows = fixedRowsData();
         const userRows = userRowsData();
-
 
         function getCourseColumns() {
             const fixedColumns = [
@@ -169,7 +165,6 @@ fetch('/assignment/load_data')
         const columns = getCourseColumns();
 
         let data = fixedRows.concat(userRows);
-        let savedComments = comments ? comments : [];
 
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
@@ -222,12 +217,18 @@ fetch('/assignment/load_data')
                 return cellProperties;
             },
             afterInit: function () {
-                if (savedComments) {
-                    savedComments.forEach(comment => {
+                const sourceData = this.getSourceData();
+                saved_data.forEach(assignment => {
+                    const rowIndex = sourceData.findIndex(row => row.researchers.id === assignment.user_id);
+
+                    if (rowIndex !== -1) {
+                        const colIndex = this.propToCol(assignment.course_id);
+
                         const commentsPlugin = this.getPlugin('comments');
-                        commentsPlugin.setCommentAtCell(comment.row, comment.column, comment.value);
-                    });
-                }
+                        //Id is set for the two merged rows, and we want to set the comment for the assignment row
+                        commentsPlugin.setCommentAtCell(rowIndex + 1, colIndex, assignment.comment);
+                    }
+                });
             },
             afterGetColHeader: function (col, th) {
                 th.style.transform = 'rotate(180deg)';
@@ -277,18 +278,6 @@ fetch('/assignment/load_data')
                             }
                         }
                     });
-                }
-            },
-            afterSetCellMeta: function (row, col, key, value) {
-                if (key === 'comment') {
-                    savedComments = value === undefined
-                        ? savedComments.filter(comment => comment.row !== row || comment.column !== col)
-                        : [...savedComments.filter(comment => comment.row !== row || comment.column !== col), {
-                            'row': row,
-                            'column': col,
-                            'key': key,
-                            'value': value.value
-                        }];
                 }
             },
             afterRenderer: function (TD, row, col, prop, value, cellProperties) {
@@ -420,29 +409,41 @@ fetch('/assignment/load_data')
             async function saveAssignment(isDraft = false) {
                 const slicedData = data.slice(lenFixedRowsText);
                 const savedData = [];
+                const commentsPlugin = table.getPlugin('comments');
 
                 for (let i = 0; i < slicedData.length; i += 2) {
-                    const user_row = slicedData[i];
-                    const course_row = slicedData[i + 1];
+                    const preferenceRow = slicedData[i];
+                    const assignmentRow = slicedData[i + 1];
 
                     const userData = {
-                        user_id: user_row.researchers.id,
-                        load_q1: user_row.loadQ1,
-                        load_q2: user_row.loadQ2,
+                        user_id: preferenceRow.researchers.id,
+                        load_q1: preferenceRow.loadQ1,
+                        load_q2: preferenceRow.loadQ2,
+                        comment: preferenceRow.comment
                     };
 
                     const courseData = {};
                     courses.forEach(course => {
-                        if (course_row[course.id] !== '') {
-                            courseData[course.id] = course_row[course.id];
+                        const col = table.propToCol(course.id);
+                        const comment = commentsPlugin.getCommentAtCell(i + lenFixedRowsText + 1, col);
+                        if (assignmentRow[course.id] !== '') {
+                            courseData[course.id] = {
+                                position: assignmentRow[course.id],
+                                comment: comment
+                            };
                         }
                     });
-                    savedData.push({userData, courseData})
+
+                    const comments = {
+                        preference: preferenceRow.comment,
+                        assignment: assignmentRow.comment,
+                    };
+
+                    savedData.push({userData, courseData, comments});
                 }
 
                 const tableData = {
                     data: savedData,
-                    comments: savedComments,
                     isDraft: isDraft
                 };
 
@@ -473,7 +474,6 @@ fetch('/assignment/load_data')
             });
 
             $('#button-clear-assignments').click(function () {
-                savedComments = [];
                 const newUsersRow = userRowsData(true);
                 data = fixedRows.concat(newUsersRow);
                 table.loadData(data);

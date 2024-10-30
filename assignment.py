@@ -1,6 +1,6 @@
 from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, \
-    ResearcherSupervisor, Role, Assignment, AssignmentLine, Comment
+    ResearcherSupervisor, Role, Assignment, AssignmentLine
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -28,7 +28,6 @@ def load_data():
 
     courses = [serialize_model(course) for course in
                db.session.query(Course).filter_by(year=current_year).order_by(Course.quadri).all() or []]
-    users = {user.id: serialize_model(user) for user in db.session.query(User).filter_by(active=True).all() or []}
     supervisors = [serialize_model(supervisor) for supervisor in db.session.query(ResearcherSupervisor).all() or []]
     teachers = {teacher.id: serialize_model(teacher) for teacher in
                 db.session.query(Teacher).filter_by(course_year=current_year).all() or []}
@@ -41,12 +40,12 @@ def load_data():
 
     saved_data = db.session.query(Assignment).order_by(Assignment.id.desc()).first()
     saved_data_serialized = [serialize_model(line) for line in saved_data.assignment_lines] if saved_data else []
-    comments = [serialize_model(comment) for comment in saved_data.comments] if saved_data else []
 
     user_ids = [user.id for user in saved_data.users] if saved_data else []
     users = {user.id: serialize_model(user) for user in db.session.query(User).filter(
         (User.active == True) | (User.id.in_(user_ids))
     ).all() or []}
+
 
     data = {
         'courses': courses,
@@ -58,7 +57,6 @@ def load_data():
         'organizations': organizations,
         'current_year': current_year,
         'saved_data': saved_data_serialized,
-        'comments': comments,
         'MAX_LOAD': DEFAULT_MAX_LOAD,
     }
 
@@ -84,22 +82,19 @@ def publish_assignments():
         course_data = item.get('courseData')
 
         if course_data and user_data:
-            for id, pos in course_data.items():
+            for id, properties in course_data.items():
                 try:
                     assignment_line = AssignmentLine(course_id=id, course_year=current_year,
                                                      user_id=user_data.get('user_id'),
                                                      load_q1=user_data.get('load_q1'), load_q2=user_data.get('load_q2'),
-                                                     position=pos, assignment_id=assignment.id)
+                                                     position=properties.get('position'),
+                                                     comment=properties.get('comment'),
+                                                     assignment_id=assignment.id)
                     db.session.add(assignment_line)
                 except Exception as e:
                     return jsonify({"error": str(e)}), 400
 
             db.session.commit()
-
-    for item in data.get('comments'):
-        comment = Comment(row=item.get('row'), column=item.get('column'), value=item.get('value'),
-                          assignment_id=assignment.id)
-        db.session.add(comment)
 
     db.session.commit()
 

@@ -16,8 +16,7 @@
 {% block pagecontent %}
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-12">
-                <br>
+            <div class="col-sm-12 m-2">
                 <h1>{{ requested_user.first_name }} {{ requested_user.name }}</h1>
                 <hr>
             </div>
@@ -33,15 +32,15 @@
         <div class="tab-content">
             <div class="tab-pane active" id="profile">
                 <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-sm-12 mb-3 ms-3">
                         <br>
                         <h2>Your informations</h2>
                     </div>
                 </div>
                 <form class="form" action="{{ url_for('user.update_user_profile', user_id=requested_user.id) }}" method="post"
                       id="profileForm">
-                    <div class="row">
-                        <div class="col-sm-6 col-md-6">
+                    <div class="row ms-1">
+                        <div class="col-4 me-5">
                             <dl>
                                 <dt>First name</dt>
                                 <dd>
@@ -76,7 +75,7 @@
                                 </dd>
                             </dl>
                         </div>
-                        <div class="col-sm-6 col-md-6">
+                        <div class="col-auto me-5">
                             <dl>
                                 <dt>Status</dt>
                                 <dd>
@@ -127,7 +126,7 @@
                                         </select>
                                     </dd>
                                 </div>
-                                <div class="col-2" id="max_load_display">
+                                <div class="col" id="max_load_display">
                                     <dt>Max load</dt>
                                     <dd>
                                         <input type="text" class="form-control" id="max_load" name="max_load"
@@ -137,9 +136,32 @@
                                 </div>
                             </dl>
                         </div>
+                        <div class="col-auto">
+                            <dl>
+                                <dt>Jokers</dt>
+                                <dd>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="thesis_joker"
+                                               name="thesis_joker"
+                                               {% if requested_user.thesis_joker %}checked{% endif %}
+                                                {% if not session.is_admin %}
+                                               disabled {% endif %}>
+                                        <label class="form-check-label" for="thesis_joker">Thesis joker</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="travel_joker"
+                                               name="travel_joker"
+                                               {% if requested_user.travel_joker %}checked{% endif %}
+                                                {% if not session.is_admin %}
+                                               disabled {% endif %}>
+                                        <label class="form-check-label" for="travel_joker">Travel joker</label>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
                         <br>
-                        <div class="row">
-                            <div class="col-sm-12">
+                        <div class="row mt-3">
+                            <div class="col">
                                 <button type="submit" class="btn btn-primary" form="profileForm">Save</button>
                             </div>
                         </div>

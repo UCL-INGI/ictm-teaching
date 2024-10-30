@@ -19,7 +19,6 @@ def create_researcher(user_id, researcher_type, max_loads):
     db.session.commit()
     return new_researcher
 
-
 def get_researchers():
     return db.session.query(User).join(Researcher).filter(User.active == True).all()
 
@@ -126,7 +125,7 @@ def is_allowed_user(user_id):
 
 @user_bp.route('/profile/<int:user_id>')
 @login_required
-def user_profile(user_id, ):
+def user_profile(user_id):
     current_year = get_current_year()
     if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")
@@ -213,6 +212,8 @@ def update_user_profile(user_id):
     supervisor_ids = request.form.getlist('supervisor[]') if is_researcher else None
     researcher_type = request.form['researcher_type'] if is_researcher else None
     max_loads = request.form['max_load'] if is_researcher else None
+    thesis_joker = True if 'thesis_joker' in request.form else False
+    travel_joker = True if 'travel_joker' in request.form else False
 
     user = db.session.query(User).filter(User.id == user_id).first()
     researcher = db.session.query(Researcher).filter(Researcher.user_id == user.id).first()
@@ -227,6 +228,8 @@ def update_user_profile(user_id):
             user.organization_id = organization_code
             user.is_admin = is_admin
             user.is_teacher = is_teacher
+            user.thesis_joker = thesis_joker
+            user.travel_joker = travel_joker
             if is_researcher:
                 if researcher is None:
                     create_researcher(user.id, researcher_type, max_loads)

@@ -128,18 +128,18 @@ class PreferenceAssignment(db.Model):
     researcher = db.relationship('Researcher', backref=db.backref('researcher_preference_assignment', lazy=True))
 
 
-class Configuration(db.Model):
-    __tablename__ = 'configuration'
+class Year(db.Model):
+    __tablename__ = 'year'
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
     is_current_year = db.Column(db.Boolean, default=False)
 
     @classmethod
-    def update_current_year(cls, config_id):
+    def update_current_year(cls, year_id):
         # Update all years to set is_current_year to False
         cls.query.update({cls.is_current_year: False})
 
-        selected_config = cls.query.get(config_id)
+        selected_config = cls.query.get(year_id)
         if selected_config:
             selected_config.is_current_year = True
             db.session.commit()
@@ -173,26 +173,35 @@ class CourseOrganization(db.Model):
     )
 
 
-class Assignment(db.Model):
-    __tablename__ = 'assignment'
-    id = db.Column(db.Integer, primary_key=True)
-    is_draft = db.Column(db.Boolean, default=True)
-
-    assignment_lines = db.relationship('AssignmentLine', backref='assignments', lazy=True)
-    users = db.relationship('User', secondary='assignment_line', viewonly=True)
-
-
-class AssignmentLine(db.Model):
-    __tablename__ = 'assignment_line'
+class AssignmentDraft(db.Model):
+    __tablename__ = 'assignment_draft'
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, nullable=False)
     course_year = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'))
     load_q1 = db.Column(db.Integer)
     load_q2 = db.Column(db.Integer)
     position = db.Column(db.Integer)
     comment = db.Column(db.String(500))
-    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'))
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['course_id', 'course_year'],
+            ['course.id', 'course.year']
+        ),
+    )
+
+
+class AssignmentPublished(db.Model):
+    __tablename__ = 'assignment_published'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
+    researcher_id = db.Column(db.Integer, db.ForeignKey('researcher.id'))
+    load_q1 = db.Column(db.Integer)
+    load_q2 = db.Column(db.Integer)
+    position = db.Column(db.Integer)
+    comment = db.Column(db.String(500))
 
     __table_args__ = (
         db.ForeignKeyConstraint(

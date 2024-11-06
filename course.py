@@ -1,5 +1,5 @@
 from decorators import login_required, check_access_level
-from db import db, User, Course, Teacher, Organization, Evaluation, Configuration, Role
+from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -125,8 +125,8 @@ def search_teachers():
     if not validate_string_pattern(search_term):
         return make_response("Invalid search term", 400)
 
-    teachers = db.session.query(User).join(Teacher).filter(
-        User.active == True,
+    teachers = db.session.query(User).filter(
+        User.is_teacher == True,
         User.name.ilike(f'%{search_term}%')
     ).all()
     results = [{'id': teacher.id, 'text': f'{teacher.name} {teacher.first_name}'} for teacher in teachers]

@@ -8,7 +8,7 @@ from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
 from assignment import assignment_bp
-from db import db, Configuration, Organization, User, Course, Teacher, Researcher
+from db import db, Year, Organization, User, Course, Teacher, Researcher
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -32,7 +32,7 @@ app.register_blueprint(assignment_bp, url_prefix="/assignment")
 
 
 def get_configurations():
-    return db.session.query(Configuration).order_by(Configuration.year.asc()).all()
+    return db.session.query(Year).order_by(Year.year.asc()).all()
 
 
 def get_organization():

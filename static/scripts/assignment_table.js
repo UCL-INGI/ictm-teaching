@@ -22,9 +22,9 @@ fetch('/assignment/load_data')
             organizations,
             current_year,
             saved_data,
-            comments,
             MAX_LOAD
         } = loadData;
+
         courses.forEach(course => {
             let teachersId = Object.values(teachers).filter(teacher => teacher.course_id === course.id);
             let teachersName = teachersId.map(teacher => {
@@ -76,17 +76,22 @@ fetch('/assignment/load_data')
                 };
 
                 courses.forEach(course => {
-                    row[course.id] = orderedProperties.includes('tutors') && orderedProperties[i] === 'tutors' ? 0 : course[orderedProperties[i]];
+                    // If the current property is 'tutors', check if 'saved_data' exists.
+                    // If 'saved_data' exists, count the number of assignments for the course.
+                    // If 'saved_data' is null or empty, assign 0 instead.
+                    row[course.id] = (orderedProperties[i] === 'tutors')
+                        ? (saved_data ? saved_data.filter(assignment => assignment.course_id === course.id).length : 0)
+                        : course[orderedProperties[i]]; // For other properties, assign the value from the course data.
                 });
                 rows.push(row);
             }
             return rows;
         }
 
-        function buildRow(user, isFilled) {
+        function buildRow(researcher, user, isFilled) {
             const row = {};
             row.researchers = {
-                id: user.id,
+                id: researcher.id,
                 name: isFilled ? `${user.name} ${user.first_name}` : ""
             };
             return row;
@@ -99,9 +104,9 @@ fetch('/assignment/load_data')
                 const researcher = researchers[researcherId];
                 const user = users[researcher.user_id];
                 //The first line displays the preferences for each user
-                const preferenceRow = buildRow(user, true);
+                const preferenceRow = buildRow(researcher, user, true);
                 //The second line allows admins to assign a course to the user
-                const assignmentRow = buildRow(user, false);
+                const assignmentRow = buildRow(researcher, user, false);
                 const assistantOrg = organizations[user.organization_id];
 
                 let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
@@ -114,7 +119,7 @@ fetch('/assignment/load_data')
                 preferenceRow.promoter = researcher.promoters;
                 preferenceRow.totalLoad = researcher.max_loads;
 
-                const foundData = saved_data && saved_data.find(data => data.user_id === user.id);
+                const foundData = saved_data && saved_data.find(data => data.researcher_id === researcher.id);
                 preferenceRow.loadQ1 = foundData && !clearData ? foundData.load_q1 : 0;
                 preferenceRow.loadQ2 = foundData && !clearData ? foundData.load_q2 : 0;
 
@@ -128,11 +133,9 @@ fetch('/assignment/load_data')
 
                 courses.forEach(course => {
                     const existingPref = userPrefs.find(pref => pref.course_id === course.id);
-                    const savedAssignment = saved_data && !clearData ? saved_data.find(data => data.user_id === user.id && data.course_id === course.id) : null;
+                    const savedAssignment = saved_data && !clearData ? saved_data.find(data => data.researcher_id === researcher.id && data.course_id === course.id) : null;
                     preferenceRow[course.id] = existingPref ? existingPref.rank : "";
                     assignmentRow[course.id] = savedAssignment ? savedAssignment.position : "";
-
-
                 });
                 rows.push(preferenceRow);
                 rows.push(assignmentRow);
@@ -219,7 +222,7 @@ fetch('/assignment/load_data')
             afterInit: function () {
                 const sourceData = this.getSourceData();
                 saved_data.forEach(assignment => {
-                    const rowIndex = sourceData.findIndex(row => row.researchers.id === assignment.user_id);
+                    const rowIndex = sourceData.findIndex(row => row.researchers.id === assignment.researcher_id);
 
                     if (rowIndex !== -1) {
                         const colIndex = this.propToCol(assignment.course_id);
@@ -249,33 +252,21 @@ fetch('/assignment/load_data')
                 if (changes) {
                     changes.forEach(([row, prop, oldValue, newValue]) => {
                         let col = this.propToCol(prop);
+
                         if ((col >= lenFixedHeaders && row >= lenFixedRowsText) && (row % 2 === 1)) {
-
                             const colInfos = this.getDataAtProp(prop);
-                            let nbrAssistants = colInfos[RowIndices.TOTAL_ASSISTANT_NOW];
-                            const rowInfos = this.getDataAtRow(row - 1);
                             const quadri = colInfos[RowIndices.QUADRI];
-
                             let loadKey = quadri === 1 ? ColumnIndices.LOAD_Q1 : ColumnIndices.LOAD_Q2;
-                            let loadValue = rowInfos[loadKey];
 
-                            // Old non-empty value and new empty value: loadValue-- and nbrAssistants--.
-                            // Old non-empty value and new non-empty value: loadValue++ and nbrAssistants++.
-                            // Old null value and new non-empty value: loadValue++ and nbrAssistants++.
-                            // Old non-null value and new null value: loadValue-- and nbrAssistants--.
-                            if (oldValue !== newValue) {
-                                if ((oldValue !== '' && newValue === '') || (oldValue !== null && newValue === null)) {
-                                    if (loadValue > 0 && nbrAssistants > 0) {
-                                        loadValue--;
-                                        nbrAssistants--;
-                                    }
-                                } else if ((oldValue === '' && newValue !== '') || (oldValue === null && newValue !== null)) {
-                                    loadValue++;
-                                    nbrAssistants++;
-                                }
-                                this.setDataAtCell(row - 1, loadKey, loadValue);
-                                this.setDataAtCell(RowIndices.TOTAL_ASSISTANT_NOW, col, nbrAssistants);
-                            }
+                            //Count the number of assignments to determine the value of loads
+                            let researcherRow = this.getDataAtRow(row).slice(lenFixedHeaders);
+                            let loadValue = researcherRow.filter(value => value !== null && value !== '').length;
+                            this.setDataAtCell(row - 1, loadKey, loadValue);
+
+                            //Count the number of assignments to determine the number of assistants
+                            let courseCol = this.getDataAtCol(col).slice(lenFixedRowsText);
+                            let nbrAssistants = courseCol.filter((value, index) => index % 2 === 1 && value !== null && value !== '').length;
+                            this.setDataAtCell(RowIndices.TOTAL_ASSISTANT_NOW, col, nbrAssistants);
                         }
                     });
                 }
@@ -416,7 +407,7 @@ fetch('/assignment/load_data')
                     const assignmentRow = slicedData[i + 1];
 
                     const userData = {
-                        user_id: preferenceRow.researchers.id,
+                        researcher_id: preferenceRow.researchers.id,
                         load_q1: preferenceRow.loadQ1,
                         load_q2: preferenceRow.loadQ2,
                         comment: preferenceRow.comment
@@ -457,7 +448,8 @@ fetch('/assignment/load_data')
                     });
 
                     if (response.ok) {
-                        updateToastContent('Assignments published');
+                        let msg = isDraft ? 'Draft saved' : 'Assignments published';
+                        updateToastContent(msg);
                         toastNotification.show();
                     } else {
                         updateToastContent('Failed to publish assignments' + response.statusText);

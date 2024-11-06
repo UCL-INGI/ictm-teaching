@@ -1,6 +1,6 @@
 from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, \
-    ResearcherSupervisor, Role, Assignment, AssignmentLine
+    ResearcherSupervisor, Role, AssignmentDraft, AssignmentPublished
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -38,14 +38,20 @@ def load_data():
     organizations = {organization.id: serialize_model(organization) for organization in
                      db.session.query(Organization).all() or []}
 
-    saved_data = db.session.query(Assignment).order_by(Assignment.id.desc()).first()
-    saved_data_serialized = [serialize_model(line) for line in saved_data.assignment_lines] if saved_data else []
+    saved_data = [serialize_model(assignment) for assignment in
+                  db.session.query(AssignmentDraft).filter_by(course_year=current_year).all()]
 
-    user_ids = [user.id for user in saved_data.users] if saved_data else []
-    users = {user.id: serialize_model(user) for user in db.session.query(User).filter(
-        (User.active == True) | (User.id.in_(user_ids))
-    ).all() or []}
-
+    # Retrieve active users or users associated with preferences.
+    # Join the 'Researcher' model to 'PreferenceAssignment' and check if the researcher has preferences.
+    users = {
+        user.id: serialize_model(user)
+        for user in db.session.query(User)
+        .filter(
+            (User.active == True) | (User.id.in_(
+                db.session.query(Researcher.user_id).join(PreferenceAssignment, Researcher.id == PreferenceAssignment.researcher_id)
+            ))
+        ).all()
+    }
 
     data = {
         'courses': courses,
@@ -56,7 +62,7 @@ def load_data():
         'preferences': preferences,
         'organizations': organizations,
         'current_year': current_year,
-        'saved_data': saved_data_serialized,
+        'saved_data': saved_data,
         'MAX_LOAD': DEFAULT_MAX_LOAD,
     }
 
@@ -73,29 +79,40 @@ def publish_assignments():
     current_year = get_current_year()
     is_draft = data.get('isDraft')
 
-    assignment = Assignment(is_draft=is_draft)
-    db.session.add(assignment)
-    db.session.commit()
+    try:
+        AssignmentDraft.query.filter_by(course_year=current_year).delete()
+        if not is_draft:
+            AssignmentPublished.query.filter_by(course_year=current_year).delete()
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    assignments_to_add = []
 
     for item in data.get('data'):
         user_data = item.get('userData')
         course_data = item.get('courseData')
 
         if course_data and user_data:
-            for id, properties in course_data.items():
-                try:
-                    assignment_line = AssignmentLine(course_id=id, course_year=current_year,
-                                                     user_id=user_data.get('user_id'),
-                                                     load_q1=user_data.get('load_q1'), load_q2=user_data.get('load_q2'),
-                                                     position=properties.get('position'),
-                                                     comment=properties.get('comment'),
-                                                     assignment_id=assignment.id)
-                    db.session.add(assignment_line)
-                except Exception as e:
-                    return jsonify({"error": str(e)}), 400
+            researcher_id = user_data.get('researcher_id')
+            load_q1 = user_data.get('load_q1')
+            load_q2 = user_data.get('load_q2')
+            for course_id, properties in course_data.items():
+                position = properties.get('position')
+                comment = properties.get('comment')
 
-            db.session.commit()
+                assignments_to_add.append(AssignmentDraft(
+                    course_id=course_id, course_year=current_year, researcher_id=researcher_id,
+                    load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
+                ))
 
+                if not is_draft:
+                    assignments_to_add.append(AssignmentPublished(
+                        course_id=course_id, course_year=current_year, researcher_id=researcher_id,
+                        load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
+                    ))
+
+    db.session.bulk_save_objects(assignments_to_add)
     db.session.commit()
 
     return jsonify({"message": "Assignments published successfully"}), 200

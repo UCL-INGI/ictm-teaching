@@ -53,14 +53,14 @@ fetch('/assignment/load_data')
         //Create all course header
         const allHeaders = fixedHeaders.concat(coursesHeaders);
 
-        function fixedRowsData() {
+        function fixedRowsData(clearData = false) {
             let rows = [];
 
             const allProperties = Object.keys(courses[0]);
             const properties = allProperties.filter(prop => requiredProperties.includes(prop));
             // Use to keep the order of the properties
             const orderedProperties = requiredProperties.map(prop => properties.includes(prop) ? prop : null).filter(prop => prop !== null);
-            orderedProperties.push('tutors')
+            orderedProperties.push('total_assistants')
 
             for (let i = 0; i < lenFixedRowsText; i++) {
                 let row = {
@@ -76,11 +76,11 @@ fetch('/assignment/load_data')
                 };
 
                 courses.forEach(course => {
-                    // If the current property is 'tutors', check if 'saved_data' exists.
-                    // If 'saved_data' exists, count the number of assignments for the course.
-                    // If 'saved_data' is null or empty, assign 0 instead.
-                    row[course.id] = (orderedProperties[i] === 'tutors')
-                        ? (saved_data ? saved_data.filter(assignment => assignment.course_id === course.id).length : 0)
+                    // Check if the current property is 'total_assistants'
+                    // If 'clearData' is true, set 'total_assistants' to 0
+                    // Otherwise, calculate based on 'saved_data' if available, or set to 0 if not
+                    row[course.id] = (orderedProperties[i] === 'total_assistants')
+                        ? (clearData ? 0 : (saved_data ? saved_data.filter(assignment => assignment.course_id === course.id).length : 0))
                         : course[orderedProperties[i]]; // For other properties, assign the value from the course data.
                 });
                 rows.push(row);
@@ -112,7 +112,7 @@ fetch('/assignment/load_data')
                 let researcherSupervisor = Object.values(supervisors).filter(supervisor => supervisor.researcher_id === researcher.id);
                 let supervisorNames = researcherSupervisor.map(supervisor => {
                     let user = users[supervisor.supervisor_id];
-                    return user ? `${user.name}` : '';
+                    return user ? `${user.name} ${user.first_name}` : '';
                 });
                 researcher.promoters = supervisorNames.join(', ');
                 preferenceRow.org = assistantOrg ? assistantOrg.name : "";
@@ -246,6 +246,9 @@ fetch('/assignment/load_data')
                     if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
                         th.style.backgroundColor = 'green';
                     }
+                    if (colData[RowIndices.TOTAL_ASSISTANT_NOW] < colData[RowIndices.ASSISTANTS]) {
+                        th.style.backgroundColor = 'red';
+                    }
                 }
             },
             afterChange: function (changes) {
@@ -260,7 +263,11 @@ fetch('/assignment/load_data')
 
                             //Count the number of assignments to determine the value of loads
                             let researcherRow = this.getDataAtRow(row).slice(lenFixedHeaders);
-                            let loadValue = researcherRow.filter(value => value !== null && value !== '').length;
+                            let loadValue = researcherRow.filter((value, index) => {
+                                //Check if the course is in the same quadri
+                                const courseQuadri = this.getDataAtCell(RowIndices.QUADRI, index + lenFixedHeaders);
+                                return value !== null && value !== '' && courseQuadri === quadri;
+                            }).length;
                             this.setDataAtCell(row - 1, loadKey, loadValue);
 
                             //Count the number of assignments to determine the number of assistants
@@ -466,8 +473,10 @@ fetch('/assignment/load_data')
             });
 
             $('#button-clear-assignments').click(function () {
+                const newFixedRows = fixedRowsData(true);
                 const newUsersRow = userRowsData(true);
-                data = fixedRows.concat(newUsersRow);
+                data = newFixedRows.concat(newUsersRow);
+
                 table.loadData(data);
                 updateToastContent('Data cleared');
                 toastNotification.show();

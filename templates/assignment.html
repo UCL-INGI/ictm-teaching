@@ -9,91 +9,122 @@
 
 {% block pagecontent %}
     <div class="row">
-        <div class="col">
-            <h1 class="m-3">Edit assignment</h1>
-            <hr>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-6 col-md-5 col-lg-4 ms-3">
-            <div class="card mb-2">
-                <div class="card-header">
-                    <h3 class="card-title">Legend</h3>
-                </div>
-                <div class="card-subtitle mt-3 mb-2 me-3 ms-3">
-                    <p>
-                        Each researcher has two merged lines to indicate their preferences:
-                    </p>
-                    <ul>
-                        <li>First line: Represents the user's (researcher's) preferences.</li>
-                        <li><strong>Second line</strong>: Indicates the assignment made by the admin.</li>
-                    </ul>
-                    <p>
-                        This allows for a quick visualization of each researcher's preferences along with the
-                        corresponding assignment.
-                    </p>
-                </div>
-                <div class="card-body">
-                    <div class="legend-item d-flex mb-2">
-                        <img src="{{ url_for('static', filename='img/assigned_cell.jpg') }}" alt="Assigned Cell Example"
-                             class="me-2">
-                        <div class="d-flex flex-column">
-                            <span class="mb-2">Researcher's preference (researcher's second choice)</span>
-                            <span>Admin's assignment (no value = not yet assigned)</span>
-                        </div>
-                    </div>
-                    <div class="legend-item d-flex align-items-center">
-                        <img src="{{ url_for('static', filename='img/comment.jpg') }}"
-                             alt="Not Assigned Cell Example" class="me-2">
-                        <span>Cell assigned with a comment</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-5 col-lg-4">
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h3 class="card-title">Controls</h3>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <button type="button" class="btn btn-outline-dark btn-sm" id="button-export">Export to
-                            CSV
-                        </button>
+        <div class="row">
+            <div class="col-5 ms-3 mt-3 mb-3">
+                <div class="accordion" id="accordionLegend">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="legendHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#legendCollapse" aria-expanded="true"
+                                    aria-controls="legendCollapse">
+                                Legend
+                            </button>
+                        </h2>
+                        <div id="legendCollapse" class="accordion-collapse collapse show"
+                             aria-labelledby="legendHeading"
+                             data-bs-parent="#accordionLegend">
+                            <div class="accordion-body">
+                                <p>Each researcher has two merged lines to indicate their preferences:</p>
+                                <ul>
+                                    <li>First line: Represents the user's (researcher's) preferences.</li>
+                                    <li><strong>Second line</strong>: Indicates the assignment made by the admin.</li>
+                                </ul>
+                                <p>This allows for a quick visualization of each researcher's preferences along with the
+                                    corresponding assignment.</p>
 
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-dark btn-sm w-100"
-                                        id="button-create-assignments">Save assignments
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-dark btn-sm w-100"
-                                        id="button-clear-assignments">Clear assignments
-                                </button>
+                                <div class="legend-item d-flex mb-2">
+                                    <img src="{{ url_for('static', filename='img/assigned_cell.jpg') }}"
+                                         alt="Assigned Cell Example" class="me-2">
+                                    <div class="d-flex flex-column">
+                                        <span class="mb-2">Researcher's preference (researcher's second choice)</span>
+                                        <span>Admin's assignment (no value = not yet assigned)</span>
+                                    </div>
+                                </div>
+                                <div class="legend-item d-flex align-items-center">
+                                    <img src="{{ url_for('static', filename='img/comment.jpg') }}"
+                                         alt="Not Assigned Cell Example" class="me-2">
+                                    <span>Cell assigned with a comment</span>
+                                </div>
+
+                                <div class="mt-4">
+                                    <h5>Course Header Colors :</h5>
+                                    <ul class="list-unstyled">
+                                        <li><span class="d-inline-block bg-success"
+                                                  style="width: 16px; height: 16px; margin-right: 8px;"></span> Desired
+                                            number of assistants reached
+                                        </li>
+                                        <li><span class="d-inline-block bg-danger"
+                                                  style="width: 16px; height: 16px; margin-right: 8px;"></span>
+                                            Additional
+                                            researchers needed
+                                        </li>
+                                        <li><span class="d-inline-block"
+                                                  style="width: 16px; height: 16px; margin-right: 8px; background-color: #D8BFD8;"></span>
+                                            No number of assistants defined
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-outline-dark btn-sm"
-                                id="button-publish-assignments">Publish assignments
-                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-5 mt-3">
+                <div class="accordion" id="accordionControls">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="controlsHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#controlsCollapse" aria-expanded="false"
+                                    aria-controls="controlsCollapse">
+                                Controls
+                            </button>
+                        </h2>
+                        <div id="controlsCollapse" class="accordion-collapse collapse show" aria-labelledby="controlsHeading"
+                             data-bs-parent="#accordionControls">
+                            <div class="accordion-body">
+                                <div class="d-grid gap-3">
+                                    <button type="button" class="btn btn-outline-dark btn-sm" id="button-export">Export
+                                        to
+                                        CSV
+                                    </button>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <button type="button" class="btn btn-outline-dark btn-sm w-100"
+                                                    id="button-create-assignments">Save assignments
+                                            </button>
+                                        </div>
+                                        <div class="col-6">
+                                            <button type="button" class="btn btn-outline-dark btn-sm w-100"
+                                                    id="button-clear-assignments">Clear assignments
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-dark btn-sm"
+                                            id="button-publish-assignments">Publish assignments
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="toast" id="toast-notification" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <strong class="me-auto">Notification</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col mb-3 ms-3 mt-1">
-            <div id="handsontable">
-                <script type="module" src="{{ url_for('static', filename='scripts/assignment_table.js') }}"></script>
+
+        <div class="toast" id="toast-notification" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
             </div>
         </div>
-    </div>
+        <div class="row">
+            <div class="col mb-3 ms-3 mt-1">
+                <div id="handsontable">
+                    <script type="module"
+                            src="{{ url_for('static', filename='scripts/assignment_table.js') }}"></script>
+                </div>
+            </div>
+        </div>
 {% endblock %}

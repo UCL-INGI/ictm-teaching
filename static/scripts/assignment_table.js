@@ -241,12 +241,15 @@ fetch('/assignment/load_data')
                 th.style.height = '100px';
                 th.style.lineHeight = '100px';
 
+                let colData = this.getDataAtCol(col);
                 if (col > lenFixedHeaders - 1) {
-                    let colData = this.getDataAtCol(col);
-                    if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
+                    if (colData[RowIndices.ASSISTANTS] === 0) {
+                        th.style.backgroundColor = '#E1BEE7';
+                    }
+                    else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
                         th.style.backgroundColor = 'green';
                     }
-                    if (colData[RowIndices.TOTAL_ASSISTANT_NOW] < colData[RowIndices.ASSISTANTS]) {
+                    else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] < colData[RowIndices.ASSISTANTS]) {
                         th.style.backgroundColor = 'red';
                     }
                 }

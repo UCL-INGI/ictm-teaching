@@ -245,9 +245,8 @@ fetch('/assignment/load_data')
                 if (col > lenFixedHeaders - 1) {
                     if (colData[RowIndices.ASSISTANTS] === 0) {
                         th.style.backgroundColor = '#E1BEE7';
-                    }
-                    else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
-                        th.style.backgroundColor = 'green';
+                    } else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
+                        th.style.backgroundColor = colData[RowIndices.TOTAL_ASSISTANT_NOW] === colData[RowIndices.ASSISTANTS] ? 'green' : 'red';
                     }
                 }
             },

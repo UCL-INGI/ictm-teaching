@@ -249,9 +249,6 @@ fetch('/assignment/load_data')
                     else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] >= colData[RowIndices.ASSISTANTS]) {
                         th.style.backgroundColor = 'green';
                     }
-                    else if (colData[RowIndices.TOTAL_ASSISTANT_NOW] < colData[RowIndices.ASSISTANTS]) {
-                        th.style.backgroundColor = 'red';
-                    }
                 }
             },
             afterChange: function (changes) {

@@ -48,7 +48,8 @@ def load_data():
         for user in db.session.query(User)
         .filter(
             (User.active == True) | (User.id.in_(
-                db.session.query(Researcher.user_id).join(PreferenceAssignment, Researcher.id == PreferenceAssignment.researcher_id)
+                db.session.query(Researcher.user_id).join(PreferenceAssignment,
+                                                          Researcher.id == PreferenceAssignment.researcher_id)
             ))
         ).all()
     }
@@ -118,7 +119,9 @@ def publish_assignments():
                                 load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
                             ))
                     except (ValueError, TypeError) as e:
-                        return jsonify({"error": f"Invalid data for researcher_id {researcher_id} course_id {course_id}: {str(e)}"}), 400
+                        course = db.session.query(Course).filter_by(id=course_id, year=current_year).first()
+                        return jsonify({
+                                           "error": f"Invalid data for researcher_id {researcher_id} course_name {course.code} - {course.title}"}), 400
 
             except (ValueError, TypeError) as e:
                 return jsonify({"error": f"Invalid user data: {str(e)}"}), 400
@@ -130,4 +133,3 @@ def publish_assignments():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to publish assignments: {str(e)}"}), 500
-

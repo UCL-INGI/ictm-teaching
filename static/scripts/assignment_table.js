@@ -412,8 +412,6 @@ fetch('/assignment/load_data')
                     const preferenceRow = slicedData[i];
                     const assignmentRow = slicedData[i + 1];
 
-                    console.log("Assignment row: ", assignmentRow);
-
                     const userData = {
                         researcher_id: preferenceRow.researchers.id,
                         load_q1: preferenceRow.loadQ1,

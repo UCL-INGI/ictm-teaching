@@ -96,7 +96,6 @@ def publish_assignments():
                 if not course_data or not user_data:
                     raise ValueError("Missing course or user data")
 
-                # Validate and convert user data
                 researcher_id = int(user_data.get('researcher_id'))
                 load_q1 = int(user_data.get('load_q1'))
                 load_q2 = int(user_data.get('load_q2'))

@@ -80,39 +80,55 @@ def publish_assignments():
     is_draft = data.get('isDraft')
 
     try:
+        # Clear existing assignments for the current year
         AssignmentDraft.query.filter_by(course_year=current_year).delete()
         if not is_draft:
             AssignmentPublished.query.filter_by(course_year=current_year).delete()
         db.session.commit()
+
+        assignments_to_add = []
+
+        for item in data.get('data', []):
+            try:
+                user_data = item.get('userData')
+                course_data = item.get('courseData')
+
+                if not course_data or not user_data:
+                    raise ValueError("Missing course or user data")
+
+                # Validate and convert user data
+                researcher_id = int(user_data.get('researcher_id'))
+                load_q1 = int(user_data.get('load_q1'))
+                load_q2 = int(user_data.get('load_q2'))
+
+                for course_id, properties in course_data.items():
+                    try:
+                        course_id = int(course_id)
+                        position = int(properties.get('position'))
+                        comment = properties.get('comment')
+                        if not isinstance(comment, (str, type(None))):
+                            raise ValueError("Invalid comment format")
+
+                        assignments_to_add.append(AssignmentDraft(
+                            course_id=course_id, course_year=current_year, researcher_id=researcher_id,
+                            load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
+                        ))
+                        if not is_draft:
+                            assignments_to_add.append(AssignmentPublished(
+                                course_id=course_id, course_year=current_year, researcher_id=researcher_id,
+                                load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
+                            ))
+                    except (ValueError, TypeError) as e:
+                        return jsonify({"error": f"Invalid data for researcher_id {researcher_id} course_id {course_id}: {str(e)}"}), 400
+
+            except (ValueError, TypeError) as e:
+                return jsonify({"error": f"Invalid user data: {str(e)}"}), 400
+
+        db.session.add_all(assignments_to_add)
+        db.session.commit()
+        return jsonify({"message": "Assignments published successfully"}), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        db.session.rollback()
+        return jsonify({"error": f"Failed to publish assignments: {str(e)}"}), 500
 
-    assignments_to_add = []
-
-    for item in data.get('data'):
-        user_data = item.get('userData')
-        course_data = item.get('courseData')
-
-        if course_data and user_data:
-            researcher_id = user_data.get('researcher_id')
-            load_q1 = user_data.get('load_q1')
-            load_q2 = user_data.get('load_q2')
-            for course_id, properties in course_data.items():
-                position = properties.get('position')
-                comment = properties.get('comment')
-
-                assignments_to_add.append(AssignmentDraft(
-                    course_id=course_id, course_year=current_year, researcher_id=researcher_id,
-                    load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
-                ))
-
-                if not is_draft:
-                    assignments_to_add.append(AssignmentPublished(
-                        course_id=course_id, course_year=current_year, researcher_id=researcher_id,
-                        load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
-                    ))
-
-    db.session.bulk_save_objects(assignments_to_add)
-    db.session.commit()
-
-    return jsonify({"message": "Assignments published successfully"}), 200

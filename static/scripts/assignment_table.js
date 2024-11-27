@@ -412,6 +412,8 @@ fetch('/assignment/load_data')
                     const preferenceRow = slicedData[i];
                     const assignmentRow = slicedData[i + 1];
 
+                    console.log("Assignment row: ", assignmentRow);
+
                     const userData = {
                         researcher_id: preferenceRow.researchers.id,
                         load_q1: preferenceRow.loadQ1,
@@ -423,7 +425,7 @@ fetch('/assignment/load_data')
                     courses.forEach(course => {
                         const col = table.propToCol(course.id);
                         const comment = commentsPlugin.getCommentAtCell(i + lenFixedRowsText + 1, col);
-                        if (assignmentRow[course.id] !== '') {
+                        if (assignmentRow[course.id] !== '' && assignmentRow[course.id] !== null) {
                             courseData[course.id] = {
                                 position: assignmentRow[course.id],
                                 comment: comment
@@ -458,7 +460,10 @@ fetch('/assignment/load_data')
                         updateToastContent(msg);
                         toastNotification.show();
                     } else {
-                        updateToastContent('Failed to publish assignments' + response.statusText);
+                        const errorData = await response.json();
+                        const errorMessage = errorData.error || 'Failed to publish assignments';
+
+                        updateToastContent(errorMessage);
                         toastNotification.show();
                     }
                 } catch (error) {

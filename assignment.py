@@ -89,13 +89,10 @@ def publish_assignments():
 
         assignments_to_add = []
 
-        for item in data.get('data', []):
+        for index, item in enumerate(data.get('data', [])):
             try:
                 user_data = item.get('userData')
                 course_data = item.get('courseData')
-
-                if not course_data or not user_data:
-                    raise ValueError("Missing course or user data")
 
                 researcher_id = int(user_data.get('researcher_id'))
                 load_q1 = int(user_data.get('load_q1'))
@@ -121,10 +118,10 @@ def publish_assignments():
                     except (ValueError, TypeError) as e:
                         course = db.session.query(Course).filter_by(id=course_id, year=current_year).first()
                         return jsonify({
-                                           "error": f"Invalid data for researcher_id {researcher_id} course_name {course.code} - {course.title}"}), 400
+                            "error": f"Error for researcher_id {researcher_id}, course_name {course.code} - {course.title} : {e}"}), 400
 
             except (ValueError, TypeError) as e:
-                return jsonify({"error": f"Invalid user data: {str(e)}"}), 400
+                return jsonify({"error": f"Invalid data : {str(e)}"}), 400
 
         db.session.add_all(assignments_to_add)
         db.session.commit()

@@ -1,7 +1,7 @@
 import argparse
 from app import app, db
 from datetime import datetime
-from db import User, Configuration, Organization
+from db import User, Year, Organization
 
 
 def create_database(name, first_name, email):
@@ -27,10 +27,10 @@ def add_first_admin(name, first_name, email):
 # Add the first year corresponding to the current year
 def initialize_configuration():
     current_year = datetime.now().year
-    existing_year = Configuration.query.filter_by(year=current_year).first()
+    existing_year = Year.query.filter_by(year=current_year).first()
 
     if existing_year is None:
-        config = Configuration(year=current_year, is_current_year=True)
+        config = Year(year=current_year, is_current_year=True)
         db.session.add(config)
         db.session.commit()
 

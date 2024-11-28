@@ -1,4 +1,4 @@
-from db import db, User, Configuration
+from db import db, User
 from flask import Blueprint, current_app, url_for, request, make_response, redirect, session
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils

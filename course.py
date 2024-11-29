@@ -138,6 +138,7 @@ def search_teachers():
 @check_access_level(Role.ADMIN)
 def course_info(course_id, year):
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
+
     if not course:
         return make_response("Course not found", 404)
 

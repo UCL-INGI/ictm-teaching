@@ -80,7 +80,10 @@ def add_user():
 
                 if supervisor_ids:
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    new_researcher.supervisors = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    supervisors_to_add = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    db.session.add_all(supervisors_to_add)
+
+                    new_researcher.supervisors = supervisors_to_add
                     db.session.commit()
 
             flash("User added successfully.", "success")

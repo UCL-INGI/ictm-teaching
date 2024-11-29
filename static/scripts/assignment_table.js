@@ -496,7 +496,7 @@ fetch('/assignment/load_data')
             });
 
             $('#button-publish-teachers').click(async function () {
-                await saveAssignment(isTeacherPublication=true);
+                await saveAssignment(false, true);
             });
 
             $('#button-publish-everyone').click(async function () {

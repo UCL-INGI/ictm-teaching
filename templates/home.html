@@ -1,111 +1,122 @@
 {% extends "layout.html" %}
 {% block pagetitle %}Home Page{% endblock %}
+
 {% block pagecontent %}
-    <br>
     {% include "toast.html" %}
-    <h1>{{ session.first_name }} {{ session.name }}</h1>
-    <hr>
-    {% if is_researcher %}
-        <h2 class="sub-header">Course(s) assigned this year ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Course</th>
-                <th>Position</th>
-            </tr>
-            </thead>
-            <tbody>
-                {% for researcher_course in researcher_assignments %}
+
+    <div class="container-fluid ms-3">
+        <h1 class="mt-3 mb-3">{{ session.first_name }} {{ session.name }}</h1>
+        <hr>
+
+        {% if is_researcher %}
+            <h2 class="sub-header mb-2">Course(s) assigned this year ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Course</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for course in researcher_courses %}
                     <tr>
-                        <td>{{ researcher_course.course.code }} - {{ researcher_course.course.title }}</td>
-                        <td>{{ researcher_course.position }}</td>
+                        <td>{{ course.code }} - {{ course.title }}</td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-        <div class="container-fluid">
-            <h2 class="sub-header">History</h2>
-            <hr>
+                </tbody>
+            </table>
 
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs" id="historyTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="assistants-tab" data-bs-toggle="tab" href="#assistants" role="tab"
-                       aria-controls="assistants" aria-selected="true">Assistants</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="evaluations-tab" data-bs-toggle="tab" href="#evaluations" role="tab"
-                       aria-controls="evaluations" aria-selected="false">Evaluations</a>
-                </li>
-            </ul>
 
-            <!-- Tab panes -->
-            <div class="tab-content">
-                <!-- Assistants Pane -->
-                <div class="tab-pane fade show active" id="assistants" role="tabpanel"
-                     aria-labelledby="assistants-tab">
-                    <table class="table table-hover mt-3">
-                        <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Title</th>
-                            <th>Year</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Evaluations Pane -->
-                <div class="tab-pane fade show" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
-                    <!-- Content for Evaluations -->
-                    <br>
-                    <p>Content for evaluations will go here.</p>
+            <div class="container-fluid mt-4">
+                <h2 class="sub-header">History</h2>
+                <hr>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="assistants-tab" data-bs-toggle="tab" href="#assistants"
+                           role="tab" aria-controls="assistants" aria-selected="true">Assistants</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="evaluations-tab" data-bs-toggle="tab" href="#evaluations" role="tab"
+                           aria-controls="evaluations" aria-selected="false">Evaluations</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <!-- Assistants Pane -->
+                    <div class="tab-pane fade show active" id="assistants" role="tabpanel"
+                         aria-labelledby="assistants-tab">
+                        <table class="table table-hover mt-3">
+                            <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Year</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Content for assistants -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Evaluations Pane -->
+                    <div class="tab-pane fade show" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
+                        <br>
+                        <p>Content for evaluations will go here.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    {% endif %}
-    {% if user.is_teacher %}
-        <h2 class="sub-header">My courses for ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Code</th>
-                <th>Title</th>
-                <th>Assistants</th>
-            </tr>
-            </thead>
-            <tbody>
+        {% endif %}
 
-            {% for course in courses %}
-                <tr>
-                    <td>{{ course.code }}</td>
-                    <td>{{ course.title }}</td>
-                    <td>
-                        {% for assistant in assistants %}
-                            {{ assistant.name }} {{ assistant.first_name }}<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <h2 class="sub-header">Course assignments for my researchers</h2>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Course</th>
-                <th>Researcher</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for researcher_course in teacher_assignments %}
-                <tr>
-                    <td>{{ researcher_course.course.code }} - {{ researcher_course.course.title }}</td>
-                    <td>{{ researcher_course.user.name }} {{ researcher_course.user.first_name }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+        {% if user.is_teacher %}
+            <div class="mt-4 mb-2">
+                <h2 class="sub-header mb-2">My courses for ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Assistants</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for course in courses_teacher %}
+                        <tr>
+                            <td>{{ course.code }} - {{ course.title }}</td>
+                            <td>
+                                {% for assistant in course.assistants %}
+                                    {{ assistant.name }} {{ assistant.first_name }}<br>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <h2 class="sub-header mb-2">Courses assigned to my researchers</h2>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Researcher</th>
+                        <th>Course</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for researcher in researcher_supervised %}
+                        <tr>
+                            <td>{{ researcher.user.name }} {{ researcher.user.first_name }}</td>
+                            <td>
+                                {% for course in researcher.assigned_courses %}
+                                    {{ course.code }} - {{ course.title }}<br>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

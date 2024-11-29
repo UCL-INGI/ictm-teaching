@@ -1,6 +1,7 @@
 import datetime
 
 import jinja2.defaults
+from sqlalchemy.orm import joinedload
 
 from auth import auth_bp
 from user import user_bp
@@ -55,18 +56,25 @@ def inject_configurations():
 @login_required
 def index():
     current_year = get_current_year()
+    year = db.session.query(Year).filter_by(year=current_year).first()
     user = db.session.query(User).filter_by(email=session['email']).first()
     researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
+    teacher = db.session.query(Teacher).filter_by(user_id=user.id).first() if user.is_teacher else None
 
-    courses_teacher = db.session.query(Course).join(Teacher).filter(Teacher.user_id == user.id).all()
-    courses_researcher = db.session.query(Course).join(AssignmentPublished).filter(PublishAssignment.user_id == user.id,
-                                                                                 PublishAssignment.course_year == current_year)
-    if researcher:
-        courses_researcher = courses_researcher.filter(AssignmentPublished.is_teacher_publication == False).all()
-    else:
-        courses_researcher = courses_researcher.all()
+    # Get the teacher's courses
+    courses_teacher = db.session.query(Course).join(Teacher).filter(
+        Teacher.user_id == user.id).all() if year.publication_status != 'Draft' and user.is_teacher else []
 
-    return render_template("home.html", user=user, courses=courses_teacher, courses_researcher=courses_researcher)
+    users_supervised = teacher.user.researchers if teacher else []
+    researcher_supervised = []
+    for researcher_supervisor in users_supervised:
+        researcher_supervised.append(researcher_supervisor.researcher)
+
+    # Get the courses where the researcher is assigned
+    researcher_courses = researcher.assigned_courses if year.publication_status == 'Everyone' and researcher else []
+
+    return render_template("home.html", user=user, courses_teacher=courses_teacher,
+                           researcher_supervised=researcher_supervised, researcher_courses=researcher_courses)
 
 
 if __name__ == '__main__':

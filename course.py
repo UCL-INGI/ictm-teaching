@@ -145,8 +145,10 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
+    evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).first()
+
     return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
-                           evaluations=course.evaluations)
+                           evaluations=evaluations)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])

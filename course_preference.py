@@ -46,7 +46,7 @@ def save_preference():
         try:
             course_id = preference['course_id']
             course_year = preference['course_year']
-            new_preference = PreferenceAssignment(rank=rank, course_id=course_id, course_year=course_year,
+            new_preference = PreferenceAssignment(rank=rank+1, course_id=course_id, course_year=course_year,
                                                   researcher_id=researcher.id)
             db.session.add(new_preference)
             db.session.commit()

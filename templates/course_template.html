@@ -41,7 +41,7 @@
         $(document).ready(function () {
             $(document).on('change', '#organization_code', function () {
                 var containerSelector = $('#selected-organizations', $(this).parent());
-                addBadge($(this), containerSelector);
+                addBadge(this, containerSelector, 'organization_code');
             });
 
 

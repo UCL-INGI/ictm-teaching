@@ -147,7 +147,10 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    return render_template('course_info.html', course=course, all_years=all_years, current_year=year)
+    evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).all() or []
+
+    return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
+                           evaluations=evaluations)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])
@@ -265,21 +268,45 @@ def add_duplicate_course():
     return redirect(url_for('course.course_info', course_id=course_id, year=year))
 
 
-@course_bp.route('/evaluations/<int:user_id>/<int:current_year>')
+@course_bp.route('/evaluation/<int:evaluation_id>')
 @login_required
-def evaluations(user_id, current_year):
+def course_evaluation(evaluation_id):
+    evaluation = db.session.query(Evaluation).get(evaluation_id)
+    courses = db.session.query(Course).filter_by(year=evaluation.course_year).all()
+
+    course = evaluation.course
+    user = db.session.query(User).filter_by(id=session['user_id']).first()
+    teachers = course.course_teacher
+
+    # Accessible only to the admin, the evaluation creator and the course teachers
+    if (not user.is_admin) and (user.id != evaluation.user_id) and (user.id not in [teacher.user_id for teacher in teachers]):
+        flash("You are not allowed to access this page", "danger")
+        return redirect(url_for('course.courses', course_id=course.id, year=course.year))
+
+    return render_template('evaluations.html', evaluation=evaluation, current_year=evaluation.course_year,
+                           courses=courses)
+
+
+@course_bp.route('/evaluations/<int:current_year>')
+@login_required
+@check_access_level(Role.RESEARCHER)
+def user_evaluation(current_year):
     courses = db.session.query(Course).filter_by(year=current_year).all()
+    user_id = session.get('user_id')
 
-    return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id)
+    return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id,
+                           evaluation=None)
 
 
-@course_bp.route('/create_evaluations/<int:user_id>/<int:current_year>', methods=['POST'])
+@course_bp.route('/create_evaluations/<int:current_year>', methods=['POST'])
 @login_required
-def create_evaluation(user_id, current_year):
+@check_access_level(Role.RESEARCHER)
+def create_evaluation(current_year):
     form = request.form
     if not form:
         return make_response("Problem with form request", 500)
 
+    user_id = session.get('user_id')
     course_id = request.form.get('course_id')
     tasks = request.form.getlist('tasks[]')
     other_task = request.form.get('other_task')
@@ -289,9 +316,6 @@ def create_evaluation(user_id, current_year):
 
     if not all([course_id, evaluation_hour, workload, comment is not None]):
         return make_response("Missing required fields", 400)
-
-    if other_task:
-        tasks.append(other_task)
 
     try:
         existing_evaluation = db.session.query(Evaluation).filter_by(course_id=course_id, course_year=current_year,
@@ -304,11 +328,12 @@ def create_evaluation(user_id, current_year):
             flash('Evaluation created successfully!', 'success')
 
         new_evaluation = Evaluation(course_id=course_id, course_year=current_year, user_id=user_id, task=tasks,
-                                    nbr_hours=evaluation_hour, workload=workload, comment=comment)
+                                    other_task=other_task, nbr_hours=evaluation_hour, workload=workload,
+                                    comment=comment)
         db.session.add(new_evaluation)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         flash(f'An error occurred: {str(e)}', 'danger')
 
-    return redirect(url_for('course.evaluations', user_id=user_id, current_year=current_year))
+    return redirect(url_for('course.user_evaluation', user_id=user_id, current_year=current_year))

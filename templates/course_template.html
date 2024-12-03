@@ -2,11 +2,6 @@
 {% block pagetitle %}Course informations{% endblock %}
 {% block additionalpageheader %}
     <style>
-        .badge a {
-            color: black;
-            text-decoration: none;
-        }
-
         .badge a:hover {
             color: red;
         }
@@ -46,7 +41,7 @@
         $(document).ready(function () {
             $(document).on('change', '#organization_code', function () {
                 var containerSelector = $('#selected-organizations', $(this).parent());
-                addBadge($(this), containerSelector);
+                addBadge(this, containerSelector, 'organization_code');
             });
 
 

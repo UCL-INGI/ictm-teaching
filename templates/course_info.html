@@ -43,42 +43,68 @@
                 </tbody>
             </table>
             <div class="container-fluid">
-                <h2 class="sub-header">History</h2>
-                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="sub-header">History</h2>
+                        <hr>
 
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs" id="historyTabs" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="assistants-tab" data-bs-toggle="tab" href="#assistants" role="tab"
-                           aria-controls="assistants" aria-selected="true">Assistants</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="evaluations-tab" data-bs-toggle="tab" href="#evaluations" role="tab"
-                           aria-controls="evaluations" aria-selected="false">Evaluations</a>
-                    </li>
-                </ul>
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" id="historyTabs{{ course.year }}" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="assistants-tab-{{ course.year }}" data-bs-toggle="tab" href="#assistants-{{ course.year }}"
+                                   role="tab"
+                                   aria-controls="assistants" aria-selected="true">Assistants</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="evaluations-tab-{{ course.year }}" data-bs-toggle="tab" href="#evaluations-{{ course.year }}"
+                                   role="tab"
+                                   aria-controls="evaluations" aria-selected="false">Evaluations</a>
+                            </li>
+                        </ul>
 
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <!-- Assistants Pane -->
-                    <div class="tab-pane fade show active" id="assistants" role="tabpanel"
-                         aria-labelledby="assistants-tab">
-                        <table class="table table-hover mt-3">
-                            <thead>
-                            <tr>
-                                <th>Last name</th>
-                                <th>First name</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Evaluations Pane -->
-                    <div class="tab-pane fade show" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
-                        <!-- Content for Evaluations -->
-                        <br>
-                        <p>Content for evaluations will go here.</p>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <!-- Assistants Pane -->
+                            <div class="tab-pane fade show active" id="assistants-{{ course.year }}" role="tabpanel"
+                                 aria-labelledby="assistants-tab-{{ course.year }}">
+                                <table class="table table-hover mt-3">
+                                    <thead>
+                                    <tr>
+                                        <th>Last name</th>
+                                        <th>First name</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Evaluations Pane -->
+                            <div class="tab-pane fade show" id="evaluations-{{ course.year }}" role="tabpanel"
+                                 aria-labelledby="evaluations-tab-{{ course.year }}">
+                                <!-- Content for Evaluations -->
+                                <table class="table table-hover" id="evaluationTable">
+                                    <thead>
+                                    <tr>
+                                        <th>Evaluation id</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if not evaluations %}
+                                        <tr>
+                                            <td>No evaluations for this year.</td>
+                                        </tr>
+                                    {% endif %}
+                                    {% for evaluation in evaluations %}
+                                        <tr>
+                                            <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
+                                                {{ evaluation.id }}</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

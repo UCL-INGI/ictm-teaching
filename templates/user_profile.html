@@ -27,10 +27,6 @@
                 <ul class="nav nav-tabs">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#profile">My profile</a>
                     </li>
-                    {% if is_researcher %}
-                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preferences">My
-                            preferences</a></li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -150,140 +146,10 @@
                     </div>
                 </form>
             </div>
-            {% if is_researcher %}
-                <div class="tab-pane" id="preferences">
-                    <div class="container-fluid">
-                        {% if current_user %}
-                            <form id="preferencesForm" method="post">
-                                <br>
-                                <h2>Preferences for next year</h2>
-                                <table class="table table-hover" id="staticPreferencesTable">
-                                    <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Title</th>
-                                        <th>Semester</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider">
-                                    {% for preference in preferences %}
-                                        <tr>
-                                            <td>{{ preference.course.code }}</td>
-                                            <td>{{ preference.course.title }}</td>
-                                            <td>{{ preference.course.quadri }}</td>
-                                            <td>
-                                                <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
-                                                   class="delete-icon">
-                                                    <i class="fas fa-trash delete-icon"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-
-                                <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
-                                    <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider">
-                                    {% for preference in preferences %}
-                                        <tr>
-                                            <td>
-                                                <select class="form-control course-select">
-                                                    {% for course in courses %}
-                                                        <option value="{{ course.id }}-{{ course.year }}"
-                                                                {% if course.id == preference.course.id %}selected{% endif %}>
-                                                            {{ course.code }} - {{ course.title }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <i class="fas fa-trash delete-icon"></i>
-                                                <i class="fas fa-arrows-alt move-icon"></i>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-
-                                    <!-- Hidden row template -->
-                                    <tr id="template-row" style="display: none;">
-                                        <td>
-                                            <select class="form-control course-select">
-                                                {% for course in courses %}
-                                                    <option value="{{ course.id }}-{{ course.year }}">
-                                                        {{ course.code }} - {{ course.title }}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-trash delete-icon"></i>
-                                            <i class="fas fa-arrows-alt move-icon"></i>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-
-                                <button type="button" id="addPreferencesButton" class="btn btn-primary">Edit Preferences
-                                </button>
-                                <button type="button" id="savePreferencesButton" class="btn btn-success"
-                                        style="display: none;">
-                                    Save Preferences
-                                </button>
-                                <button type="button" id="cancelEditButton" class="btn btn-secondary"
-                                        style="display: none;">
-                                    Cancel
-                                </button>
-                                <button type="button" id="addRowButton" class="btn btn-primary" style="display: none;">
-                                    Add Row
-                                </button>
-                            </form>
-                        {% else %}
-                            <br>
-                            <h2>Course preferences</h2>
-                            <table class="table table-hover" id="preferencesTable">
-                                <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Title</th>
-                                    <th>Semester</th>
-                                    <th>
-                                        <select class="form-select form-select-sm d-inline" id="yearSelect"
-                                                name="yearSelect"
-                                                {% if session.is_admin == False %} disabled {% endif %}>
-                                            {% for config in configurations %}
-                                                <option value="{{ config.year }}" {% if config.year == current_year %}
-                                                        selected {% endif %}
-                                                        data-redirect="{{ url_for('user.user_profile', user_id=requested_user.id, current_year=config.year) }}">
-                                                    {{ config.year }}-{{ config.year + 1 }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody class="table-group-divider">
-                                {% for preference in preferences %}
-                                    <tr>
-                                        <td>{{ preference.course.code }}</td>
-                                        <td>{{ preference.course.title }}</td>
-                                        <td>{{ preference.course.quadri }}</td>
-                                        <td></td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
         </div>
     </div>
 {% endblock %}
+
 {% block additionalfooter %}
     <script>
         //Handle user status
@@ -304,79 +170,6 @@
 
             $('#is_researcher').change(function () {
                 toggleSupervisorSelect();
-            });
-
-            //Handle preferences
-            $('#addPreferencesButton').click(function () {
-                $('#staticPreferencesTable').hide();
-                $('#editablePreferencesTable').show();
-                $('#addPreferencesButton').hide();
-                $('#savePreferencesButton').show();
-                $('#cancelEditButton').show();
-                $('#addRowButton').show();
-            });
-
-            $('#cancelEditButton').click(function () {
-                $('#editablePreferencesTable').hide();
-                $('#staticPreferencesTable').show();
-                $('#addPreferencesButton').show();
-                $('#savePreferencesButton').hide();
-                $('#cancelEditButton').hide();
-                $('#addRowButton').hide();
-            });
-
-            $('#addRowButton').click(function () {
-                const newRow = $('#template-row').clone().removeAttr('id').removeAttr('style');
-                $('#editablePreferencesTable tbody').append(newRow);
-
-                $("#editablePreferencesTable tbody").sortable({
-                    items: 'tr',
-                    handle: '.move-icon',
-                    axis: 'y',
-                    cursor: 'move'
-                });
-            });
-
-            // Event listener pour le bouton de suppression
-            $(document).on('click', '.delete-icon', function () {
-                $(this).closest('tr').remove();
-            });
-
-            $('#savePreferencesButton').click(function () {
-                const preferences = [];
-                !$('#editablePreferencesTable tbody tr').not('#template-row').each(function () {
-                    const courseValue = $(this).find('select.course-select').val();
-
-                    if (courseValue) {
-                        const [course_id, course_year] = courseValue.split("-");
-                        preferences.push({course_id: course_id, course_year: course_year});
-                    }
-                });
-
-                const data = {
-                    preferences: preferences,
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ url_for('course_preference.save_preference') }}",
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        alert('Preferences updated successfully.');
-                        location.reload(); // Refresh the page to show the updated preferences
-                    },
-                    error: function (error) {
-                        alert('Error updating the preferences.');
-                    }
-                });
-            });
-
-            $("#editablePreferencesTable tbody").sortable({
-                items: 'tr',
-                handle: '.move-icon',
-                axis: 'y',
-                cursor: 'move'
             });
 
             $('#profileForm').submit(function (event) {

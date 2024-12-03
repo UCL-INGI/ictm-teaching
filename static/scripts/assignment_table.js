@@ -378,11 +378,6 @@ fetch('/assignment/load_data')
         });
 
         $(document).ready(function () {
-            function updateToastContent(message) {
-                let toastBody = document.querySelector('#toast-notification .toast-body');
-                toastBody.textContent = message;
-            }
-
             let toastNotification = new bootstrap.Toast(document.getElementById('toast-notification'));
 
             $('#button-export').click(function () {

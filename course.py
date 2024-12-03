@@ -145,7 +145,7 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
-    evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).first()
+    evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).all()
 
     return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
                            evaluations=evaluations)
@@ -285,24 +285,26 @@ def course_evaluation(evaluation_id):
                            courses=courses)
 
 
-@course_bp.route('/evaluations/<int:user_id>/<int:current_year>')
+@course_bp.route('/evaluations/<int:current_year>')
 @login_required
 @check_access_level(Role.RESEARCHER)
-def user_evaluation(user_id, current_year):
+def user_evaluation(current_year):
     courses = db.session.query(Course).filter_by(year=current_year).all()
+    user_id = session.get('user_id')
 
     return render_template('evaluations.html', courses=courses, current_year=current_year, user_id=user_id,
                            evaluation=None)
 
 
-@course_bp.route('/create_evaluations/<int:user_id>/<int:current_year>', methods=['POST'])
+@course_bp.route('/create_evaluations/<int:current_year>', methods=['POST'])
 @login_required
 @check_access_level(Role.RESEARCHER)
-def create_evaluation(user_id, current_year):
+def create_evaluation(current_year):
     form = request.form
     if not form:
         return make_response("Problem with form request", 500)
 
+    user_id = session.get('user_id')
     course_id = request.form.get('course_id')
     tasks = request.form.getlist('tasks[]')
     other_task = request.form.get('other_task')

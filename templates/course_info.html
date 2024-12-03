@@ -85,22 +85,20 @@
                                 <table class="table table-hover" id="evaluationTable">
                                     <thead>
                                     <tr>
-                                        <th>Course name</th>
-                                        <th>Year</th>
+                                        <th>Evaluation id</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {% if evaluations is none %}
                                         <tr>
-                                            <td colspan="3">No evaluations for this year.</td>
+                                            <td colspan="1">No evaluations for this year.</td>
                                         </tr>
                                     {% endif %}
                                     {% for evaluation in evaluations %}
                                         <tr>
                                             <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
-                                                {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
+                                                {{ evaluation.id }}</a>
                                             </td>
-                                            <td>{{ evaluation.course.year }}</td>
                                         </tr>
                                     {% endfor %}
                                     </tbody>

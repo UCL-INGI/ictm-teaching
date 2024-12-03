@@ -8,7 +8,7 @@
         <p>Please note that your answers are confidential and that if there are any problems or changes we have to
             report, we'll do so anonymously.</p>
         <hr>
-        <form action="{{ url_for("course.create_evaluation", current_year=current_year, user_id=session["user_id"]) }}"
+        <form action="{{ url_for("course.create_evaluation", current_year=current_year) }}"
               method="POST">
             <strong>If you gave two courses during this semester, choose one of them and create a new evaluation for the
                 second one </strong>

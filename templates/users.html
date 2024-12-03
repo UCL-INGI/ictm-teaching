@@ -50,6 +50,7 @@
                 {% if user_type == 'researcher' %}
                     <th>Status</th>
                     <th>Max load</th>
+                    <th>Preferences</th>
                 {% endif %}
                 {% if user_type == 'archived' %}
                     <th>Type</th>
@@ -71,7 +72,11 @@
                     {% if user_type == 'researcher' %}
                         <td>{{ user.researcher_profile.researcher_type }}</td>
                         <td>{{ user.researcher_profile.max_loads }}</td>
-                        <td></td>
+                        <td>
+                            <a href="{{ url_for('user.preferences', user_id=user.id, current_year=dynamic_year) }}" >
+                                <i class="fas fa-star"></i>
+                            </a>
+                        </td>
                     {% endif %}
                     {% if user_type == 'archived' %}
                         {% if user.is_teacher %}

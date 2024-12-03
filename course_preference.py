@@ -29,24 +29,24 @@ def save_preference():
     current_year = get_current_year()
 
     if data is None:
-        flash("No data received", "error")
+        return jsonify({"error": "No data received"}), 400
 
     preferences = data.get("preferences", None)
-    if preferences is None:
-        flash("No preferences received", "error")
+    if preferences is None or len(preferences) == 0:
+        return jsonify({"error": "No preferences received"}), 400
+
 
     user_id = session["user_id"]
     researcher = Researcher.query.filter(Researcher.user_id == user_id).first()
     if researcher is None:
-        flash("Researcher not found", "error")
+        return jsonify({"error": "Researcher not found"}), 400
 
     delete_old_preferences(researcher.id, current_year)
 
     for rank, preference in enumerate(preferences):
         try:
             course_id = preference['course_id']
-            course_year = preference['course_year']
-            new_preference = PreferenceAssignment(rank=rank+1, course_id=course_id, course_year=course_year,
+            new_preference = PreferenceAssignment(rank=rank+1, course_id=course_id, course_year=current_year,
                                                   researcher_id=researcher.id)
             db.session.add(new_preference)
             db.session.commit()

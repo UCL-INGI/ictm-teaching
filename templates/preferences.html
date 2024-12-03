@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block pagecontent %}
-    {% include "toast.html" %}
+    {% include "toast_notification.html" %}
     <div class="container-fluid">
         <form id="preferencesForm" method="post">
             <br>
@@ -48,16 +48,14 @@
                         <td>{{ preference.course.code }}</td>
                         <td>{{ preference.course.title }}</td>
                         <td>{{ preference.course.quadri }}</td>
-                        {% if not session.is_admin %}
-                            <td>
+                        <td>
+                            {% if not session.is_admin %}
                                 <a href="{{ url_for('course_preference.delete_preference', preference=preference.id) }}"
                                    class="delete-icon">
                                     <i class="fas fa-trash delete-icon"></i>
                                 </a>
-                            </td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -66,7 +64,7 @@
             <table class="table table-hover" id="editablePreferencesTable" style="display: none;">
                 <thead>
                 <tr>
-                    <th>Code</th>
+                    <th colspan="2">Code</th>
                 </tr>
                 </thead>
                 <tbody class="table-group-divider">
@@ -94,7 +92,7 @@
                     <td>
                         <select class="form-control course-select">
                             {% for course in courses %}
-                                <option value="{{ course.id }}-{{ course.year }}">
+                                <option value="{{ course.id }}">
                                     {{ course.code }} - {{ course.title }}
                                 </option>
                             {% endfor %}
@@ -132,6 +130,8 @@
         $(document).ready(function () {
             // Handle year select change
             handleYearSelectChange();
+
+            let toastNotification = new bootstrap.Toast(document.getElementById('toast-notification'));
 
             //Handle preferences
             $('#addPreferencesButton').click(function () {
@@ -172,11 +172,10 @@
             $('#savePreferencesButton').click(function () {
                 const preferences = [];
                 !$('#editablePreferencesTable tbody tr').not('#template-row').each(function () {
-                    const courseValue = $(this).find('select.course-select').val();
+                    const courseId = $(this).find('select.course-select').val();
 
-                    if (courseValue) {
-                        const [course_id, course_year] = courseValue.split("-");
-                        preferences.push({course_id: course_id, course_year: course_year});
+                    if (courseId) {
+                        preferences.push({course_id: courseId});
                     }
                 });
 
@@ -194,7 +193,9 @@
                         location.reload(); // Refresh the page to show the updated preferences
                     },
                     error: function (error) {
-                        alert('Error updating the preferences.');
+                        const errorMessage = error.responseJSON.error || 'Error updating the preferences.'
+                        updateToastContent(errorMessage);
+                        toastNotification.show();
                     }
                 });
             });

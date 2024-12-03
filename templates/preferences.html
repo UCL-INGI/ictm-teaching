@@ -73,7 +73,7 @@
                         <td>
                             <select class="form-control course-select">
                                 {% for course in courses %}
-                                    <option value="{{ course.id }}-{{ course.year }}"
+                                    <option value="{{ course.id }}"
                                             {% if course.id == preference.course.id %}selected{% endif %}>
                                         {{ course.code }} - {{ course.title }}
                                     </option>

@@ -1,6 +1,7 @@
 import datetime
 
 import jinja2.defaults
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from auth import auth_bp
@@ -63,18 +64,29 @@ def index():
 
     # Get the teacher's courses
     courses_teacher = db.session.query(Course).join(Teacher).filter(
-        Teacher.user_id == user.id).all() if year.publication_status != 'Draft' and user.is_teacher else []
+        and_(Teacher.user_id == user.id, Course.year == current_year)
+    ).all() if year.publication_status != 'Draft' and user.is_teacher else []
 
     users_supervised = teacher.user.researchers if teacher else []
     researcher_supervised = []
     for researcher_supervisor in users_supervised:
-        researcher_supervised.append(researcher_supervisor.researcher)
+        # Filter assigned_courses wth current year
+        researcher = researcher_supervisor.researcher
+        current_year_courses = [
+            course for course in researcher.assigned_courses if course.year == current_year
+        ]
+        researcher.current_assigned_courses = current_year_courses
+        researcher_supervised.append(researcher)
 
     # Get the courses where the researcher is assigned
     researcher_courses = researcher.assigned_courses if year.publication_status == 'Everyone' and researcher else []
+    researcher_current_course = [
+        course for course in researcher_courses if course.year == current_year
+    ]
 
     return render_template("home.html", user=user, courses_teacher=courses_teacher,
-                           researcher_supervised=researcher_supervised, researcher_courses=researcher_courses)
+                           researcher_supervised=researcher_supervised, researcher_courses=researcher_courses,
+                           researcher_current_course=researcher_current_course)
 
 
 if __name__ == '__main__':

@@ -91,6 +91,11 @@ function filter(page) {
     }
 }
 
+function updateToastContent(message) {
+    let toastBody = document.querySelector('#toast-notification .toast-body');
+    toastBody.textContent = message;
+}
+
 // Event listener for removing the organization tag
 $(document).on('click', '.remove-tag', function (e) {
     e.preventDefault();

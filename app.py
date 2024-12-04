@@ -9,7 +9,7 @@ from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
 from assignment import assignment_bp
-from db import db, Year, Organization, User, Course, Teacher, Researcher, AssignmentPublished
+from db import db, Year, Organization, User, Course, Teacher, Researcher, Evaluation, AssignmentPublished
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *

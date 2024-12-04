@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block pagetitle %}Home Page{% endblock %}
 
+{% block additionalpageheader %}
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+{% endblock %}
 {% block pagecontent %}
     {% include "toast.html" %}
 

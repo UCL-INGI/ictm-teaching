@@ -39,13 +39,19 @@
                     <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="{{ url_for('user.user_profile', user_id=session.user_id, current_year=dynamic_year) }}">My
+                               href="{{ url_for('user.user_profile', user_id=session.user_id) }}">My
                                 Profile</a>
                         </li>
-                        <li>
-                            <a class="nav-link"
-                               href="{{ url_for('course.evaluations', user_id=session.user_id, current_year=dynamic_year) }}">Evaluations</a>
-                        </li>
+                        {% if is_researcher %}
+                            <li>
+                                <a class="nav-link"
+                                   href="{{ url_for('user.preferences', user_id=session.user_id, current_year=dynamic_year) }}">Preferences</a>
+                            </li>
+                            <li>
+                                <a class="nav-link"
+                                   href="{{ url_for('course.user_evaluation', user_id=session.user_id, current_year=dynamic_year) }}">Evaluations</a>
+                            </li>
+                        {% endif %}
                         {% if session.is_admin %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="usersDropdown" role="button"
@@ -95,8 +101,8 @@
                                 </ul>
                             </li>
                             <li>
-                            <a class="nav-link"
-                               href="{{ url_for('config.manage_years', configurations=configurations) }}">Configurations</a>
+                                <a class="nav-link"
+                                   href="{{ url_for('config.manage_years') }}">Configurations</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="assignmentDropdown" role="button"
@@ -118,7 +124,8 @@
                         <div class="me-0">
                             <div class="navbar-text me-2">
                                 <input type="text" class="form-control form-control-sm" id="dynamicYearInput"
-                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;" disabled>
+                                       value="{{ dynamic_year }} - {{ dynamic_year + 1 }}" style="width: 100px;"
+                                       disabled>
                             </div>
                         </div>
 
@@ -136,21 +143,6 @@
 <div id="content">
     {% block pagecontent %}{% endblock %}
 </div>
-{% block additionalfooter %}
-    <script>
-        $(document).ready(function () {
-            $('#confirmationModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-
-                var message = button.data('message');
-                var url = button.data('url');
-
-                var modal = $(this);
-                modal.find('.modal-body').text(message);
-                modal.find('#confirmationForm').attr('action', url);
-            });
-        });
-    </script>
-{% endblock %}
+{% block additionalfooter %}{% endblock %}
 </body>
 </html>

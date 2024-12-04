@@ -140,7 +140,7 @@ class PreferenceAssignment(db.Model):
     )
 
     course = db.relationship('Course', backref=db.backref('course_preference_assignment', lazy=True))
-    researcher = db.relationship('Researcher', backref=db.backref('researcher_preference_assignment', lazy=True))
+    researcher = db.relationship('Researcher', backref=db.backref('preferences', lazy=True))
 
 
 class Year(db.Model):
@@ -234,17 +234,24 @@ class AssignmentPublished(db.Model):
 class Evaluation(db.Model):
     __tablename__ = 'evaluation'
 
-    course_id = db.Column(db.Integer, primary_key=True)
-    course_year = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, nullable=False)
+    course_year = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task = db.Column(db.JSON, nullable=False)
+    other_task = db.Column(db.String(200))
     nbr_hours = db.Column(db.String(10), nullable=False)
     workload = db.Column(db.String(10), nullable=False)
     comment = db.Column(db.String(500))
 
     __table_args__ = (
+        db.UniqueConstraint('course_id', 'course_year', 'user_id', name='unique_course_year_user'),
         db.ForeignKeyConstraint(
             ['course_id', 'course_year'],
             ['course.id', 'course.year']
         ),
     )
+
+    course = db.relationship('Course', backref=db.backref('evaluations', lazy=True))
+    user = db.relationship('User',
+                           backref=db.backref('evaluations', lazy=True, order_by='desc(Evaluation.course_year)'))

@@ -38,7 +38,7 @@
                     <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
                             {% if session.is_admin == False %} disabled {% endif %}>
                         {% for config in configurations %}
-                            <option value="{{ config.year }}" {% if config.year == current_year %}
+                            <option value="{{ config.year }}" {% if config.year == year %}
                                     selected {% endif %} data-redirect="{{ url_for('course.courses', year=config.year) }}">
                                 {{ config.year }}-{{ config.year + 1 }}
                             </option>

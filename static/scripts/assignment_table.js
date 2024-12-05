@@ -184,6 +184,15 @@ fetch('/assignment/load_data')
             }
         }
 
+        function getCountCourseAssignment() {
+            return fetch('/assignment/course_assignments_count')
+                .then(response => response.json())
+                .then(data => {
+                    return data.results;
+                })
+                .catch(error => console.log(error))
+        }
+
         const table = new Handsontable(document.getElementById("handsontable"), {
             data: data,
             fixedColumnsLeft: lenFixedHeaders,
@@ -277,16 +286,34 @@ fetch('/assignment/load_data')
                     });
                 }
             },
-            afterRenderer: function (TD, row, col, prop, value, cellProperties) {
+            afterRenderer: async function (TD, row, col, prop, value, cellProperties) {
                 if ((col >= lenFixedHeaders && row >= lenFixedRowsText) && (row % 2 === 1) && (value !== '')) {
                     TD.style.fontWeight = 'bold'; // Bold text
                     TD.style.textAlign = 'left'; // Left alignment
                 }
-                //Style first col if needed
-                if (col === 0 && row < lenFixedRowsText) {
-                    TD.style.fontWeight = 'bold';
-                    TD.style.textAlign = 'left';
+
+                if (row >= lenFixedRowsText && col >= lenFixedHeaders && (row % 2 === 0)) {
+                    const assignmentCount = await getCountCourseAssignment();
+
+                    const user_id = this.getDataAtRowProp(row, 'researchers.id'); // Retrieves user ID
+                    const course_id = this.getDataAtCol(col)[0]; // Retrieves the course ID
+
+                    const assignment = assignmentCount.find(item => item.user_id === user_id && item.course_id === course_id);
+
+                    if (assignment && value !== '' && value !== null) {
+                        // Colouring based on the number of assignments
+                        const count = assignment.count;
+                        TD.style.color = 'black'; // to better see the preferences when the cell is coloured
+                        if (count === 1) {
+                            TD.style.backgroundColor = '#A0A7D5';
+                        } else if (count === 2) {
+                            TD.style.backgroundColor = '#555DB0';
+                        } else if (count >= 3) {
+                            TD.style.backgroundColor = '#1C2793';
+                        }
+                    }
                 }
+
                 //(row%2) === 1 to avoid empty lines
                 if (row >= lenFixedRowsText && (row % 2) === 0 && col < lenFixedHeaders) {
                     const rowValue = this.getDataAtRow(row);

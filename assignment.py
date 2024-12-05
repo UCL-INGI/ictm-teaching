@@ -1,10 +1,12 @@
+from flask_mail import Message, Mail
+import os
 from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, \
     ResearcherSupervisor, Role, AssignmentDraft, AssignmentPublished
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
-from enums import DEFAULT_MAX_LOAD
+from enums import DEFAULT_MAX_LOAD, MAIL_ADMIN
 
 assignment_bp = Blueprint('assignment', __name__)
 mail = Mail()
@@ -127,7 +129,7 @@ def publish_assignments():
 
         db.session.add_all(assignments_to_add)
         db.session.commit()
-        send_mail(is_draft)
+        send_mail(True)
         return jsonify({"message": "Assignments published successfully"}), 200
 
     except Exception as e:
@@ -146,4 +148,5 @@ def send_mail(teacher_publication):
         mail_html = render_template('mail_template.html', user=user)
         mail_message = Message("Publication of assignments", sender="ictm@uclouvain.be", html=mail_html,
                                recipients=[user.email], cc=MAIL_ADMIN)
+
         mail.send(mail_message)

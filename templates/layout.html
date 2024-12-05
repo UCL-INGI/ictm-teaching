@@ -117,19 +117,6 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="assignmentDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    Assignments
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="assignmentDropdown">
-                                    <li>
-                                        <a class="dropdown-item" id="assignmentList"
-                                           href="{{ url_for('assignment.assignments') }}"> Load Assignment
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
                         {% endif %}
                         {% block additionalnav %}{% endblock %}
                     </ul>

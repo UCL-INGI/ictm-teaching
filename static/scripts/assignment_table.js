@@ -295,22 +295,21 @@ fetch('/assignment/load_data')
                 if (row >= lenFixedRowsText && col >= lenFixedHeaders && (row % 2 === 0)) {
                     const assignmentCount = await getCountCourseAssignment();
 
-                    console.log("Assignment count", assignmentCount);
-
                     const user_id = this.getDataAtRowProp(row, 'researchers.id'); // Retrieves user ID
                     const course_id = this.getDataAtCol(col)[0]; // Retrieves the course ID
 
                     const assignment = assignmentCount.find(item => item.user_id === user_id && item.course_id === course_id);
 
-                    if (assignment) {
-                        // Coloration basée sur le nombre d'affectations
+                    if (assignment && value !== '' && value !== null) {
+                        // Colouring based on the number of assignments
                         const count = assignment.count;
+                        TD.style.color = 'black'; // to better see the preferences when the cell is coloured
                         if (count === 1) {
-                            TD.style.backgroundColor = '#87CEEB';
+                            TD.style.backgroundColor = '#A0A7D5';
                         } else if (count === 2) {
-                            TD.style.backgroundColor = '#5DADE2';
+                            TD.style.backgroundColor = '#555DB0';
                         } else if (count >= 3) {
-                            TD.style.backgroundColor = '#0A74DA';
+                            TD.style.backgroundColor = '#1C2793';
                         }
                     }
                 }

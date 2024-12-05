@@ -14,3 +14,4 @@ TASK = ["Exercise sessions", "Project(s)", "Supervisor of monitoring students", 
         "Corrections/jury/oral", "Creation of new content (new exercises, new project statement, ...)"]
 EVALUATION_HOUR = ["< 2h", "2h - 4h", "4h - 6h", "6h - 8h", "> 8h"]
 WORKLOAD = ["Very light", "Light", "Reasonable", "High", "Very high"]
+MAIL_ADMIN = ["samuel.vancampenhout@student.uclouvain.be"]

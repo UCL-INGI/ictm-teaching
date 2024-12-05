@@ -7,10 +7,11 @@ from user import user_bp
 from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
-from assignment import assignment_bp
+from assignment import assignment_bp, mail
 from db import db, Year, Organization, User, Course, Teacher, Researcher, Evaluation
 from decorators import *
 from flask import Flask, render_template, session, request
+from flask_mail import Mail
 from enums import *
 from util import get_current_year
 import json
@@ -21,6 +22,7 @@ app.config.from_file("config.json", load=json.load)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+mail.init_app(app)
 
 # Core blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")

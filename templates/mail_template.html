@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="card mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-primary text-white text-center">
+                <h3 class="mt-2">Publication of Your Assignments</h3>
+            </div>
+
+            <div class="card-body">
+                <p class="lead">Hello {{ user.name }} {{ user.first_name }},</p>
+                <p>The assignments for the {{ dynamic_year }} - {{ dynamic_year + 1 }} academic year have been published and can be accessed from the ICTM application homepage.</p>
+                <p>Please check your assignments. If you have any problems, you can reply directly to this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

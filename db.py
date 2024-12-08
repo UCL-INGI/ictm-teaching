@@ -2,8 +2,11 @@ from enum import Enum
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Enum
 import json
 from sqlalchemy.orm import validates
+
+from enums import PUBLICATION_STATUS
 
 db = SQLAlchemy()
 
@@ -60,12 +63,22 @@ class Course(db.Model):
 
     __table_args__ = (db.UniqueConstraint('id', 'year', name='uq_course_id_year'),)
 
+    teachers = db.relationship('Teacher', backref=db.backref('course_teacher', lazy=True))
     organizations = db.relationship('Organization',
                                     secondary='course_organization',
                                     back_populates='courses',
                                     primaryjoin="and_(Course.id == CourseOrganization.course_id, Course.year == "
                                                 "CourseOrganization.course_year)",
                                     secondaryjoin="Organization.id == CourseOrganization.organization_id")
+
+    assistants = db.relationship(
+        'User',
+        secondary='assignment_published',
+        primaryjoin="and_(Course.id == AssignmentPublished.course_id, Course.year == AssignmentPublished.course_year)",
+        secondaryjoin="and_(Researcher.id == AssignmentPublished.researcher_id, User.id == Researcher.user_id)",
+        backref='assigned_courses',
+        viewonly=True
+    )
 
 
 class Researcher(db.Model):
@@ -77,6 +90,8 @@ class Researcher(db.Model):
     researcher_type = db.Column(db.String(30))
 
     user = db.relationship('User', backref=db.backref('researcher_profile', uselist=False))
+    assigned_courses = db.relationship('Course', secondary='assignment_published',
+                              backref=db.backref('courses', lazy=True))
 
 
 class ResearcherSupervisor(db.Model):
@@ -104,11 +119,11 @@ class Teacher(db.Model):
     )
 
     user = db.relationship('User', backref=db.backref('user_teacher', uselist=False))
-    course = db.relationship('Course', backref=db.backref('course_teacher', lazy=True))
 
 
 class PreferenceAssignment(db.Model):
     __tablename__ = 'preference_assignment'
+    rank = db.Column(db.Integer, nullable=False)
     id = db.Column(db.Integer, primary_key=True)
     rank = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, nullable=False)
@@ -133,6 +148,11 @@ class Year(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
     is_current_year = db.Column(db.Boolean, default=False)
+    publication_status = db.Column(
+        Enum(*PUBLICATION_STATUS, name='publication_status_enum'),
+        nullable=False,
+        default='Draft'
+    )
 
     @classmethod
     def update_current_year(cls, year_id):

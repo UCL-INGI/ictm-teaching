@@ -19,7 +19,6 @@ def create_researcher(user_id, researcher_type, max_loads):
     db.session.commit()
     return new_researcher
 
-
 def get_researchers():
     return db.session.query(User).join(Researcher).filter(User.active == True).all()
 
@@ -81,8 +80,10 @@ def add_user():
 
                 if supervisor_ids:
                     supervisors = db.session.query(User).filter(User.id.in_(supervisor_ids)).all()
-                    new_researcher.supervisors = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in
-                                                  supervisors]
+                    supervisors_to_add = [ResearcherSupervisor(researcher=new_researcher, supervisor=s) for s in supervisors]
+                    db.session.add_all(supervisors_to_add)
+
+                    new_researcher.supervisors = supervisors_to_add
                     db.session.commit()
 
             flash("User added successfully.", "success")
@@ -126,7 +127,7 @@ def is_allowed_user(user_id):
 
 @user_bp.route('/profile/<int:user_id>')
 @login_required
-def user_profile(user_id, ):
+def user_profile(user_id):
     current_year = get_current_year()
     if not is_allowed_user(user_id):
         flash("Permission denied. You do not have access to this page.", "error")

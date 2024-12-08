@@ -22,21 +22,22 @@
         {% if is_researcher %}
             <div class="card mb-3">
                 <div class="card-header mb-0">
-                    <h2 class="card-title">Course(s) assigned this year ({{ dynamic_year }} - {{ dynamic_year + 1 }})</h2>
+                    <h2 class="card-title">Course(s) assigned this year ({{ dynamic_year }}
+                        - {{ dynamic_year + 1 }})</h2>
                 </div>
                 <div class="card-body">
                     <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>Course</th>
-                            </tr>
+                        <tr>
+                            <th>Course</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for course in researcher_current_course %}
-                                <tr>
-                                    <td>{{ course.code }} - {{ course.title }}</td>
-                                </tr>
-                            {% endfor %}
+                        {% for course in researcher_current_course %}
+                            <tr>
+                                <td>{{ course.code }} - {{ course.title }}</td>
+                            </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -63,24 +64,41 @@
                              aria-labelledby="assistants-tab">
                             <table class="table table-hover">
                                 <thead>
-                                    <tr>
-                                        <th>Course</th>
-                                        <th>Year</th>
-                                    </tr>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Year</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    {% for course in researcher_courses %}
-                                        <tr>
-                                            <td>{{ course.code }} - {{ course.title }}</td>
-                                            <td>{{ course.year }}</td>
-                                        </tr>
-                                    {% endfor %}
+                                {% for course in researcher_courses %}
+                                    <tr>
+                                        <td>{{ course.code }} - {{ course.title }}</td>
+                                        <td>{{ course.year }}</td>
+                                    </tr>
+                                {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                         <!-- Evaluations Tab -->
                         <div class="tab-pane fade" id="evaluations" role="tabpanel" aria-labelledby="evaluations-tab">
-                            <p>Content for evaluations will go here.</p>
+                            <table class="table table-hover" id="evaluationTable">
+                                <thead>
+                                <tr>
+                                    <th>Course name</th>
+                                    <th>Year</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for evaluation in evaluations %}
+                                    <tr>
+                                        <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
+                                            {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
+                                        </td>
+                                        <td>{{ evaluation.course.year }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -96,22 +114,22 @@
                 <div class="card-body">
                     <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>Course</th>
-                                <th>Assistants</th>
-                            </tr>
+                        <tr>
+                            <th>Course</th>
+                            <th>Assistants</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for course in courses_teacher %}
-                                <tr>
-                                    <td>{{ course.code }} - {{ course.title }}</td>
-                                    <td>
-                                        {% for assistant in course.assistants %}
-                                            {{ assistant.name }} {{ assistant.first_name }}<br>
-                                        {% endfor %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                        {% for course in courses_teacher %}
+                            <tr>
+                                <td>{{ course.code }} - {{ course.title }}</td>
+                                <td>
+                                    {% for assistant in course.assistants %}
+                                        {{ assistant.name }} {{ assistant.first_name }}<br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -124,22 +142,22 @@
                 <div class="card-body">
                     <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>Researcher</th>
-                                <th>Course</th>
-                            </tr>
+                        <tr>
+                            <th>Researcher</th>
+                            <th>Course</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for researcher in researcher_supervised %}
-                                <tr>
-                                    <td>{{ researcher.user.name }} {{ researcher.user.first_name }}</td>
-                                    <td>
-                                        {% for course in researcher.current_assigned_courses %}
-                                            {{ course.code }} - {{ course.title }}<br>
-                                        {% endfor %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                        {% for researcher in researcher_supervised %}
+                            <tr>
+                                <td>{{ researcher.user.name }} {{ researcher.user.first_name }}</td>
+                                <td>
+                                    {% for course in researcher.current_assigned_courses %}
+                                        {{ course.code }} - {{ course.title }}<br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>

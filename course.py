@@ -277,7 +277,7 @@ def course_evaluation(evaluation_id):
 
     course = evaluation.course
     user = db.session.query(User).filter_by(id=session['user_id']).first()
-    teachers = course.course_teacher
+    teachers = course.teachers
 
     # Accessible only to the admin, the evaluation creator and the course teachers
     if (not user.is_admin) and (user.id != evaluation.user_id) and (user.id not in [teacher.user_id for teacher in teachers]):

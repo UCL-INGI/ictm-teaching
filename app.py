@@ -84,9 +84,11 @@ def index():
         course for course in researcher_courses if course.year == current_year
     ]
 
+    researcher_evaluations = researcher.user.evaluations if researcher else []
+
     return render_template("home.html", user=user, courses_teacher=courses_teacher,
                            researcher_supervised=researcher_supervised, researcher_courses=researcher_courses,
-                           researcher_current_course=researcher_current_course)
+                           researcher_current_course=researcher_current_course, evaluations=researcher_evaluations)
 
 
 if __name__ == '__main__':

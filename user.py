@@ -112,8 +112,9 @@ def users(user_type):
         list_name = 'Archived Users'
     elif user_type == 'other':
         base_query = base_query.outerjoin(Researcher).filter(
-            User.active == True,
-            User.is_teacher == False
+            User.active == True,  # Active users
+            User.is_teacher == False,  # Not teachers
+            Researcher.id == None  # Not linked to a researcher
         )
         list_name = 'Other Users'
 

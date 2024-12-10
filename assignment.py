@@ -82,16 +82,6 @@ def publish_assignments():
     is_teacher_publication = data.get('isTeacherPublication')
 
     try:
-        year_entry = db.session.query(Year).filter_by(year=current_year).first()
-        if is_draft:
-            year_entry.publication_status = 'Draft'
-        elif is_teacher_publication:
-            year_entry.publication_status = 'Teachers only'
-        else:
-            year_entry.publication_status = 'Everyone'
-
-        db.session.commit()
-
         # Clear existing assignments for the current year
         AssignmentDraft.query.filter_by(course_year=current_year).delete()
         if not is_draft:

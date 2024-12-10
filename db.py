@@ -6,8 +6,6 @@ from sqlalchemy import Enum
 import json
 from sqlalchemy.orm import validates
 
-from enums import PUBLICATION_STATUS
-
 db = SQLAlchemy()
 
 
@@ -148,11 +146,6 @@ class Year(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
     is_current_year = db.Column(db.Boolean, default=False)
-    publication_status = db.Column(
-        Enum(*PUBLICATION_STATUS, name='publication_status_enum'),
-        nullable=False,
-        default='Draft'
-    )
 
     @classmethod
     def update_current_year(cls, year_id):

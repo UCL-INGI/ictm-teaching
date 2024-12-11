@@ -28,24 +28,31 @@
                 {% endwith %}
             </form>
             <br>
-            <h2 class="sub-header">Assistant(s) for this year ({{ course.year }} - {{ course.year + 1 }})</h2>
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>Researcher</th>
-                </tr>
-                </thead>
-                <tbody>
-                    {% for assistant in course.assistants %}
-                        <tr>
-                            <td>
-                                {{ assistant.name }} {{ assistant.first_name }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div class="container-fluid">
+            <div class="container-fluid mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="sub-header">Assistant(s) for this year ({{ course.year }}
+                            - {{ course.year + 1 }})</h2>
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Researcher</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for assistant in course.assistants %}
+                                <tr>
+                                    <td>
+                                        {{ assistant.name }} {{ assistant.first_name }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid mb-3">
                 <div class="card">
                     <div class="card-body">
                         <h2 class="sub-header">History</h2>
@@ -54,12 +61,14 @@
                         <!-- Nav tabs -->
                         <ul class="nav nav-tabs" id="historyTabs{{ course.year }}" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="assistants-tab-{{ course.year }}" data-bs-toggle="tab" href="#assistants-{{ course.year }}"
+                                <a class="nav-link active" id="assistants-tab-{{ course.year }}" data-bs-toggle="tab"
+                                   href="#assistants-{{ course.year }}"
                                    role="tab"
                                    aria-controls="assistants" aria-selected="true">Assistants</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="evaluations-tab-{{ course.year }}" data-bs-toggle="tab" href="#evaluations-{{ course.year }}"
+                                <a class="nav-link" id="evaluations-tab-{{ course.year }}" data-bs-toggle="tab"
+                                   href="#evaluations-{{ course.year }}"
                                    role="tab"
                                    aria-controls="evaluations" aria-selected="false">Evaluations</a>
                             </li>
@@ -99,8 +108,9 @@
                                     {% endif %}
                                     {% for evaluation in evaluations %}
                                         <tr>
-                                            <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
-                                                {{ evaluation.id }}</a>
+                                            <td>
+                                                <a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
+                                                    {{ evaluation.id }}</a>
                                             </td>
                                         </tr>
                                     {% endfor %}

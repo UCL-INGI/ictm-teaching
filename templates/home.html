@@ -33,7 +33,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for course in researcher_current_course %}
+                        {% for course in data.researcher_current_courses %}
                             <tr>
                                 <td>{{ course.code }} - {{ course.title }}</td>
                             </tr>
@@ -70,7 +70,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for course in researcher_courses %}
+                                {% for course in data.researcher_courses %}
                                     <tr>
                                         <td>{{ course.code }} - {{ course.title }}</td>
                                         <td>{{ course.year }}</td>
@@ -89,7 +89,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for evaluation in evaluations %}
+                                {% for evaluation in data.researcher_evaluations %}
                                     <tr>
                                         <td><a href="{{ url_for('course.course_evaluation', evaluation_id=evaluation.id) }}">
                                             {{ evaluation.course.code }} - {{ evaluation.course.title }}</a>
@@ -120,7 +120,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for course in courses_teacher %}
+                        {% for course in data.teacher_courses %}
                             <tr>
                                 <td>{{ course.code }} - {{ course.title }}</td>
                                 <td>
@@ -148,7 +148,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for researcher in researcher_supervised %}
+                        {% for researcher in data.supervised_researchers %}
                             <tr>
                                 <td>{{ researcher.user.name }} {{ researcher.user.first_name }}</td>
                                 <td>

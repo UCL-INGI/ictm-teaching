@@ -59,7 +59,6 @@ def index():
     current_year = get_current_year()
     year = db.session.query(Year).filter_by(year=current_year).first()
     user = db.session.query(User).filter_by(email=session['email']).first()
-    researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
     teacher = db.session.query(Teacher).filter_by(user_id=user.id).first() if user.is_teacher else None
 
     data = {}
@@ -84,7 +83,9 @@ def index():
             "supervised_researchers": supervised_researchers
         })
 
-    elif researcher:
+    # To change if we decide to use session to store roles
+    elif is_researcher():
+        researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
         # Populate researcher-specific data
         researcher_courses = researcher.assigned_courses
         current_courses = [

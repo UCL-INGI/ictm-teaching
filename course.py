@@ -211,6 +211,7 @@ def update_course_info():
         course.organizations = db.session.query(Organization).filter(
             Organization.id.in_(organisation_code)).all()
         db.session.commit()
+        flash("Course updated successfully", "success")
     except Exception as e:
         db.session.rollback()
     return redirect(url_for("course.course_info", course_id=course_id, year=year))

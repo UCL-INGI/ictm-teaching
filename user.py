@@ -244,6 +244,7 @@ def update_user_profile(user_id):
             else:
                 delete_researcher(user.id)
         db.session.commit()
+        flash("User profile updated successfully.", "success")
     except Exception as e:
         db.session.rollback()
     return redirect(url_for("user.user_profile", user_id=user_id, current_year=current_year))

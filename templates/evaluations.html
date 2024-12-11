@@ -2,9 +2,8 @@
 {% block pagetitle %}Evaluation form{% endblock %}
 {% block pagecontent %}
     {% include "toast.html" %}
-    <div class="container mt-1">
-        <br>
-        <h2>Evaluation form</h2>
+    <div class="container mt-3">
+        <h2 class="mb-3">Evaluation form</h2>
         <p>Please note that your answers are confidential and that if there are any problems or changes we have to
             report, we'll do so anonymously.</p>
         <hr>
@@ -12,8 +11,7 @@
               method="POST">
             <strong>If you gave two courses during this semester, choose one of them and create a new evaluation for the
                 second one </strong>
-            <div class="form-group">
-                <br>
+            <div class="form-group mt-3 mb-3">
                 <label for="course">1. What is the course you gave this semester?</label>
                 <select class="form-control" id="course" name="course_id" required
                         {% if evaluation %} disabled {% endif %}>
@@ -25,10 +23,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <br>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label>2. What was/were your task(s) for the course supervision? (Multiple choices possible)</label>
-                <br>
                 {% for task in tasks %}
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="tasks[]" id="{{ task }}"
@@ -44,10 +40,9 @@
                            value="{{ evaluation.other_task if evaluation else '' }}" {% if evaluation %} disabled {% endif %}>
                 </div>
             </div>
-            <br>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label>3. On average, how many hours a week were devoted to this course (preparation, time in exercise
-                    sessions, projects, etc., all included)?</label><br>
+                    sessions, projects, etc., all included)?</label>
                 <select class="form-control" name="evaluation_hour" required {% if evaluation %} disabled {% endif %}>
                     {% for hour in evaluation_hour %}
                         <option value="{{ hour }}" {% if evaluation and evaluation.nbr_hours == hour %}
@@ -55,9 +50,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <br>
-            <div class="form-group">
-                <label>4. How would you rate your workload for this course?</label><br>
+            <div class="form-group mb-3">
+                <label>4. How would you rate your workload for this course?</label>
                 <select class="form-control" name="workload" required {% if evaluation %} disabled {% endif %}>
                     {% for workload in workloads %}
                         <option value="{{ workload }}"
@@ -66,17 +60,15 @@
                     {% endfor %}
                 </select>
             </div>
-            <br>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label for="comments">5. Do you have any comments to make about the course load? (For example: if you
                     know that the course will change a lot less next year, or will be strongly
-                    reorganized,...)</label><br>
+                    reorganized,...)</label>
                 <textarea class="form-control" id="comment" name="comment"
                           rows="3" {% if evaluation %} disabled {% endif %}>{{ evaluation.comment if evaluation else '' }}</textarea>
             </div>
 
         {% if not evaluation %}
-            <br>
             <button type="submit" class="btn btn-primary">Submit</button>
         {% endif %}
         </form>

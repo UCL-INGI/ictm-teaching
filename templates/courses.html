@@ -38,7 +38,7 @@
                     <select class="form-select form-select-sm d-inline" id="yearSelect" name="yearSelect"
                             {% if session.is_admin == False %} disabled {% endif %}>
                         {% for config in configurations %}
-                            <option value="{{ config.year }}" {% if config.year == current_year %}
+                            <option value="{{ config.year }}" {% if config.year == year %}
                                     selected {% endif %} data-redirect="{{ url_for('course.courses', year=config.year) }}">
                                 {{ config.year }}-{{ config.year + 1 }}
                             </option>
@@ -52,7 +52,7 @@
                 <tr class="course-item"
                     data-organizations="{{ course.organizations | map(attribute='id') | join(',') }}">
                     <td>
-                        <a href="{{ url_for("course.course_info", course_id=course.id, year=current_year) }}">
+                        <a href="{{ url_for("course.course_info", course_id=course.id, year=year) }}">
                             {{ course.code }} - {{ course.title }}
                         </a>
                     </td>

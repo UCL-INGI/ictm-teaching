@@ -1,6 +1,6 @@
 from decorators import login_required, check_access_level
 from db import db, User, Course, PreferenceAssignment, Teacher, Researcher, Organization, \
-    ResearcherSupervisor, Role, AssignmentDraft, AssignmentPublished
+    ResearcherSupervisor, Role, AssignmentDraft, AssignmentPublished, Year
 from flask import Blueprint, render_template, flash, current_app, url_for, request, make_response, redirect, session, \
     Flask, jsonify
 from util import get_current_year
@@ -79,6 +79,7 @@ def publish_assignments():
 
     current_year = get_current_year()
     is_draft = data.get('isDraft')
+    is_teacher_publication = data.get('isTeacherPublication')
 
     try:
         # Clear existing assignments for the current year
@@ -113,8 +114,7 @@ def publish_assignments():
                         if not is_draft:
                             assignments_to_add.append(AssignmentPublished(
                                 course_id=course_id, course_year=current_year, researcher_id=researcher_id,
-                                load_q1=load_q1, load_q2=load_q2, position=position, comment=comment
-                            ))
+                                load_q1=load_q1, load_q2=load_q2, position=position, comment=comment))
                     except (ValueError, TypeError) as e:
                         course = db.session.query(Course).filter_by(id=course_id, year=current_year).first()
                         return jsonify({

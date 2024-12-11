@@ -32,14 +32,17 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th>Last name</th>
-                    <th>First name</th>
+                    <th>Researcher</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colspan="2">No assistants assigned this year.</td>
-                </tr>
+                    {% for assistant in course.assistants %}
+                        <tr>
+                            <td>
+                                {{ assistant.name }} {{ assistant.first_name }}
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <div class="container-fluid">
@@ -72,9 +75,17 @@
                                     <tr>
                                         <th>Last name</th>
                                         <th>First name</th>
+                                        <th>Year</th>
                                     </tr>
                                     </thead>
                                     <tbody>
+                                    {% for assistant in all_assistants %}
+                                        <tr>
+                                            <td>{{ assistant.user.name }}</td>
+                                            <td>{{ assistant.user.first_name }}</td>
+                                            <td>{{ assistant.year }}</td>
+                                        </tr>
+                                    {% endfor %}
                                     </tbody>
                                 </table>
                             </div>

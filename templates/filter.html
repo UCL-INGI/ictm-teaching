@@ -1,24 +1,26 @@
-<b>Filter organizations</b>
-<div class="row col-sm-12">
-    <div class="col-sm-12 ">
-        <!-- Badges for organizations -->
-        <div class="mb-3">
-            <br>
-            {% for org in organizations_code %}
-                <label>
-                    <input type="checkbox" style="opacity: 0" class="badge-checkbox" data-id="{{ org.id }}"
-                           checked>
-                    <span class="badge bg-primary">{{ org.name }}</span>
-                </label>
-            {% endfor %}
+<div class="container-fluid mb-3">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="sub-header">Filter organizations</h5>
+            <div class="row col-sm-12 mt-3">
+                <div class="col-sm-12">
+                    <!-- Badges for organizations -->
+                    {% for org in organizations_code %}
+                        <label>
+                            <input type="checkbox" style="opacity: 0" class="badge-checkbox" data-id="{{ org.id }}"
+                                   checked>
+                            <span class="badge bg-primary">{{ org.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-sm-12 d-flex mt-3">
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="checkAllBtn">Check All</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="uncheckAllBtn">Uncheck All</button>
+            </div>
         </div>
     </div>
 </div>
-<div class="col-sm-12 d-flex">
-    <button type="button" class="btn btn-outline-secondary btn-sm" id="checkAllBtn">Check All</button>
-    <button type="button" class="btn btn-outline-secondary btn-sm" id="uncheckAllBtn">Uncheck All</button>
-</div>
-
 <script>
     function setupBadgeCheckboxHandlers(filterType) {
         $(document).on('change', '.badge-checkbox', function () {

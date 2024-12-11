@@ -117,7 +117,7 @@ def add_course():
 @check_access_level(Role.ADMIN)
 def courses(year):
     courses = db.session.query(Course).filter_by(year=year).all()
-    return render_template('courses.html', courses=courses, current_year=year)
+    return render_template('courses.html', courses=courses, year=year)
 
 
 @course_bp.route('/search_teachers')
@@ -141,6 +141,7 @@ def search_teachers():
 @check_access_level(Role.ADMIN)
 def course_info(course_id, year):
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
+
     if not course:
         return make_response("Course not found", 404)
 
@@ -210,6 +211,7 @@ def update_course_info():
         course.organizations = db.session.query(Organization).filter(
             Organization.id.in_(organisation_code)).all()
         db.session.commit()
+        flash("Course updated successfully", "success")
     except Exception as e:
         db.session.rollback()
     return redirect(url_for("course.course_info", course_id=course_id, year=year))
@@ -276,7 +278,7 @@ def course_evaluation(evaluation_id):
 
     course = evaluation.course
     user = db.session.query(User).filter_by(id=session['user_id']).first()
-    teachers = course.course_teacher
+    teachers = course.teachers
 
     # Accessible only to the admin, the evaluation creator and the course teachers
     if (not user.is_admin) and (user.id != evaluation.user_id) and (user.id not in [teacher.user_id for teacher in teachers]):

@@ -1,6 +1,8 @@
 import datetime
 
 import jinja2.defaults
+from sqlalchemy import and_
+from sqlalchemy.orm import joinedload
 
 from auth import auth_bp
 from user import user_bp
@@ -8,7 +10,7 @@ from course import course_bp
 from config import config_bp
 from course_preference import course_preference_bp
 from assignment import assignment_bp
-from db import db, Year, Organization, User, Course, Teacher, Researcher, Evaluation
+from db import db, Year, Organization, User, Course, Teacher, Researcher, Evaluation, AssignmentPublished
 from decorators import *
 from flask import Flask, render_template, session, request
 from enums import *
@@ -53,11 +55,49 @@ def inject_configurations():
 # Routes
 @app.route('/')
 @login_required
-def index():  # put application's code here
+def index():
     current_year = get_current_year()
+    year = db.session.query(Year).filter_by(year=current_year).first()
     user = db.session.query(User).filter_by(email=session['email']).first()
-    courses_teacher = db.session.query(Course).filter_by(year=current_year).join(Teacher).filter(Teacher.user_id == user.id).all()
-    return render_template("home.html", user=user, courses=courses_teacher, evaluations=user.evaluations)
+    researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
+    teacher = db.session.query(Teacher).filter_by(user_id=user.id).first() if user.is_teacher else None
+
+    # Teacher data
+    courses_teacher = []
+    researcher_supervised = []
+
+    # Researcher data
+    researcher_courses = []
+    researcher_current_course = []
+    researcher_evaluations = []
+
+    if teacher:
+        # Get the teacher's courses
+        courses_teacher = db.session.query(Course).join(Teacher).filter(
+            and_(Teacher.user_id == user.id, Course.year == current_year)
+        ).all()
+
+        users_supervised = teacher.user.researchers
+        for researcher_supervisor in users_supervised:
+            # Filter assigned_courses wth current year
+            researcher = researcher_supervisor.researcher
+            current_year_courses = [
+                course for course in researcher.assigned_courses if course.year == current_year
+            ]
+            researcher.current_assigned_courses = current_year_courses
+            researcher_supervised.append(researcher)
+
+    elif researcher:
+        # Get the courses where the researcher is assigned
+        researcher_courses = researcher.assigned_courses
+        researcher_current_course = [
+            course for course in researcher_courses if course.year == current_year
+        ]
+        researcher_evaluations = researcher.user.evaluations
+
+    return render_template("home.html", user=user, courses_teacher=courses_teacher,
+                           researcher_supervised=researcher_supervised, researcher_courses=researcher_courses,
+                           researcher_current_course=researcher_current_course, evaluations=researcher_evaluations)
 
 
 if __name__ == '__main__':

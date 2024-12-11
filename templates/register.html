@@ -26,32 +26,29 @@
 {% block pagecontent %}
     {% include "toast.html" %}
     <div class="container bootstrap snippet">
-        <h2 class="text-center mb-4">New user</h2>
+        <h2 class="text-center mb-4 mt-3">New user</h2>
         <form method="post" action="{{ url_for("user.add_user") }}">
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4">
                     <label for="email">Email address</label>
                     <input type="email" class="form-control" id="email" name="email"
                            placeholder="Enter your email address">
                 </div>
             </div>
-            <br>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4">
                     <label for="firstname">First name</label>
                     <input type="text" class="form-control" id="firstname" name="first_name"
                            placeholder="Enter your first name">
                 </div>
             </div>
-            <br>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4">
                     <label for="lastname">Name</label>
                     <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name">
                 </div>
             </div>
-            <br>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4">
                     <label for="organization_code">Organization code</label>
                     <select class="form-select" id="organization_code" name="organization_code">
@@ -61,8 +58,7 @@
                     </select>
                 </div>
             </div>
-            <br>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-1">
                 <div class="col-sm-4">
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher">
@@ -74,9 +70,8 @@
                     </div>
                 </div>
             </div>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4" id="supervisor_select" style="display: none;">
-                    <br>
                     <div class="form-group">
                         <label for="supervisor">Supervisor</label>
                         {% with is_disabled=false, show_selected_supervisors=false %}
@@ -86,9 +81,8 @@
                 </div>
             </div>
 
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-3">
                 <div class="col-sm-4" id="researcher_type_select" style="display: none;">
-                    <br>
                     <label for="researcher_type">Researcher type</label>
                     <select class="form-select" id="researcher_type" name="researcher_type">
                         {% for type in researcher_type %}
@@ -97,7 +91,6 @@
                     </select>
                 </div>
             </div>
-            <br>
             <div class="row justify-content-center">
                 <div class="col-sm-4">
                     <input type="submit" value="Add">

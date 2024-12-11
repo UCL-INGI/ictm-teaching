@@ -15,24 +15,22 @@
 {% block pagecontent %}
     {% include "toast.html" %}
     <div class="container-sm">
-        <h2 class="text-center mb-4">New Course</h2>
+        <h2 class="text-center mb-4 mt-3">New Course</h2>
         <form method="post" action="{{ url_for('course.add_course') }}">
             <div class="row">
                 <div class="col-sm-6 col-md-6">
 
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="code"><h4>Code</h4></label>
                         <input type="text" class="form-control" id="code" name="code"
                                placeholder="Enter the course code">
                     </div>
-                    <br>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="title"><h4>Title</h4></label>
                         <input type="text" class="form-control" id="title" name="title"
                                placeholder="Enter the course title">
                     </div>
-                    <br>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="quadri"><h4>Quadri</h4></label>
                         <select class="form-select" id="quadri" name="quadri">
                             {% for q in quadri %}
@@ -43,7 +41,7 @@
                 </div>
 
                 <div class="col-sm-6 col-md-6">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="year"><h4>Year</h4></label>
                         <select class="form-select" id="year" name="year">
                             {% for config in configurations %}
@@ -54,8 +52,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <br>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="language"><h4>Language</h4></label>
                         <select class="form-select" id="language" name="language">
                             {% for code, name in language.items() %}
@@ -63,8 +60,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <br>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="organization_code"><h4>Organization Code</h4></label>
                         <select class="form-select" id="organization_code" name="organization_code">
                             <option value="" disabled selected>Select an organization</option>
@@ -76,7 +72,6 @@
                     <div id="tags-container"></div>
                 </div>
             </div>
-            <br>
             <div class="text-center">
                 <input type="submit" class="btn btn-primary" value="Add">
             </div>

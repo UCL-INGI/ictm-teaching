@@ -15,9 +15,8 @@
 
 {% block pagecontent %}
     {% include "toast_notification.html" %}
-    <div class="container-fluid">
+    <div class="container-fluid mt-3">
         <form id="preferencesForm" method="post">
-            <br>
             <h2>The preferences of {{ researcher.user.name }} {{ researcher.user.first_name }}</h2>
             <table class="table table-hover" id="staticPreferencesTable">
                 <thead>

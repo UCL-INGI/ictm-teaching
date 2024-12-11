@@ -1,7 +1,7 @@
 from sqlalchemy import func
 
 from decorators import login_required, check_access_level
-from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role
+from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role, Researcher, AssignmentPublished
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -148,10 +148,16 @@ def course_info(course_id, year):
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
+    query_all_assistants = db.session.query(User, Course.year).join(Researcher).join(
+        AssignmentPublished).join(Course).filter(
+        AssignmentPublished.course_id == course_id
+    ).order_by(Course.year.desc()).all()
+    all_assistants = [{"user": user, "year": year} for user, year in query_all_assistants]
+
     evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).all() or []
 
     return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
-                           evaluations=evaluations)
+                           evaluations=evaluations, all_assistants=all_assistants)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])

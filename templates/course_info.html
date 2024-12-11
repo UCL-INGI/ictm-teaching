@@ -75,9 +75,17 @@
                                     <tr>
                                         <th>Last name</th>
                                         <th>First name</th>
+                                        <th>Year</th>
                                     </tr>
                                     </thead>
                                     <tbody>
+                                    {% for assistant in all_assistants %}
+                                        <tr>
+                                            <td>{{ assistant.user.name }}</td>
+                                            <td>{{ assistant.user.first_name }}</td>
+                                            <td>{{ assistant.year }}</td>
+                                        </tr>
+                                    {% endfor %}
                                     </tbody>
                                 </table>
                             </div>

@@ -89,7 +89,7 @@ class Researcher(db.Model):
 
     user = db.relationship('User', backref=db.backref('researcher_profile', uselist=False))
     assigned_courses = db.relationship('Course', secondary='assignment_published',
-                              backref=db.backref('courses', lazy=True))
+                                       backref=db.backref('courses', lazy=True), order_by='Course.year.desc()')
 
 
 class ResearcherSupervisor(db.Model):

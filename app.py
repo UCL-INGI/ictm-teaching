@@ -88,14 +88,14 @@ def index():
         researcher = db.session.query(Researcher).filter_by(user_id=user.id).first()
         # Populate researcher-specific data
         researcher_courses = researcher.assigned_courses
-        current_courses = [
+        researcher_current_courses = [
             course for course in researcher_courses if course.year == current_year
         ]
         evaluations = researcher.user.evaluations
 
         data.update({
             "researcher_courses": researcher_courses,
-            "current_courses": current_courses,
+            "researcher_current_courses": researcher_current_courses,
             "researcher_evaluations": evaluations
         })
 

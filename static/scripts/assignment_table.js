@@ -202,7 +202,25 @@ fetch('/assignment/load_data')
             contextMenu: ['commentsAddEdit', 'commentsRemove', 'hidden_columns_hide', 'hidden_rows_hide', 'hidden_columns_show', 'hidden_rows_show'],
             comments: true,
             filters: true,
-            dropdownMenu: ['filter_by_value', 'filter_action_bar', 'undo'],
+            dropdownMenu: {
+                items: {
+                    'filter_by_value': {},
+                    'filter_action_bar': {},
+                    '---------': {},
+                    'clear_all_filters': {
+                        name: 'Reset filters',
+                        callback: function () {
+                            const filtersPlugin = this.getPlugin('filters');
+                            console.log(filtersPlugin);
+                            if (filtersPlugin) {
+                                filtersPlugin.clearConditions();
+                                filtersPlugin.filter();
+                            }
+                        },
+                    },
+                },
+            },
+            //dropdownMenu: ['filter_by_value', 'filter_action_bar', 'reset_filter'],
             className: 'controlsQuickFilter htCenter htMiddle',
             colHeaders: allHeaders,
             columns: columns,

@@ -97,7 +97,8 @@ def add_course():
         is_course = db.session.query(Course).filter(Course.code == code,
                                                     Course.year == year).first()
         if is_course is not None:
-            return make_response("Course already exists", 500)
+            flash("Course already exists", "danger")
+            return redirect(url_for('course.add_course'))
 
         new_course = Course(year=year, code=code, title=title, quadri=quadri, language=language)
         # Fetch organizations and add them to the course
@@ -106,7 +107,7 @@ def add_course():
 
         db.session.add(new_course)
         db.session.commit()
-        return redirect(url_for("course.courses", year=year))
+        return redirect(url_for("course.course_info", course_id=new_course.id, year=year))
     except Exception as e:
         db.session.rollback()
         raise e

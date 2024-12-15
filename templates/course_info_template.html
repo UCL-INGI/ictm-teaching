@@ -64,7 +64,7 @@
                     <select class="form-control assigned-teachers"
                             id="assigned_teachers_{{ course.year }}"
                             name="assigned_teachers[]" multiple>
-                        {% for assigned_teacher in course.course_teacher %}
+                        {% for assigned_teacher in course.teachers %}
                             {% if assigned_teacher.course_year == course.year %}
                                 <option value="{{ assigned_teacher.user_id }}"
                                         selected>{{ assigned_teacher.user.name }} {{ assigned_teacher.user.first_name }}</option>
@@ -77,7 +77,7 @@
                 <dd>
                     <select class="form-control assigned-teachers" id="assigned_teachers"
                             name="assigned_teachers[]" multiple>
-                        {% for t in course.course_teacher %}
+                        {% for t in course.teachers %}
                             <option value="{{ t.user_id }}"
                                     selected>{{ t.user.name }} {{ t.user.first_name }}</option>
                         {% endfor %}

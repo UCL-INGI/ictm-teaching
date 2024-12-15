@@ -1,7 +1,7 @@
 from sqlalchemy import func
 
 from decorators import login_required, check_access_level
-from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role
+from db import db, User, Course, Teacher, Organization, Evaluation, Year, Role, Researcher, AssignmentPublished
 from flask import Blueprint, render_template, flash, url_for, request, make_response, redirect, \
     Flask, jsonify, session
 from util import get_current_year
@@ -97,7 +97,8 @@ def add_course():
         is_course = db.session.query(Course).filter(Course.code == code,
                                                     Course.year == year).first()
         if is_course is not None:
-            return make_response("Course already exists", 500)
+            flash("Course already exists", "danger")
+            return redirect(url_for('course.add_course'))
 
         new_course = Course(year=year, code=code, title=title, quadri=quadri, language=language)
         # Fetch organizations and add them to the course
@@ -106,7 +107,7 @@ def add_course():
 
         db.session.add(new_course)
         db.session.commit()
-        return redirect(url_for("course.courses", year=year))
+        return redirect(url_for("course.course_info", course_id=new_course.id, year=year))
     except Exception as e:
         db.session.rollback()
         raise e
@@ -117,7 +118,7 @@ def add_course():
 @check_access_level(Role.ADMIN)
 def courses(year):
     courses = db.session.query(Course).filter_by(year=year).all()
-    return render_template('courses.html', courses=courses, current_year=year)
+    return render_template('courses.html', courses=courses, year=year)
 
 
 @course_bp.route('/search_teachers')
@@ -141,16 +142,23 @@ def search_teachers():
 @check_access_level(Role.ADMIN)
 def course_info(course_id, year):
     course = db.session.query(Course).filter(Course.id == course_id, Course.year == year).first()
+
     if not course:
         return make_response("Course not found", 404)
 
     all_years = db.session.query(Course).filter_by(id=course.id).distinct(Course.year).order_by(
         Course.year.desc()).all()
 
+    query_all_assistants = db.session.query(User, Course.year).join(Researcher).join(
+        AssignmentPublished).join(Course).filter(
+        AssignmentPublished.course_id == course_id
+    ).order_by(Course.year.desc()).all()
+    all_assistants = [{"user": user, "year": year} for user, year in query_all_assistants]
+
     evaluations = db.session.query(Evaluation).filter_by(course_id=course_id).all() or []
 
     return render_template('course_info.html', course=course, all_years=all_years, current_year=year,
-                           evaluations=evaluations)
+                           evaluations=evaluations, all_assistants=all_assistants)
 
 
 @course_bp.route('/update_course_info', methods=['POST'])
@@ -276,7 +284,7 @@ def course_evaluation(evaluation_id):
 
     course = evaluation.course
     user = db.session.query(User).filter_by(id=session['user_id']).first()
-    teachers = course.course_teacher
+    teachers = course.teachers
 
     # Accessible only to the admin, the evaluation creator and the course teachers
     if (not user.is_admin) and (user.id != evaluation.user_id) and (user.id not in [teacher.user_id for teacher in teachers]):

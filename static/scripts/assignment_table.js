@@ -168,7 +168,6 @@ fetch('/assignment/load_data')
         const columns = getCourseColumns();
 
         let data = fixedRows.concat(userRows);
-
         const nbrLines = data.length - 1;
         const nbrCols = columns.length - 1;
 
@@ -203,7 +202,23 @@ fetch('/assignment/load_data')
             contextMenu: ['commentsAddEdit', 'commentsRemove', 'hidden_columns_hide', 'hidden_rows_hide', 'hidden_columns_show', 'hidden_rows_show'],
             comments: true,
             filters: true,
-            dropdownMenu: ['filter_by_value', 'filter_action_bar', 'undo'],
+            dropdownMenu: {
+                items: {
+                    'filter_by_value': {},
+                    'filter_action_bar': {},
+                    '---------': {},
+                    'clear_all_filters': {
+                        name: 'Reset filters',
+                        callback: function () {
+                            const filtersPlugin = this.getPlugin('filters');
+                            if (filtersPlugin) {
+                                filtersPlugin.clearConditions();
+                                filtersPlugin.filter();
+                            }
+                        },
+                    },
+                },
+            },
             className: 'controlsQuickFilter htCenter htMiddle',
             colHeaders: allHeaders,
             columns: columns,
@@ -336,32 +351,29 @@ fetch('/assignment/load_data')
             ],
             beforeFilter(conditionsStack) {
                 const filtersPlugin = this.getPlugin('filters');
-                //Get the user data without the fixed rows
+                // Get the user data without the fixed rows
                 const tab = this.getData().slice(lenFixedRowsText);
 
-                let values = [];
-                const filteredResults = [];
-                //Get the number of the column to filter
-
                 if (conditionsStack && conditionsStack.length > 0) {
-                    const col = conditionsStack[0].column;
+                    // Start with all row IDs as potentially valid
+                    let filteredResults = tab.map(row => row[0]); // Array of IDs
 
-                    if (conditionsStack && conditionsStack.length > 0) {
-                        for (let i = 0; i < conditionsStack.length; i++) {
-                            //Get the matching values to filter
-                            values = conditionsStack[i].conditions[0].args.flat();
+                    // Process each condition and refine the filteredResults
+                    for (const condition of conditionsStack) {
+                        const col = condition.column; // Column to filter
+                        const values = condition.conditions.flatMap(c => c.args).flat(); // Values to match
 
-                            //Verify if the row value for the specific column is in the filter
-                            for (const row of tab) {
-                                if (values.includes(row[col])) {
-                                    //Push id to the filteredResults array
-                                    filteredResults.push(row[0]);
-                                }
-                            }
-                        }
+                        // Filter rows that match the current condition
+                        filteredResults = filteredResults.filter(id =>
+                            tab.some(row => row[0] === id && values.includes(row[col]))
+                        );
+
+                        // Exit early if no rows match any condition
+                        if (filteredResults.length === 0) break;
                     }
+
+                    // Apply the final filtered IDs to the Handsontable filter
                     filtersPlugin.clearConditions();
-                    //Create a new condition to filter the data based on the id
                     filtersPlugin.addCondition(0, 'by_value', [filteredResults]);
                 }
             },
@@ -398,7 +410,7 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             });
 
-            async function saveAssignment(isDraft = false) {
+            async function saveAssignment(isDraft = false, isTeacherPublication = false) {
                 const slicedData = data.slice(lenFixedRowsText);
                 const savedData = [];
                 const commentsPlugin = table.getPlugin('comments');
@@ -436,7 +448,8 @@ fetch('/assignment/load_data')
 
                 const tableData = {
                     data: savedData,
-                    isDraft: isDraft
+                    isDraft: isDraft,
+                    isTeacherPublication: isTeacherPublication,
                 };
 
                 try {
@@ -479,7 +492,11 @@ fetch('/assignment/load_data')
                 toastNotification.show();
             });
 
-            $('#button-publish-assignments').click(async function () {
+            $('#button-publish-teachers').click(async function () {
+                await saveAssignment(false, true);
+            });
+
+            $('#button-publish-everyone').click(async function () {
                 await saveAssignment();
             });
         });
